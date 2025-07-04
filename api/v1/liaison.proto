@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/singchia/liaison/api/v1;liaison";
+
+service LiaisonService {
+}
