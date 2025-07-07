@@ -4,5 +4,23 @@ import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/singchia/liaison/api/v1;liaison";
 
+message Edge {
+    uint64 id = 1;
+    string name = 2;
+    string description = 3;
+    string status = 4;
+    string created_at = 5;
+    string updated_at = 6;
+}
+
+message CreateEdgeRequest {
+    string name = 1;
+    string description = 2;
+}
+
+message CreateEdgeResponse {
+    Edge edge = 1;
+}
+
 service LiaisonService {
 }
