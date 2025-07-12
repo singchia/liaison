@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
 
 option go_package = "github.com/singchia/liaison/api/v1;liaison";
 
@@ -13,14 +13,96 @@ message Edge {
     string updated_at = 6;
 }
 
+message AccessKey {
+    string access_key = 1;
+    string secret_key = 2;
+}
+
+// 创建边缘节点请求
 message CreateEdgeRequest {
     string name = 1;
     string description = 2;
 }
 
 message CreateEdgeResponse {
-    Edge edge = 1;
+    int32 code = 1;
+    string message = 2;
+    AccessKey data = 3;
+}
+
+// 获取边缘节点请求
+message GetEdgeRequest {
+    uint64 id = 1;
+}
+
+message GetEdgeResponse {
+    int32 code = 1;
+    string message = 2;
+    Edge data = 3;
+}
+
+// 列举边缘节点请求
+message ListEdgesRequest {
+    int32 page = 1;
+    int32 page_size = 2;
+}
+
+message ListEdgesResponse {
+    int32 code = 1;
+    string message = 2;
+    repeated Edge data = 3;
+}
+
+// 更新边缘节点请求
+message UpdateEdgeRequest {
+    uint64 id = 1;
+    string name = 2;
+    string description = 3;
+    int32 status = 4; // 1: running, 2: stopped
+}
+
+message UpdateEdgeResponse {
+    int32 code = 1;
+    string message = 2;
+    Edge data = 3;
+}
+
+// 删除边缘节点请求
+message DeleteEdgeRequest {
+    uint64 id = 1;
+}
+
+message DeleteEdgeResponse {
+    int32 code = 1;
+    string message = 2;
 }
 
 service LiaisonService {
+    rpc CreateEdge(CreateEdgeRequest) returns (CreateEdgeResponse) {
+        option (google.api.http) = {
+            post: "/v1/edges"
+            body: "*"
+        };
+    };
+    rpc GetEdge(GetEdgeRequest) returns (GetEdgeResponse) {
+        option (google.api.http) = {
+            get: "/v1/edges/{id}"
+        };
+    };
+    rpc ListEdges(ListEdgesRequest) returns (ListEdgesResponse) {
+        option (google.api.http) = {
+            get: "/v1/edges"
+       };
+    };
+    rpc UpdateEdge(UpdateEdgeRequest) returns (UpdateEdgeResponse) {
+        option (google.api.http) = {
+            put: "/v1/edges/{id}",
+            body: "*"
+        };
+    };
+    rpc DeleteEdge(DeleteEdgeRequest) returns (DeleteEdgeResponse) {
+        option (google.api.http) = {
+            delete: "/v1/edges/{id}"
+        };
+    };
 }
