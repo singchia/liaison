@@ -22,6 +22,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// 边缘
 type Edge struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -106,6 +107,58 @@ func (x *Edge) GetUpdatedAt() string {
 	return ""
 }
 
+type Edges struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Total         int32                  `protobuf:"varint,1,opt,name=total,proto3" json:"total,omitempty"`
+	Edges         []*Edge                `protobuf:"bytes,2,rep,name=edges,proto3" json:"edges,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Edges) Reset() {
+	*x = Edges{}
+	mi := &file_liaison_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Edges) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Edges) ProtoMessage() {}
+
+func (x *Edges) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Edges.ProtoReflect.Descriptor instead.
+func (*Edges) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Edges) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+func (x *Edges) GetEdges() []*Edge {
+	if x != nil {
+		return x.Edges
+	}
+	return nil
+}
+
 type AccessKey struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AccessKey     string                 `protobuf:"bytes,1,opt,name=access_key,json=accessKey,proto3" json:"access_key,omitempty"`
@@ -116,7 +169,7 @@ type AccessKey struct {
 
 func (x *AccessKey) Reset() {
 	*x = AccessKey{}
-	mi := &file_liaison_proto_msgTypes[1]
+	mi := &file_liaison_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -128,7 +181,7 @@ func (x *AccessKey) String() string {
 func (*AccessKey) ProtoMessage() {}
 
 func (x *AccessKey) ProtoReflect() protoreflect.Message {
-	mi := &file_liaison_proto_msgTypes[1]
+	mi := &file_liaison_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -141,7 +194,7 @@ func (x *AccessKey) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AccessKey.ProtoReflect.Descriptor instead.
 func (*AccessKey) Descriptor() ([]byte, []int) {
-	return file_liaison_proto_rawDescGZIP(), []int{1}
+	return file_liaison_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *AccessKey) GetAccessKey() string {
@@ -169,7 +222,7 @@ type CreateEdgeRequest struct {
 
 func (x *CreateEdgeRequest) Reset() {
 	*x = CreateEdgeRequest{}
-	mi := &file_liaison_proto_msgTypes[2]
+	mi := &file_liaison_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -181,7 +234,7 @@ func (x *CreateEdgeRequest) String() string {
 func (*CreateEdgeRequest) ProtoMessage() {}
 
 func (x *CreateEdgeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_liaison_proto_msgTypes[2]
+	mi := &file_liaison_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -194,7 +247,7 @@ func (x *CreateEdgeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateEdgeRequest.ProtoReflect.Descriptor instead.
 func (*CreateEdgeRequest) Descriptor() ([]byte, []int) {
-	return file_liaison_proto_rawDescGZIP(), []int{2}
+	return file_liaison_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *CreateEdgeRequest) GetName() string {
@@ -222,7 +275,7 @@ type CreateEdgeResponse struct {
 
 func (x *CreateEdgeResponse) Reset() {
 	*x = CreateEdgeResponse{}
-	mi := &file_liaison_proto_msgTypes[3]
+	mi := &file_liaison_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -234,7 +287,7 @@ func (x *CreateEdgeResponse) String() string {
 func (*CreateEdgeResponse) ProtoMessage() {}
 
 func (x *CreateEdgeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_liaison_proto_msgTypes[3]
+	mi := &file_liaison_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -247,7 +300,7 @@ func (x *CreateEdgeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateEdgeResponse.ProtoReflect.Descriptor instead.
 func (*CreateEdgeResponse) Descriptor() ([]byte, []int) {
-	return file_liaison_proto_rawDescGZIP(), []int{3}
+	return file_liaison_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *CreateEdgeResponse) GetCode() int32 {
@@ -281,7 +334,7 @@ type GetEdgeRequest struct {
 
 func (x *GetEdgeRequest) Reset() {
 	*x = GetEdgeRequest{}
-	mi := &file_liaison_proto_msgTypes[4]
+	mi := &file_liaison_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -293,7 +346,7 @@ func (x *GetEdgeRequest) String() string {
 func (*GetEdgeRequest) ProtoMessage() {}
 
 func (x *GetEdgeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_liaison_proto_msgTypes[4]
+	mi := &file_liaison_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -306,7 +359,7 @@ func (x *GetEdgeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetEdgeRequest.ProtoReflect.Descriptor instead.
 func (*GetEdgeRequest) Descriptor() ([]byte, []int) {
-	return file_liaison_proto_rawDescGZIP(), []int{4}
+	return file_liaison_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetEdgeRequest) GetId() uint64 {
@@ -327,7 +380,7 @@ type GetEdgeResponse struct {
 
 func (x *GetEdgeResponse) Reset() {
 	*x = GetEdgeResponse{}
-	mi := &file_liaison_proto_msgTypes[5]
+	mi := &file_liaison_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -339,7 +392,7 @@ func (x *GetEdgeResponse) String() string {
 func (*GetEdgeResponse) ProtoMessage() {}
 
 func (x *GetEdgeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_liaison_proto_msgTypes[5]
+	mi := &file_liaison_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -352,7 +405,7 @@ func (x *GetEdgeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetEdgeResponse.ProtoReflect.Descriptor instead.
 func (*GetEdgeResponse) Descriptor() ([]byte, []int) {
-	return file_liaison_proto_rawDescGZIP(), []int{5}
+	return file_liaison_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetEdgeResponse) GetCode() int32 {
@@ -387,7 +440,7 @@ type ListEdgesRequest struct {
 
 func (x *ListEdgesRequest) Reset() {
 	*x = ListEdgesRequest{}
-	mi := &file_liaison_proto_msgTypes[6]
+	mi := &file_liaison_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -399,7 +452,7 @@ func (x *ListEdgesRequest) String() string {
 func (*ListEdgesRequest) ProtoMessage() {}
 
 func (x *ListEdgesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_liaison_proto_msgTypes[6]
+	mi := &file_liaison_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -412,7 +465,7 @@ func (x *ListEdgesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListEdgesRequest.ProtoReflect.Descriptor instead.
 func (*ListEdgesRequest) Descriptor() ([]byte, []int) {
-	return file_liaison_proto_rawDescGZIP(), []int{6}
+	return file_liaison_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ListEdgesRequest) GetPage() int32 {
@@ -433,14 +486,14 @@ type ListEdgesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
 	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
-	Data          []*Edge                `protobuf:"bytes,3,rep,name=data,proto3" json:"data,omitempty"`
+	Data          *Edges                 `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListEdgesResponse) Reset() {
 	*x = ListEdgesResponse{}
-	mi := &file_liaison_proto_msgTypes[7]
+	mi := &file_liaison_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -452,7 +505,7 @@ func (x *ListEdgesResponse) String() string {
 func (*ListEdgesResponse) ProtoMessage() {}
 
 func (x *ListEdgesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_liaison_proto_msgTypes[7]
+	mi := &file_liaison_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -465,7 +518,7 @@ func (x *ListEdgesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListEdgesResponse.ProtoReflect.Descriptor instead.
 func (*ListEdgesResponse) Descriptor() ([]byte, []int) {
-	return file_liaison_proto_rawDescGZIP(), []int{7}
+	return file_liaison_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ListEdgesResponse) GetCode() int32 {
@@ -482,7 +535,7 @@ func (x *ListEdgesResponse) GetMessage() string {
 	return ""
 }
 
-func (x *ListEdgesResponse) GetData() []*Edge {
+func (x *ListEdgesResponse) GetData() *Edges {
 	if x != nil {
 		return x.Data
 	}
@@ -502,7 +555,7 @@ type UpdateEdgeRequest struct {
 
 func (x *UpdateEdgeRequest) Reset() {
 	*x = UpdateEdgeRequest{}
-	mi := &file_liaison_proto_msgTypes[8]
+	mi := &file_liaison_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -514,7 +567,7 @@ func (x *UpdateEdgeRequest) String() string {
 func (*UpdateEdgeRequest) ProtoMessage() {}
 
 func (x *UpdateEdgeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_liaison_proto_msgTypes[8]
+	mi := &file_liaison_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -527,7 +580,7 @@ func (x *UpdateEdgeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateEdgeRequest.ProtoReflect.Descriptor instead.
 func (*UpdateEdgeRequest) Descriptor() ([]byte, []int) {
-	return file_liaison_proto_rawDescGZIP(), []int{8}
+	return file_liaison_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *UpdateEdgeRequest) GetId() uint64 {
@@ -569,7 +622,7 @@ type UpdateEdgeResponse struct {
 
 func (x *UpdateEdgeResponse) Reset() {
 	*x = UpdateEdgeResponse{}
-	mi := &file_liaison_proto_msgTypes[9]
+	mi := &file_liaison_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -581,7 +634,7 @@ func (x *UpdateEdgeResponse) String() string {
 func (*UpdateEdgeResponse) ProtoMessage() {}
 
 func (x *UpdateEdgeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_liaison_proto_msgTypes[9]
+	mi := &file_liaison_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -594,7 +647,7 @@ func (x *UpdateEdgeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateEdgeResponse.ProtoReflect.Descriptor instead.
 func (*UpdateEdgeResponse) Descriptor() ([]byte, []int) {
-	return file_liaison_proto_rawDescGZIP(), []int{9}
+	return file_liaison_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *UpdateEdgeResponse) GetCode() int32 {
@@ -628,7 +681,7 @@ type DeleteEdgeRequest struct {
 
 func (x *DeleteEdgeRequest) Reset() {
 	*x = DeleteEdgeRequest{}
-	mi := &file_liaison_proto_msgTypes[10]
+	mi := &file_liaison_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -640,7 +693,7 @@ func (x *DeleteEdgeRequest) String() string {
 func (*DeleteEdgeRequest) ProtoMessage() {}
 
 func (x *DeleteEdgeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_liaison_proto_msgTypes[10]
+	mi := &file_liaison_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -653,7 +706,7 @@ func (x *DeleteEdgeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteEdgeRequest.ProtoReflect.Descriptor instead.
 func (*DeleteEdgeRequest) Descriptor() ([]byte, []int) {
-	return file_liaison_proto_rawDescGZIP(), []int{10}
+	return file_liaison_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *DeleteEdgeRequest) GetId() uint64 {
@@ -673,7 +726,7 @@ type DeleteEdgeResponse struct {
 
 func (x *DeleteEdgeResponse) Reset() {
 	*x = DeleteEdgeResponse{}
-	mi := &file_liaison_proto_msgTypes[11]
+	mi := &file_liaison_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -685,7 +738,7 @@ func (x *DeleteEdgeResponse) String() string {
 func (*DeleteEdgeResponse) ProtoMessage() {}
 
 func (x *DeleteEdgeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_liaison_proto_msgTypes[11]
+	mi := &file_liaison_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -698,7 +751,7 @@ func (x *DeleteEdgeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteEdgeResponse.ProtoReflect.Descriptor instead.
 func (*DeleteEdgeResponse) Descriptor() ([]byte, []int) {
-	return file_liaison_proto_rawDescGZIP(), []int{11}
+	return file_liaison_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *DeleteEdgeResponse) GetCode() int32 {
@@ -709,6 +762,877 @@ func (x *DeleteEdgeResponse) GetCode() int32 {
 }
 
 func (x *DeleteEdgeResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+// 设备
+type Device struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	Cpu           int32                  `protobuf:"varint,4,opt,name=cpu,proto3" json:"cpu,omitempty"`
+	Memory        int32                  `protobuf:"varint,5,opt,name=memory,proto3" json:"memory,omitempty"`
+	Disk          int32                  `protobuf:"varint,6,opt,name=disk,proto3" json:"disk,omitempty"`
+	Os            string                 `protobuf:"bytes,7,opt,name=os,proto3" json:"os,omitempty"`
+	Version       string                 `protobuf:"bytes,8,opt,name=version,proto3" json:"version,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     string                 `protobuf:"bytes,10,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Device) Reset() {
+	*x = Device{}
+	mi := &file_liaison_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Device) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Device) ProtoMessage() {}
+
+func (x *Device) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Device.ProtoReflect.Descriptor instead.
+func (*Device) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *Device) GetId() uint64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *Device) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Device) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *Device) GetCpu() int32 {
+	if x != nil {
+		return x.Cpu
+	}
+	return 0
+}
+
+func (x *Device) GetMemory() int32 {
+	if x != nil {
+		return x.Memory
+	}
+	return 0
+}
+
+func (x *Device) GetDisk() int32 {
+	if x != nil {
+		return x.Disk
+	}
+	return 0
+}
+
+func (x *Device) GetOs() string {
+	if x != nil {
+		return x.Os
+	}
+	return ""
+}
+
+func (x *Device) GetVersion() string {
+	if x != nil {
+		return x.Version
+	}
+	return ""
+}
+
+func (x *Device) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+func (x *Device) GetUpdatedAt() string {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return ""
+}
+
+type Devices struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Total         int32                  `protobuf:"varint,1,opt,name=total,proto3" json:"total,omitempty"`
+	Devices       []*Device              `protobuf:"bytes,2,rep,name=devices,proto3" json:"devices,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Devices) Reset() {
+	*x = Devices{}
+	mi := &file_liaison_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Devices) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Devices) ProtoMessage() {}
+
+func (x *Devices) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Devices.ProtoReflect.Descriptor instead.
+func (*Devices) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *Devices) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+func (x *Devices) GetDevices() []*Device {
+	if x != nil {
+		return x.Devices
+	}
+	return nil
+}
+
+// 列举设备请求
+type ListDevicesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListDevicesRequest) Reset() {
+	*x = ListDevicesRequest{}
+	mi := &file_liaison_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListDevicesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListDevicesRequest) ProtoMessage() {}
+
+func (x *ListDevicesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListDevicesRequest.ProtoReflect.Descriptor instead.
+func (*ListDevicesRequest) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *ListDevicesRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListDevicesRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+type ListDevicesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Data          *Devices               `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListDevicesResponse) Reset() {
+	*x = ListDevicesResponse{}
+	mi := &file_liaison_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListDevicesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListDevicesResponse) ProtoMessage() {}
+
+func (x *ListDevicesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListDevicesResponse.ProtoReflect.Descriptor instead.
+func (*ListDevicesResponse) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *ListDevicesResponse) GetCode() int32 {
+	if x != nil {
+		return x.Code
+	}
+	return 0
+}
+
+func (x *ListDevicesResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *ListDevicesResponse) GetData() *Devices {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+// 更新设备请求
+type UpdateDeviceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateDeviceRequest) Reset() {
+	*x = UpdateDeviceRequest{}
+	mi := &file_liaison_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateDeviceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateDeviceRequest) ProtoMessage() {}
+
+func (x *UpdateDeviceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateDeviceRequest.ProtoReflect.Descriptor instead.
+func (*UpdateDeviceRequest) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *UpdateDeviceRequest) GetId() uint64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *UpdateDeviceRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *UpdateDeviceRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+type UpdateDeviceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Data          *Device                `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateDeviceResponse) Reset() {
+	*x = UpdateDeviceResponse{}
+	mi := &file_liaison_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateDeviceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateDeviceResponse) ProtoMessage() {}
+
+func (x *UpdateDeviceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateDeviceResponse.ProtoReflect.Descriptor instead.
+func (*UpdateDeviceResponse) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *UpdateDeviceResponse) GetCode() int32 {
+	if x != nil {
+		return x.Code
+	}
+	return 0
+}
+
+func (x *UpdateDeviceResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *UpdateDeviceResponse) GetData() *Device {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+// 应用
+type Application struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Id              uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	DeviceId        uint64                 `protobuf:"varint,2,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
+	Name            string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Port            int32                  `protobuf:"varint,4,opt,name=port,proto3" json:"port,omitempty"`
+	ApplicationType string                 `protobuf:"bytes,5,opt,name=application_type,json=applicationType,proto3" json:"application_type,omitempty"`
+	CreatedAt       string                 `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt       string                 `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *Application) Reset() {
+	*x = Application{}
+	mi := &file_liaison_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Application) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Application) ProtoMessage() {}
+
+func (x *Application) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Application.ProtoReflect.Descriptor instead.
+func (*Application) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *Application) GetId() uint64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *Application) GetDeviceId() uint64 {
+	if x != nil {
+		return x.DeviceId
+	}
+	return 0
+}
+
+func (x *Application) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Application) GetPort() int32 {
+	if x != nil {
+		return x.Port
+	}
+	return 0
+}
+
+func (x *Application) GetApplicationType() string {
+	if x != nil {
+		return x.ApplicationType
+	}
+	return ""
+}
+
+func (x *Application) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+func (x *Application) GetUpdatedAt() string {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return ""
+}
+
+type Applications struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Total         int32                  `protobuf:"varint,1,opt,name=total,proto3" json:"total,omitempty"`
+	Applications  []*Application         `protobuf:"bytes,2,rep,name=applications,proto3" json:"applications,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Applications) Reset() {
+	*x = Applications{}
+	mi := &file_liaison_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Applications) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Applications) ProtoMessage() {}
+
+func (x *Applications) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Applications.ProtoReflect.Descriptor instead.
+func (*Applications) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *Applications) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+func (x *Applications) GetApplications() []*Application {
+	if x != nil {
+		return x.Applications
+	}
+	return nil
+}
+
+// 列举应用请求
+type ListApplicationsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListApplicationsRequest) Reset() {
+	*x = ListApplicationsRequest{}
+	mi := &file_liaison_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListApplicationsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListApplicationsRequest) ProtoMessage() {}
+
+func (x *ListApplicationsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListApplicationsRequest.ProtoReflect.Descriptor instead.
+func (*ListApplicationsRequest) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *ListApplicationsRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListApplicationsRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+type ListApplicationsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Data          *Applications          `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListApplicationsResponse) Reset() {
+	*x = ListApplicationsResponse{}
+	mi := &file_liaison_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListApplicationsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListApplicationsResponse) ProtoMessage() {}
+
+func (x *ListApplicationsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListApplicationsResponse.ProtoReflect.Descriptor instead.
+func (*ListApplicationsResponse) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *ListApplicationsResponse) GetCode() int32 {
+	if x != nil {
+		return x.Code
+	}
+	return 0
+}
+
+func (x *ListApplicationsResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *ListApplicationsResponse) GetData() *Applications {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+// 更新应用请求
+type UpdateApplicationRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateApplicationRequest) Reset() {
+	*x = UpdateApplicationRequest{}
+	mi := &file_liaison_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateApplicationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateApplicationRequest) ProtoMessage() {}
+
+func (x *UpdateApplicationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateApplicationRequest.ProtoReflect.Descriptor instead.
+func (*UpdateApplicationRequest) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *UpdateApplicationRequest) GetId() uint64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *UpdateApplicationRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+type UpdateApplicationResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Data          *Application           `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateApplicationResponse) Reset() {
+	*x = UpdateApplicationResponse{}
+	mi := &file_liaison_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateApplicationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateApplicationResponse) ProtoMessage() {}
+
+func (x *UpdateApplicationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateApplicationResponse.ProtoReflect.Descriptor instead.
+func (*UpdateApplicationResponse) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *UpdateApplicationResponse) GetCode() int32 {
+	if x != nil {
+		return x.Code
+	}
+	return 0
+}
+
+func (x *UpdateApplicationResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *UpdateApplicationResponse) GetData() *Application {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+// 删除应用请求
+type DeleteApplicationRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteApplicationRequest) Reset() {
+	*x = DeleteApplicationRequest{}
+	mi := &file_liaison_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteApplicationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteApplicationRequest) ProtoMessage() {}
+
+func (x *DeleteApplicationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteApplicationRequest.ProtoReflect.Descriptor instead.
+func (*DeleteApplicationRequest) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *DeleteApplicationRequest) GetId() uint64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type DeleteApplicationResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteApplicationResponse) Reset() {
+	*x = DeleteApplicationResponse{}
+	mi := &file_liaison_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteApplicationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteApplicationResponse) ProtoMessage() {}
+
+func (x *DeleteApplicationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteApplicationResponse.ProtoReflect.Descriptor instead.
+func (*DeleteApplicationResponse) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *DeleteApplicationResponse) GetCode() int32 {
+	if x != nil {
+		return x.Code
+	}
+	return 0
+}
+
+func (x *DeleteApplicationResponse) GetMessage() string {
 	if x != nil {
 		return x.Message
 	}
@@ -728,7 +1652,10 @@ const file_liaison_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x05 \x01(\tR\tcreatedAt\x12\x1d\n" +
 	"\n" +
-	"updated_at\x18\x06 \x01(\tR\tupdatedAt\"I\n" +
+	"updated_at\x18\x06 \x01(\tR\tupdatedAt\":\n" +
+	"\x05Edges\x12\x14\n" +
+	"\x05total\x18\x01 \x01(\x05R\x05total\x12\x1b\n" +
+	"\x05edges\x18\x02 \x03(\v2\x05.EdgeR\x05edges\"I\n" +
 	"\tAccessKey\x12\x1d\n" +
 	"\n" +
 	"access_key\x18\x01 \x01(\tR\taccessKey\x12\x1d\n" +
@@ -750,11 +1677,11 @@ const file_liaison_proto_rawDesc = "" +
 	"\x04data\x18\x03 \x01(\v2\x05.EdgeR\x04data\"C\n" +
 	"\x10ListEdgesRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\"\\\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\"]\n" +
 	"\x11ListEdgesResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\x12\x19\n" +
-	"\x04data\x18\x03 \x03(\v2\x05.EdgeR\x04data\"q\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1a\n" +
+	"\x04data\x18\x03 \x01(\v2\x06.EdgesR\x04data\"q\n" +
 	"\x11UpdateEdgeRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
@@ -768,7 +1695,71 @@ const file_liaison_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\"B\n" +
 	"\x12DeleteEdgeResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage2\x8b\x03\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"\xf4\x01\n" +
+	"\x06Device\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x10\n" +
+	"\x03cpu\x18\x04 \x01(\x05R\x03cpu\x12\x16\n" +
+	"\x06memory\x18\x05 \x01(\x05R\x06memory\x12\x12\n" +
+	"\x04disk\x18\x06 \x01(\x05R\x04disk\x12\x0e\n" +
+	"\x02os\x18\a \x01(\tR\x02os\x12\x18\n" +
+	"\aversion\x18\b \x01(\tR\aversion\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\t \x01(\tR\tcreatedAt\x12\x1d\n" +
+	"\n" +
+	"updated_at\x18\n" +
+	" \x01(\tR\tupdatedAt\"B\n" +
+	"\aDevices\x12\x14\n" +
+	"\x05total\x18\x01 \x01(\x05R\x05total\x12!\n" +
+	"\adevices\x18\x02 \x03(\v2\a.DeviceR\adevices\"E\n" +
+	"\x12ListDevicesRequest\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\"a\n" +
+	"\x13ListDevicesResponse\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1c\n" +
+	"\x04data\x18\x03 \x01(\v2\b.DevicesR\x04data\"[\n" +
+	"\x13UpdateDeviceRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\"a\n" +
+	"\x14UpdateDeviceResponse\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1b\n" +
+	"\x04data\x18\x03 \x01(\v2\a.DeviceR\x04data\"\xcb\x01\n" +
+	"\vApplication\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x1b\n" +
+	"\tdevice_id\x18\x02 \x01(\x04R\bdeviceId\x12\x12\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\x12\x12\n" +
+	"\x04port\x18\x04 \x01(\x05R\x04port\x12)\n" +
+	"\x10application_type\x18\x05 \x01(\tR\x0fapplicationType\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\x06 \x01(\tR\tcreatedAt\x12\x1d\n" +
+	"\n" +
+	"updated_at\x18\a \x01(\tR\tupdatedAt\"V\n" +
+	"\fApplications\x12\x14\n" +
+	"\x05total\x18\x01 \x01(\x05R\x05total\x120\n" +
+	"\fapplications\x18\x02 \x03(\v2\f.ApplicationR\fapplications\"J\n" +
+	"\x17ListApplicationsRequest\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\"k\n" +
+	"\x18ListApplicationsResponse\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12!\n" +
+	"\x04data\x18\x03 \x01(\v2\r.ApplicationsR\x04data\">\n" +
+	"\x18UpdateApplicationRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\"k\n" +
+	"\x19UpdateApplicationResponse\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12 \n" +
+	"\x04data\x18\x03 \x01(\v2\f.ApplicationR\x04data\"*\n" +
+	"\x18DeleteApplicationRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x04R\x02id\"I\n" +
+	"\x19DeleteApplicationResponse\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage2\xf0\x06\n" +
 	"\x0eLiaisonService\x12K\n" +
 	"\n" +
 	"CreateEdge\x12\x12.CreateEdgeRequest\x1a\x13.CreateEdgeResponse\"\x14\x82\xd3\xe4\x93\x02\x0e:\x01*\"\t/v1/edges\x12D\n" +
@@ -777,7 +1768,12 @@ const file_liaison_proto_rawDesc = "" +
 	"\n" +
 	"UpdateEdge\x12\x12.UpdateEdgeRequest\x1a\x13.UpdateEdgeResponse\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\x1a\x0e/v1/edges/{id}\x12M\n" +
 	"\n" +
-	"DeleteEdge\x12\x12.DeleteEdgeRequest\x1a\x13.DeleteEdgeResponse\"\x16\x82\xd3\xe4\x93\x02\x10*\x0e/v1/edges/{id}B,Z*github.com/singchia/liaison/api/v1;liaisonb\x06proto3"
+	"DeleteEdge\x12\x12.DeleteEdgeRequest\x1a\x13.DeleteEdgeResponse\"\x16\x82\xd3\xe4\x93\x02\x10*\x0e/v1/edges/{id}\x12M\n" +
+	"\vListDevices\x12\x13.ListDevicesRequest\x1a\x14.ListDevicesResponse\"\x13\x82\xd3\xe4\x93\x02\r\x12\v/v1/devices\x12X\n" +
+	"\fUpdateDevice\x12\x14.UpdateDeviceRequest\x1a\x15.UpdateDeviceResponse\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\x1a\x10/v1/devices/{id}\x12a\n" +
+	"\x10ListApplications\x12\x18.ListApplicationsRequest\x1a\x19.ListApplicationsResponse\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/v1/applications\x12l\n" +
+	"\x11UpdateApplication\x12\x19.UpdateApplicationRequest\x1a\x1a.UpdateApplicationResponse\" \x82\xd3\xe4\x93\x02\x1a:\x01*\x1a\x15/v1/applications/{id}\x12i\n" +
+	"\x11DeleteApplication\x12\x19.DeleteApplicationRequest\x1a\x1a.DeleteApplicationResponse\"\x1d\x82\xd3\xe4\x93\x02\x17*\x15/v1/applications/{id}B,Z*github.com/singchia/liaison/api/v1;liaisonb\x06proto3"
 
 var (
 	file_liaison_proto_rawDescOnce sync.Once
@@ -791,41 +1787,73 @@ func file_liaison_proto_rawDescGZIP() []byte {
 	return file_liaison_proto_rawDescData
 }
 
-var file_liaison_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_liaison_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
 var file_liaison_proto_goTypes = []any{
-	(*Edge)(nil),               // 0: Edge
-	(*AccessKey)(nil),          // 1: AccessKey
-	(*CreateEdgeRequest)(nil),  // 2: CreateEdgeRequest
-	(*CreateEdgeResponse)(nil), // 3: CreateEdgeResponse
-	(*GetEdgeRequest)(nil),     // 4: GetEdgeRequest
-	(*GetEdgeResponse)(nil),    // 5: GetEdgeResponse
-	(*ListEdgesRequest)(nil),   // 6: ListEdgesRequest
-	(*ListEdgesResponse)(nil),  // 7: ListEdgesResponse
-	(*UpdateEdgeRequest)(nil),  // 8: UpdateEdgeRequest
-	(*UpdateEdgeResponse)(nil), // 9: UpdateEdgeResponse
-	(*DeleteEdgeRequest)(nil),  // 10: DeleteEdgeRequest
-	(*DeleteEdgeResponse)(nil), // 11: DeleteEdgeResponse
+	(*Edge)(nil),                      // 0: Edge
+	(*Edges)(nil),                     // 1: Edges
+	(*AccessKey)(nil),                 // 2: AccessKey
+	(*CreateEdgeRequest)(nil),         // 3: CreateEdgeRequest
+	(*CreateEdgeResponse)(nil),        // 4: CreateEdgeResponse
+	(*GetEdgeRequest)(nil),            // 5: GetEdgeRequest
+	(*GetEdgeResponse)(nil),           // 6: GetEdgeResponse
+	(*ListEdgesRequest)(nil),          // 7: ListEdgesRequest
+	(*ListEdgesResponse)(nil),         // 8: ListEdgesResponse
+	(*UpdateEdgeRequest)(nil),         // 9: UpdateEdgeRequest
+	(*UpdateEdgeResponse)(nil),        // 10: UpdateEdgeResponse
+	(*DeleteEdgeRequest)(nil),         // 11: DeleteEdgeRequest
+	(*DeleteEdgeResponse)(nil),        // 12: DeleteEdgeResponse
+	(*Device)(nil),                    // 13: Device
+	(*Devices)(nil),                   // 14: Devices
+	(*ListDevicesRequest)(nil),        // 15: ListDevicesRequest
+	(*ListDevicesResponse)(nil),       // 16: ListDevicesResponse
+	(*UpdateDeviceRequest)(nil),       // 17: UpdateDeviceRequest
+	(*UpdateDeviceResponse)(nil),      // 18: UpdateDeviceResponse
+	(*Application)(nil),               // 19: Application
+	(*Applications)(nil),              // 20: Applications
+	(*ListApplicationsRequest)(nil),   // 21: ListApplicationsRequest
+	(*ListApplicationsResponse)(nil),  // 22: ListApplicationsResponse
+	(*UpdateApplicationRequest)(nil),  // 23: UpdateApplicationRequest
+	(*UpdateApplicationResponse)(nil), // 24: UpdateApplicationResponse
+	(*DeleteApplicationRequest)(nil),  // 25: DeleteApplicationRequest
+	(*DeleteApplicationResponse)(nil), // 26: DeleteApplicationResponse
 }
 var file_liaison_proto_depIdxs = []int32{
-	1,  // 0: CreateEdgeResponse.data:type_name -> AccessKey
-	0,  // 1: GetEdgeResponse.data:type_name -> Edge
-	0,  // 2: ListEdgesResponse.data:type_name -> Edge
-	0,  // 3: UpdateEdgeResponse.data:type_name -> Edge
-	2,  // 4: LiaisonService.CreateEdge:input_type -> CreateEdgeRequest
-	4,  // 5: LiaisonService.GetEdge:input_type -> GetEdgeRequest
-	6,  // 6: LiaisonService.ListEdges:input_type -> ListEdgesRequest
-	8,  // 7: LiaisonService.UpdateEdge:input_type -> UpdateEdgeRequest
-	10, // 8: LiaisonService.DeleteEdge:input_type -> DeleteEdgeRequest
-	3,  // 9: LiaisonService.CreateEdge:output_type -> CreateEdgeResponse
-	5,  // 10: LiaisonService.GetEdge:output_type -> GetEdgeResponse
-	7,  // 11: LiaisonService.ListEdges:output_type -> ListEdgesResponse
-	9,  // 12: LiaisonService.UpdateEdge:output_type -> UpdateEdgeResponse
-	11, // 13: LiaisonService.DeleteEdge:output_type -> DeleteEdgeResponse
-	9,  // [9:14] is the sub-list for method output_type
-	4,  // [4:9] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	0,  // 0: Edges.edges:type_name -> Edge
+	2,  // 1: CreateEdgeResponse.data:type_name -> AccessKey
+	0,  // 2: GetEdgeResponse.data:type_name -> Edge
+	1,  // 3: ListEdgesResponse.data:type_name -> Edges
+	0,  // 4: UpdateEdgeResponse.data:type_name -> Edge
+	13, // 5: Devices.devices:type_name -> Device
+	14, // 6: ListDevicesResponse.data:type_name -> Devices
+	13, // 7: UpdateDeviceResponse.data:type_name -> Device
+	19, // 8: Applications.applications:type_name -> Application
+	20, // 9: ListApplicationsResponse.data:type_name -> Applications
+	19, // 10: UpdateApplicationResponse.data:type_name -> Application
+	3,  // 11: LiaisonService.CreateEdge:input_type -> CreateEdgeRequest
+	5,  // 12: LiaisonService.GetEdge:input_type -> GetEdgeRequest
+	7,  // 13: LiaisonService.ListEdges:input_type -> ListEdgesRequest
+	9,  // 14: LiaisonService.UpdateEdge:input_type -> UpdateEdgeRequest
+	11, // 15: LiaisonService.DeleteEdge:input_type -> DeleteEdgeRequest
+	15, // 16: LiaisonService.ListDevices:input_type -> ListDevicesRequest
+	17, // 17: LiaisonService.UpdateDevice:input_type -> UpdateDeviceRequest
+	21, // 18: LiaisonService.ListApplications:input_type -> ListApplicationsRequest
+	23, // 19: LiaisonService.UpdateApplication:input_type -> UpdateApplicationRequest
+	25, // 20: LiaisonService.DeleteApplication:input_type -> DeleteApplicationRequest
+	4,  // 21: LiaisonService.CreateEdge:output_type -> CreateEdgeResponse
+	6,  // 22: LiaisonService.GetEdge:output_type -> GetEdgeResponse
+	8,  // 23: LiaisonService.ListEdges:output_type -> ListEdgesResponse
+	10, // 24: LiaisonService.UpdateEdge:output_type -> UpdateEdgeResponse
+	12, // 25: LiaisonService.DeleteEdge:output_type -> DeleteEdgeResponse
+	16, // 26: LiaisonService.ListDevices:output_type -> ListDevicesResponse
+	18, // 27: LiaisonService.UpdateDevice:output_type -> UpdateDeviceResponse
+	22, // 28: LiaisonService.ListApplications:output_type -> ListApplicationsResponse
+	24, // 29: LiaisonService.UpdateApplication:output_type -> UpdateApplicationResponse
+	26, // 30: LiaisonService.DeleteApplication:output_type -> DeleteApplicationResponse
+	21, // [21:31] is the sub-list for method output_type
+	11, // [11:21] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_liaison_proto_init() }
@@ -839,7 +1867,7 @@ func file_liaison_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_liaison_proto_rawDesc), len(file_liaison_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   27,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

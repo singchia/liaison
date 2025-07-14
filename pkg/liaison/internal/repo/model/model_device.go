@@ -9,13 +9,15 @@ const (
 
 type Device struct {
 	gorm.Model
-	HostName string `gorm:"column:host_name;type:varchar(255);not null"`
-	Status   string `gorm:"column:status;type:varchar(255);not null"`
-	CPU      int    `gorm:"column:cpu;type:int;not null"`
-	Memory   int    `gorm:"column:memory;type:int;not null"`
-	Disk     int    `gorm:"column:disk;type:int;not null"`
-	OS       string `gorm:"column:os;type:varchar(255);not null"`
-	Version  string `gorm:"column:version;type:varchar(255);not null"`
+	Name        string `gorm:"column:name;type:varchar(255);not null"`
+	HostName    string `gorm:"column:host_name;type:varchar(255);not null"`
+	Status      string `gorm:"column:status;type:varchar(255);not null"`
+	CPU         int    `gorm:"column:cpu;type:int;not null"`
+	Memory      int    `gorm:"column:memory;type:int;not null"`
+	Disk        int    `gorm:"column:disk;type:int;not null"`
+	OS          string `gorm:"column:os;type:varchar(255);not null"`
+	Version     string `gorm:"column:version;type:varchar(255);not null"`
+	Description string `gorm:"column:description;type:varchar(255);not null"`
 }
 
 type EthernetInterface struct {

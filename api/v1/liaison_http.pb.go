@@ -20,16 +20,29 @@ var _ = binding.EncodeURL
 const _ = http.SupportPackageIsVersion1
 
 const OperationLiaisonServiceCreateEdge = "/LiaisonService/CreateEdge"
+const OperationLiaisonServiceDeleteApplication = "/LiaisonService/DeleteApplication"
 const OperationLiaisonServiceDeleteEdge = "/LiaisonService/DeleteEdge"
 const OperationLiaisonServiceGetEdge = "/LiaisonService/GetEdge"
+const OperationLiaisonServiceListApplications = "/LiaisonService/ListApplications"
+const OperationLiaisonServiceListDevices = "/LiaisonService/ListDevices"
 const OperationLiaisonServiceListEdges = "/LiaisonService/ListEdges"
+const OperationLiaisonServiceUpdateApplication = "/LiaisonService/UpdateApplication"
+const OperationLiaisonServiceUpdateDevice = "/LiaisonService/UpdateDevice"
 const OperationLiaisonServiceUpdateEdge = "/LiaisonService/UpdateEdge"
 
 type LiaisonServiceHTTPServer interface {
+	// CreateEdge 边缘
 	CreateEdge(context.Context, *CreateEdgeRequest) (*CreateEdgeResponse, error)
+	DeleteApplication(context.Context, *DeleteApplicationRequest) (*DeleteApplicationResponse, error)
 	DeleteEdge(context.Context, *DeleteEdgeRequest) (*DeleteEdgeResponse, error)
 	GetEdge(context.Context, *GetEdgeRequest) (*GetEdgeResponse, error)
+	// ListApplications 应用
+	ListApplications(context.Context, *ListApplicationsRequest) (*ListApplicationsResponse, error)
+	// ListDevices 设备
+	ListDevices(context.Context, *ListDevicesRequest) (*ListDevicesResponse, error)
 	ListEdges(context.Context, *ListEdgesRequest) (*ListEdgesResponse, error)
+	UpdateApplication(context.Context, *UpdateApplicationRequest) (*UpdateApplicationResponse, error)
+	UpdateDevice(context.Context, *UpdateDeviceRequest) (*UpdateDeviceResponse, error)
 	UpdateEdge(context.Context, *UpdateEdgeRequest) (*UpdateEdgeResponse, error)
 }
 
@@ -40,6 +53,11 @@ func RegisterLiaisonServiceHTTPServer(s *http.Server, srv LiaisonServiceHTTPServ
 	r.GET("/v1/edges", _LiaisonService_ListEdges0_HTTP_Handler(srv))
 	r.PUT("/v1/edges/{id}", _LiaisonService_UpdateEdge0_HTTP_Handler(srv))
 	r.DELETE("/v1/edges/{id}", _LiaisonService_DeleteEdge0_HTTP_Handler(srv))
+	r.GET("/v1/devices", _LiaisonService_ListDevices0_HTTP_Handler(srv))
+	r.PUT("/v1/devices/{id}", _LiaisonService_UpdateDevice0_HTTP_Handler(srv))
+	r.GET("/v1/applications", _LiaisonService_ListApplications0_HTTP_Handler(srv))
+	r.PUT("/v1/applications/{id}", _LiaisonService_UpdateApplication0_HTTP_Handler(srv))
+	r.DELETE("/v1/applications/{id}", _LiaisonService_DeleteApplication0_HTTP_Handler(srv))
 }
 
 func _LiaisonService_CreateEdge0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
@@ -152,11 +170,126 @@ func _LiaisonService_DeleteEdge0_HTTP_Handler(srv LiaisonServiceHTTPServer) func
 	}
 }
 
+func _LiaisonService_ListDevices0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ListDevicesRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationLiaisonServiceListDevices)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ListDevices(ctx, req.(*ListDevicesRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ListDevicesResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _LiaisonService_UpdateDevice0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in UpdateDeviceRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationLiaisonServiceUpdateDevice)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UpdateDevice(ctx, req.(*UpdateDeviceRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*UpdateDeviceResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _LiaisonService_ListApplications0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ListApplicationsRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationLiaisonServiceListApplications)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ListApplications(ctx, req.(*ListApplicationsRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ListApplicationsResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _LiaisonService_UpdateApplication0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in UpdateApplicationRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationLiaisonServiceUpdateApplication)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UpdateApplication(ctx, req.(*UpdateApplicationRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*UpdateApplicationResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _LiaisonService_DeleteApplication0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DeleteApplicationRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationLiaisonServiceDeleteApplication)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.DeleteApplication(ctx, req.(*DeleteApplicationRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*DeleteApplicationResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
 type LiaisonServiceHTTPClient interface {
 	CreateEdge(ctx context.Context, req *CreateEdgeRequest, opts ...http.CallOption) (rsp *CreateEdgeResponse, err error)
+	DeleteApplication(ctx context.Context, req *DeleteApplicationRequest, opts ...http.CallOption) (rsp *DeleteApplicationResponse, err error)
 	DeleteEdge(ctx context.Context, req *DeleteEdgeRequest, opts ...http.CallOption) (rsp *DeleteEdgeResponse, err error)
 	GetEdge(ctx context.Context, req *GetEdgeRequest, opts ...http.CallOption) (rsp *GetEdgeResponse, err error)
+	ListApplications(ctx context.Context, req *ListApplicationsRequest, opts ...http.CallOption) (rsp *ListApplicationsResponse, err error)
+	ListDevices(ctx context.Context, req *ListDevicesRequest, opts ...http.CallOption) (rsp *ListDevicesResponse, err error)
 	ListEdges(ctx context.Context, req *ListEdgesRequest, opts ...http.CallOption) (rsp *ListEdgesResponse, err error)
+	UpdateApplication(ctx context.Context, req *UpdateApplicationRequest, opts ...http.CallOption) (rsp *UpdateApplicationResponse, err error)
+	UpdateDevice(ctx context.Context, req *UpdateDeviceRequest, opts ...http.CallOption) (rsp *UpdateDeviceResponse, err error)
 	UpdateEdge(ctx context.Context, req *UpdateEdgeRequest, opts ...http.CallOption) (rsp *UpdateEdgeResponse, err error)
 }
 
@@ -175,6 +308,19 @@ func (c *LiaisonServiceHTTPClientImpl) CreateEdge(ctx context.Context, in *Creat
 	opts = append(opts, http.Operation(OperationLiaisonServiceCreateEdge))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *LiaisonServiceHTTPClientImpl) DeleteApplication(ctx context.Context, in *DeleteApplicationRequest, opts ...http.CallOption) (*DeleteApplicationResponse, error) {
+	var out DeleteApplicationResponse
+	pattern := "/v1/applications/{id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationLiaisonServiceDeleteApplication))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -207,6 +353,32 @@ func (c *LiaisonServiceHTTPClientImpl) GetEdge(ctx context.Context, in *GetEdgeR
 	return &out, nil
 }
 
+func (c *LiaisonServiceHTTPClientImpl) ListApplications(ctx context.Context, in *ListApplicationsRequest, opts ...http.CallOption) (*ListApplicationsResponse, error) {
+	var out ListApplicationsResponse
+	pattern := "/v1/applications"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationLiaisonServiceListApplications))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *LiaisonServiceHTTPClientImpl) ListDevices(ctx context.Context, in *ListDevicesRequest, opts ...http.CallOption) (*ListDevicesResponse, error) {
+	var out ListDevicesResponse
+	pattern := "/v1/devices"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationLiaisonServiceListDevices))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 func (c *LiaisonServiceHTTPClientImpl) ListEdges(ctx context.Context, in *ListEdgesRequest, opts ...http.CallOption) (*ListEdgesResponse, error) {
 	var out ListEdgesResponse
 	pattern := "/v1/edges"
@@ -214,6 +386,32 @@ func (c *LiaisonServiceHTTPClientImpl) ListEdges(ctx context.Context, in *ListEd
 	opts = append(opts, http.Operation(OperationLiaisonServiceListEdges))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *LiaisonServiceHTTPClientImpl) UpdateApplication(ctx context.Context, in *UpdateApplicationRequest, opts ...http.CallOption) (*UpdateApplicationResponse, error) {
+	var out UpdateApplicationResponse
+	pattern := "/v1/applications/{id}"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationLiaisonServiceUpdateApplication))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *LiaisonServiceHTTPClientImpl) UpdateDevice(ctx context.Context, in *UpdateDeviceRequest, opts ...http.CallOption) (*UpdateDeviceResponse, error) {
+	var out UpdateDeviceResponse
+	pattern := "/v1/devices/{id}"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationLiaisonServiceUpdateDevice))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

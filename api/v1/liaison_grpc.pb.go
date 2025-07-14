@@ -19,22 +19,37 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	LiaisonService_CreateEdge_FullMethodName = "/LiaisonService/CreateEdge"
-	LiaisonService_GetEdge_FullMethodName    = "/LiaisonService/GetEdge"
-	LiaisonService_ListEdges_FullMethodName  = "/LiaisonService/ListEdges"
-	LiaisonService_UpdateEdge_FullMethodName = "/LiaisonService/UpdateEdge"
-	LiaisonService_DeleteEdge_FullMethodName = "/LiaisonService/DeleteEdge"
+	LiaisonService_CreateEdge_FullMethodName        = "/LiaisonService/CreateEdge"
+	LiaisonService_GetEdge_FullMethodName           = "/LiaisonService/GetEdge"
+	LiaisonService_ListEdges_FullMethodName         = "/LiaisonService/ListEdges"
+	LiaisonService_UpdateEdge_FullMethodName        = "/LiaisonService/UpdateEdge"
+	LiaisonService_DeleteEdge_FullMethodName        = "/LiaisonService/DeleteEdge"
+	LiaisonService_ListDevices_FullMethodName       = "/LiaisonService/ListDevices"
+	LiaisonService_UpdateDevice_FullMethodName      = "/LiaisonService/UpdateDevice"
+	LiaisonService_ListApplications_FullMethodName  = "/LiaisonService/ListApplications"
+	LiaisonService_UpdateApplication_FullMethodName = "/LiaisonService/UpdateApplication"
+	LiaisonService_DeleteApplication_FullMethodName = "/LiaisonService/DeleteApplication"
 )
 
 // LiaisonServiceClient is the client API for LiaisonService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// 服务
 type LiaisonServiceClient interface {
+	// 边缘
 	CreateEdge(ctx context.Context, in *CreateEdgeRequest, opts ...grpc.CallOption) (*CreateEdgeResponse, error)
 	GetEdge(ctx context.Context, in *GetEdgeRequest, opts ...grpc.CallOption) (*GetEdgeResponse, error)
 	ListEdges(ctx context.Context, in *ListEdgesRequest, opts ...grpc.CallOption) (*ListEdgesResponse, error)
 	UpdateEdge(ctx context.Context, in *UpdateEdgeRequest, opts ...grpc.CallOption) (*UpdateEdgeResponse, error)
 	DeleteEdge(ctx context.Context, in *DeleteEdgeRequest, opts ...grpc.CallOption) (*DeleteEdgeResponse, error)
+	// 设备
+	ListDevices(ctx context.Context, in *ListDevicesRequest, opts ...grpc.CallOption) (*ListDevicesResponse, error)
+	UpdateDevice(ctx context.Context, in *UpdateDeviceRequest, opts ...grpc.CallOption) (*UpdateDeviceResponse, error)
+	// 应用
+	ListApplications(ctx context.Context, in *ListApplicationsRequest, opts ...grpc.CallOption) (*ListApplicationsResponse, error)
+	UpdateApplication(ctx context.Context, in *UpdateApplicationRequest, opts ...grpc.CallOption) (*UpdateApplicationResponse, error)
+	DeleteApplication(ctx context.Context, in *DeleteApplicationRequest, opts ...grpc.CallOption) (*DeleteApplicationResponse, error)
 }
 
 type liaisonServiceClient struct {
@@ -95,15 +110,75 @@ func (c *liaisonServiceClient) DeleteEdge(ctx context.Context, in *DeleteEdgeReq
 	return out, nil
 }
 
+func (c *liaisonServiceClient) ListDevices(ctx context.Context, in *ListDevicesRequest, opts ...grpc.CallOption) (*ListDevicesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListDevicesResponse)
+	err := c.cc.Invoke(ctx, LiaisonService_ListDevices_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *liaisonServiceClient) UpdateDevice(ctx context.Context, in *UpdateDeviceRequest, opts ...grpc.CallOption) (*UpdateDeviceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateDeviceResponse)
+	err := c.cc.Invoke(ctx, LiaisonService_UpdateDevice_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *liaisonServiceClient) ListApplications(ctx context.Context, in *ListApplicationsRequest, opts ...grpc.CallOption) (*ListApplicationsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListApplicationsResponse)
+	err := c.cc.Invoke(ctx, LiaisonService_ListApplications_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *liaisonServiceClient) UpdateApplication(ctx context.Context, in *UpdateApplicationRequest, opts ...grpc.CallOption) (*UpdateApplicationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateApplicationResponse)
+	err := c.cc.Invoke(ctx, LiaisonService_UpdateApplication_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *liaisonServiceClient) DeleteApplication(ctx context.Context, in *DeleteApplicationRequest, opts ...grpc.CallOption) (*DeleteApplicationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteApplicationResponse)
+	err := c.cc.Invoke(ctx, LiaisonService_DeleteApplication_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // LiaisonServiceServer is the server API for LiaisonService service.
 // All implementations must embed UnimplementedLiaisonServiceServer
 // for forward compatibility.
+//
+// 服务
 type LiaisonServiceServer interface {
+	// 边缘
 	CreateEdge(context.Context, *CreateEdgeRequest) (*CreateEdgeResponse, error)
 	GetEdge(context.Context, *GetEdgeRequest) (*GetEdgeResponse, error)
 	ListEdges(context.Context, *ListEdgesRequest) (*ListEdgesResponse, error)
 	UpdateEdge(context.Context, *UpdateEdgeRequest) (*UpdateEdgeResponse, error)
 	DeleteEdge(context.Context, *DeleteEdgeRequest) (*DeleteEdgeResponse, error)
+	// 设备
+	ListDevices(context.Context, *ListDevicesRequest) (*ListDevicesResponse, error)
+	UpdateDevice(context.Context, *UpdateDeviceRequest) (*UpdateDeviceResponse, error)
+	// 应用
+	ListApplications(context.Context, *ListApplicationsRequest) (*ListApplicationsResponse, error)
+	UpdateApplication(context.Context, *UpdateApplicationRequest) (*UpdateApplicationResponse, error)
+	DeleteApplication(context.Context, *DeleteApplicationRequest) (*DeleteApplicationResponse, error)
 	mustEmbedUnimplementedLiaisonServiceServer()
 }
 
@@ -128,6 +203,21 @@ func (UnimplementedLiaisonServiceServer) UpdateEdge(context.Context, *UpdateEdge
 }
 func (UnimplementedLiaisonServiceServer) DeleteEdge(context.Context, *DeleteEdgeRequest) (*DeleteEdgeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteEdge not implemented")
+}
+func (UnimplementedLiaisonServiceServer) ListDevices(context.Context, *ListDevicesRequest) (*ListDevicesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListDevices not implemented")
+}
+func (UnimplementedLiaisonServiceServer) UpdateDevice(context.Context, *UpdateDeviceRequest) (*UpdateDeviceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateDevice not implemented")
+}
+func (UnimplementedLiaisonServiceServer) ListApplications(context.Context, *ListApplicationsRequest) (*ListApplicationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListApplications not implemented")
+}
+func (UnimplementedLiaisonServiceServer) UpdateApplication(context.Context, *UpdateApplicationRequest) (*UpdateApplicationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateApplication not implemented")
+}
+func (UnimplementedLiaisonServiceServer) DeleteApplication(context.Context, *DeleteApplicationRequest) (*DeleteApplicationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteApplication not implemented")
 }
 func (UnimplementedLiaisonServiceServer) mustEmbedUnimplementedLiaisonServiceServer() {}
 func (UnimplementedLiaisonServiceServer) testEmbeddedByValue()                        {}
@@ -240,6 +330,96 @@ func _LiaisonService_DeleteEdge_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _LiaisonService_ListDevices_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListDevicesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LiaisonServiceServer).ListDevices(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LiaisonService_ListDevices_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LiaisonServiceServer).ListDevices(ctx, req.(*ListDevicesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LiaisonService_UpdateDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateDeviceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LiaisonServiceServer).UpdateDevice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LiaisonService_UpdateDevice_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LiaisonServiceServer).UpdateDevice(ctx, req.(*UpdateDeviceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LiaisonService_ListApplications_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListApplicationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LiaisonServiceServer).ListApplications(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LiaisonService_ListApplications_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LiaisonServiceServer).ListApplications(ctx, req.(*ListApplicationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LiaisonService_UpdateApplication_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateApplicationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LiaisonServiceServer).UpdateApplication(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LiaisonService_UpdateApplication_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LiaisonServiceServer).UpdateApplication(ctx, req.(*UpdateApplicationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LiaisonService_DeleteApplication_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteApplicationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LiaisonServiceServer).DeleteApplication(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LiaisonService_DeleteApplication_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LiaisonServiceServer).DeleteApplication(ctx, req.(*DeleteApplicationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // LiaisonService_ServiceDesc is the grpc.ServiceDesc for LiaisonService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -266,6 +446,26 @@ var LiaisonService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteEdge",
 			Handler:    _LiaisonService_DeleteEdge_Handler,
+		},
+		{
+			MethodName: "ListDevices",
+			Handler:    _LiaisonService_ListDevices_Handler,
+		},
+		{
+			MethodName: "UpdateDevice",
+			Handler:    _LiaisonService_UpdateDevice_Handler,
+		},
+		{
+			MethodName: "ListApplications",
+			Handler:    _LiaisonService_ListApplications_Handler,
+		},
+		{
+			MethodName: "UpdateApplication",
+			Handler:    _LiaisonService_UpdateApplication_Handler,
+		},
+		{
+			MethodName: "DeleteApplication",
+			Handler:    _LiaisonService_DeleteApplication_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
