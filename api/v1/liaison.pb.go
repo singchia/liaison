@@ -4,7 +4,7 @@
 // 	protoc        v4.24.4
 // source: liaison.proto
 
-package liaison
+package v1
 
 import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
@@ -1639,6 +1639,635 @@ func (x *DeleteApplicationResponse) GetMessage() string {
 	return ""
 }
 
+// 代理
+type Proxy struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	ApplicationId uint64                 `protobuf:"varint,2,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
+	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Port          int32                  `protobuf:"varint,4,opt,name=port,proto3" json:"port,omitempty"`
+	Status        string                 `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`
+	Description   string                 `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     string                 `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Proxy) Reset() {
+	*x = Proxy{}
+	mi := &file_liaison_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Proxy) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Proxy) ProtoMessage() {}
+
+func (x *Proxy) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Proxy.ProtoReflect.Descriptor instead.
+func (*Proxy) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *Proxy) GetId() uint64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *Proxy) GetApplicationId() uint64 {
+	if x != nil {
+		return x.ApplicationId
+	}
+	return 0
+}
+
+func (x *Proxy) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Proxy) GetPort() int32 {
+	if x != nil {
+		return x.Port
+	}
+	return 0
+}
+
+func (x *Proxy) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *Proxy) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *Proxy) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+func (x *Proxy) GetUpdatedAt() string {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return ""
+}
+
+type Proxies struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Total         int32                  `protobuf:"varint,1,opt,name=total,proto3" json:"total,omitempty"`
+	Proxies       []*Proxy               `protobuf:"bytes,2,rep,name=proxies,proto3" json:"proxies,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Proxies) Reset() {
+	*x = Proxies{}
+	mi := &file_liaison_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Proxies) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Proxies) ProtoMessage() {}
+
+func (x *Proxies) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Proxies.ProtoReflect.Descriptor instead.
+func (*Proxies) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *Proxies) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+func (x *Proxies) GetProxies() []*Proxy {
+	if x != nil {
+		return x.Proxies
+	}
+	return nil
+}
+
+// 列举代理请求
+type ListProxiesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListProxiesRequest) Reset() {
+	*x = ListProxiesRequest{}
+	mi := &file_liaison_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListProxiesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListProxiesRequest) ProtoMessage() {}
+
+func (x *ListProxiesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListProxiesRequest.ProtoReflect.Descriptor instead.
+func (*ListProxiesRequest) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *ListProxiesRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListProxiesRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+type ListProxiesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Data          *Proxies               `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListProxiesResponse) Reset() {
+	*x = ListProxiesResponse{}
+	mi := &file_liaison_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListProxiesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListProxiesResponse) ProtoMessage() {}
+
+func (x *ListProxiesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListProxiesResponse.ProtoReflect.Descriptor instead.
+func (*ListProxiesResponse) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *ListProxiesResponse) GetCode() int32 {
+	if x != nil {
+		return x.Code
+	}
+	return 0
+}
+
+func (x *ListProxiesResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *ListProxiesResponse) GetData() *Proxies {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+// 创建代理请求
+type CreateProxyRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ApplicationId uint64                 `protobuf:"varint,1,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Port          int32                  `protobuf:"varint,3,opt,name=port,proto3" json:"port,omitempty"`
+	Description   string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateProxyRequest) Reset() {
+	*x = CreateProxyRequest{}
+	mi := &file_liaison_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateProxyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateProxyRequest) ProtoMessage() {}
+
+func (x *CreateProxyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateProxyRequest.ProtoReflect.Descriptor instead.
+func (*CreateProxyRequest) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *CreateProxyRequest) GetApplicationId() uint64 {
+	if x != nil {
+		return x.ApplicationId
+	}
+	return 0
+}
+
+func (x *CreateProxyRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CreateProxyRequest) GetPort() int32 {
+	if x != nil {
+		return x.Port
+	}
+	return 0
+}
+
+func (x *CreateProxyRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+type CreateProxyResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Data          *Proxy                 `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateProxyResponse) Reset() {
+	*x = CreateProxyResponse{}
+	mi := &file_liaison_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateProxyResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateProxyResponse) ProtoMessage() {}
+
+func (x *CreateProxyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateProxyResponse.ProtoReflect.Descriptor instead.
+func (*CreateProxyResponse) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *CreateProxyResponse) GetCode() int32 {
+	if x != nil {
+		return x.Code
+	}
+	return 0
+}
+
+func (x *CreateProxyResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *CreateProxyResponse) GetData() *Proxy {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+// 更新代理请求
+type UpdateProxyRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Port          int32                  `protobuf:"varint,3,opt,name=port,proto3" json:"port,omitempty"`
+	Status        string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
+	Description   string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateProxyRequest) Reset() {
+	*x = UpdateProxyRequest{}
+	mi := &file_liaison_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateProxyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateProxyRequest) ProtoMessage() {}
+
+func (x *UpdateProxyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateProxyRequest.ProtoReflect.Descriptor instead.
+func (*UpdateProxyRequest) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *UpdateProxyRequest) GetId() uint64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *UpdateProxyRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *UpdateProxyRequest) GetPort() int32 {
+	if x != nil {
+		return x.Port
+	}
+	return 0
+}
+
+func (x *UpdateProxyRequest) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *UpdateProxyRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+type UpdateProxyResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Data          *Proxy                 `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateProxyResponse) Reset() {
+	*x = UpdateProxyResponse{}
+	mi := &file_liaison_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateProxyResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateProxyResponse) ProtoMessage() {}
+
+func (x *UpdateProxyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateProxyResponse.ProtoReflect.Descriptor instead.
+func (*UpdateProxyResponse) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *UpdateProxyResponse) GetCode() int32 {
+	if x != nil {
+		return x.Code
+	}
+	return 0
+}
+
+func (x *UpdateProxyResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *UpdateProxyResponse) GetData() *Proxy {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+// 删除代理请求
+type DeleteProxyRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteProxyRequest) Reset() {
+	*x = DeleteProxyRequest{}
+	mi := &file_liaison_proto_msgTypes[35]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteProxyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteProxyRequest) ProtoMessage() {}
+
+func (x *DeleteProxyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[35]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteProxyRequest.ProtoReflect.Descriptor instead.
+func (*DeleteProxyRequest) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{35}
+}
+
+func (x *DeleteProxyRequest) GetId() uint64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type DeleteProxyResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteProxyResponse) Reset() {
+	*x = DeleteProxyResponse{}
+	mi := &file_liaison_proto_msgTypes[36]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteProxyResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteProxyResponse) ProtoMessage() {}
+
+func (x *DeleteProxyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[36]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteProxyResponse.ProtoReflect.Descriptor instead.
+func (*DeleteProxyResponse) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{36}
+}
+
+func (x *DeleteProxyResponse) GetCode() int32 {
+	if x != nil {
+		return x.Code
+	}
+	return 0
+}
+
+func (x *DeleteProxyResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 var File_liaison_proto protoreflect.FileDescriptor
 
 const file_liaison_proto_rawDesc = "" +
@@ -1759,7 +2388,52 @@ const file_liaison_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\"I\n" +
 	"\x19DeleteApplicationResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage2\xf0\x06\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"\xde\x01\n" +
+	"\x05Proxy\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x04R\x02id\x12%\n" +
+	"\x0eapplication_id\x18\x02 \x01(\x04R\rapplicationId\x12\x12\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\x12\x12\n" +
+	"\x04port\x18\x04 \x01(\x05R\x04port\x12\x16\n" +
+	"\x06status\x18\x05 \x01(\tR\x06status\x12 \n" +
+	"\vdescription\x18\x06 \x01(\tR\vdescription\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\a \x01(\tR\tcreatedAt\x12\x1d\n" +
+	"\n" +
+	"updated_at\x18\b \x01(\tR\tupdatedAt\"A\n" +
+	"\aProxies\x12\x14\n" +
+	"\x05total\x18\x01 \x01(\x05R\x05total\x12 \n" +
+	"\aproxies\x18\x02 \x03(\v2\x06.ProxyR\aproxies\"E\n" +
+	"\x12ListProxiesRequest\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\"a\n" +
+	"\x13ListProxiesResponse\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1c\n" +
+	"\x04data\x18\x03 \x01(\v2\b.ProxiesR\x04data\"\x85\x01\n" +
+	"\x12CreateProxyRequest\x12%\n" +
+	"\x0eapplication_id\x18\x01 \x01(\x04R\rapplicationId\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
+	"\x04port\x18\x03 \x01(\x05R\x04port\x12 \n" +
+	"\vdescription\x18\x04 \x01(\tR\vdescription\"_\n" +
+	"\x13CreateProxyResponse\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1a\n" +
+	"\x04data\x18\x03 \x01(\v2\x06.ProxyR\x04data\"\x86\x01\n" +
+	"\x12UpdateProxyRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
+	"\x04port\x18\x03 \x01(\x05R\x04port\x12\x16\n" +
+	"\x06status\x18\x04 \x01(\tR\x06status\x12 \n" +
+	"\vdescription\x18\x05 \x01(\tR\vdescription\"_\n" +
+	"\x13UpdateProxyResponse\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1a\n" +
+	"\x04data\x18\x03 \x01(\v2\x06.ProxyR\x04data\"$\n" +
+	"\x12DeleteProxyRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x04R\x02id\"C\n" +
+	"\x13DeleteProxyResponse\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage2\xbc\t\n" +
 	"\x0eLiaisonService\x12K\n" +
 	"\n" +
 	"CreateEdge\x12\x12.CreateEdgeRequest\x1a\x13.CreateEdgeResponse\"\x14\x82\xd3\xe4\x93\x02\x0e:\x01*\"\t/v1/edges\x12D\n" +
@@ -1773,7 +2447,11 @@ const file_liaison_proto_rawDesc = "" +
 	"\fUpdateDevice\x12\x14.UpdateDeviceRequest\x1a\x15.UpdateDeviceResponse\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\x1a\x10/v1/devices/{id}\x12a\n" +
 	"\x10ListApplications\x12\x18.ListApplicationsRequest\x1a\x19.ListApplicationsResponse\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/v1/applications\x12l\n" +
 	"\x11UpdateApplication\x12\x19.UpdateApplicationRequest\x1a\x1a.UpdateApplicationResponse\" \x82\xd3\xe4\x93\x02\x1a:\x01*\x1a\x15/v1/applications/{id}\x12i\n" +
-	"\x11DeleteApplication\x12\x19.DeleteApplicationRequest\x1a\x1a.DeleteApplicationResponse\"\x1d\x82\xd3\xe4\x93\x02\x17*\x15/v1/applications/{id}B,Z*github.com/singchia/liaison/api/v1;liaisonb\x06proto3"
+	"\x11DeleteApplication\x12\x19.DeleteApplicationRequest\x1a\x1a.DeleteApplicationResponse\"\x1d\x82\xd3\xe4\x93\x02\x17*\x15/v1/applications/{id}\x12M\n" +
+	"\vListProxies\x12\x13.ListProxiesRequest\x1a\x14.ListProxiesResponse\"\x13\x82\xd3\xe4\x93\x02\r\x12\v/v1/proxies\x12P\n" +
+	"\vCreateProxy\x12\x13.CreateProxyRequest\x1a\x14.CreateProxyResponse\"\x16\x82\xd3\xe4\x93\x02\x10:\x01*\"\v/v1/proxies\x12U\n" +
+	"\vUpdateProxy\x12\x13.UpdateProxyRequest\x1a\x14.UpdateProxyResponse\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\x1a\x10/v1/proxies/{id}\x12R\n" +
+	"\vDeleteProxy\x12\x13.DeleteProxyRequest\x1a\x14.DeleteProxyResponse\"\x18\x82\xd3\xe4\x93\x02\x12*\x10/v1/proxies/{id}B'Z%github.com/singchia/liaison/api/v1;v1b\x06proto3"
 
 var (
 	file_liaison_proto_rawDescOnce sync.Once
@@ -1787,7 +2465,7 @@ func file_liaison_proto_rawDescGZIP() []byte {
 	return file_liaison_proto_rawDescData
 }
 
-var file_liaison_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
+var file_liaison_proto_msgTypes = make([]protoimpl.MessageInfo, 37)
 var file_liaison_proto_goTypes = []any{
 	(*Edge)(nil),                      // 0: Edge
 	(*Edges)(nil),                     // 1: Edges
@@ -1816,6 +2494,16 @@ var file_liaison_proto_goTypes = []any{
 	(*UpdateApplicationResponse)(nil), // 24: UpdateApplicationResponse
 	(*DeleteApplicationRequest)(nil),  // 25: DeleteApplicationRequest
 	(*DeleteApplicationResponse)(nil), // 26: DeleteApplicationResponse
+	(*Proxy)(nil),                     // 27: Proxy
+	(*Proxies)(nil),                   // 28: Proxies
+	(*ListProxiesRequest)(nil),        // 29: ListProxiesRequest
+	(*ListProxiesResponse)(nil),       // 30: ListProxiesResponse
+	(*CreateProxyRequest)(nil),        // 31: CreateProxyRequest
+	(*CreateProxyResponse)(nil),       // 32: CreateProxyResponse
+	(*UpdateProxyRequest)(nil),        // 33: UpdateProxyRequest
+	(*UpdateProxyResponse)(nil),       // 34: UpdateProxyResponse
+	(*DeleteProxyRequest)(nil),        // 35: DeleteProxyRequest
+	(*DeleteProxyResponse)(nil),       // 36: DeleteProxyResponse
 }
 var file_liaison_proto_depIdxs = []int32{
 	0,  // 0: Edges.edges:type_name -> Edge
@@ -1829,31 +2517,43 @@ var file_liaison_proto_depIdxs = []int32{
 	19, // 8: Applications.applications:type_name -> Application
 	20, // 9: ListApplicationsResponse.data:type_name -> Applications
 	19, // 10: UpdateApplicationResponse.data:type_name -> Application
-	3,  // 11: LiaisonService.CreateEdge:input_type -> CreateEdgeRequest
-	5,  // 12: LiaisonService.GetEdge:input_type -> GetEdgeRequest
-	7,  // 13: LiaisonService.ListEdges:input_type -> ListEdgesRequest
-	9,  // 14: LiaisonService.UpdateEdge:input_type -> UpdateEdgeRequest
-	11, // 15: LiaisonService.DeleteEdge:input_type -> DeleteEdgeRequest
-	15, // 16: LiaisonService.ListDevices:input_type -> ListDevicesRequest
-	17, // 17: LiaisonService.UpdateDevice:input_type -> UpdateDeviceRequest
-	21, // 18: LiaisonService.ListApplications:input_type -> ListApplicationsRequest
-	23, // 19: LiaisonService.UpdateApplication:input_type -> UpdateApplicationRequest
-	25, // 20: LiaisonService.DeleteApplication:input_type -> DeleteApplicationRequest
-	4,  // 21: LiaisonService.CreateEdge:output_type -> CreateEdgeResponse
-	6,  // 22: LiaisonService.GetEdge:output_type -> GetEdgeResponse
-	8,  // 23: LiaisonService.ListEdges:output_type -> ListEdgesResponse
-	10, // 24: LiaisonService.UpdateEdge:output_type -> UpdateEdgeResponse
-	12, // 25: LiaisonService.DeleteEdge:output_type -> DeleteEdgeResponse
-	16, // 26: LiaisonService.ListDevices:output_type -> ListDevicesResponse
-	18, // 27: LiaisonService.UpdateDevice:output_type -> UpdateDeviceResponse
-	22, // 28: LiaisonService.ListApplications:output_type -> ListApplicationsResponse
-	24, // 29: LiaisonService.UpdateApplication:output_type -> UpdateApplicationResponse
-	26, // 30: LiaisonService.DeleteApplication:output_type -> DeleteApplicationResponse
-	21, // [21:31] is the sub-list for method output_type
-	11, // [11:21] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	27, // 11: Proxies.proxies:type_name -> Proxy
+	28, // 12: ListProxiesResponse.data:type_name -> Proxies
+	27, // 13: CreateProxyResponse.data:type_name -> Proxy
+	27, // 14: UpdateProxyResponse.data:type_name -> Proxy
+	3,  // 15: LiaisonService.CreateEdge:input_type -> CreateEdgeRequest
+	5,  // 16: LiaisonService.GetEdge:input_type -> GetEdgeRequest
+	7,  // 17: LiaisonService.ListEdges:input_type -> ListEdgesRequest
+	9,  // 18: LiaisonService.UpdateEdge:input_type -> UpdateEdgeRequest
+	11, // 19: LiaisonService.DeleteEdge:input_type -> DeleteEdgeRequest
+	15, // 20: LiaisonService.ListDevices:input_type -> ListDevicesRequest
+	17, // 21: LiaisonService.UpdateDevice:input_type -> UpdateDeviceRequest
+	21, // 22: LiaisonService.ListApplications:input_type -> ListApplicationsRequest
+	23, // 23: LiaisonService.UpdateApplication:input_type -> UpdateApplicationRequest
+	25, // 24: LiaisonService.DeleteApplication:input_type -> DeleteApplicationRequest
+	29, // 25: LiaisonService.ListProxies:input_type -> ListProxiesRequest
+	31, // 26: LiaisonService.CreateProxy:input_type -> CreateProxyRequest
+	33, // 27: LiaisonService.UpdateProxy:input_type -> UpdateProxyRequest
+	35, // 28: LiaisonService.DeleteProxy:input_type -> DeleteProxyRequest
+	4,  // 29: LiaisonService.CreateEdge:output_type -> CreateEdgeResponse
+	6,  // 30: LiaisonService.GetEdge:output_type -> GetEdgeResponse
+	8,  // 31: LiaisonService.ListEdges:output_type -> ListEdgesResponse
+	10, // 32: LiaisonService.UpdateEdge:output_type -> UpdateEdgeResponse
+	12, // 33: LiaisonService.DeleteEdge:output_type -> DeleteEdgeResponse
+	16, // 34: LiaisonService.ListDevices:output_type -> ListDevicesResponse
+	18, // 35: LiaisonService.UpdateDevice:output_type -> UpdateDeviceResponse
+	22, // 36: LiaisonService.ListApplications:output_type -> ListApplicationsResponse
+	24, // 37: LiaisonService.UpdateApplication:output_type -> UpdateApplicationResponse
+	26, // 38: LiaisonService.DeleteApplication:output_type -> DeleteApplicationResponse
+	30, // 39: LiaisonService.ListProxies:output_type -> ListProxiesResponse
+	32, // 40: LiaisonService.CreateProxy:output_type -> CreateProxyResponse
+	34, // 41: LiaisonService.UpdateProxy:output_type -> UpdateProxyResponse
+	36, // 42: LiaisonService.DeleteProxy:output_type -> DeleteProxyResponse
+	29, // [29:43] is the sub-list for method output_type
+	15, // [15:29] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_liaison_proto_init() }
@@ -1867,7 +2567,7 @@ func file_liaison_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_liaison_proto_rawDesc), len(file_liaison_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   27,
+			NumMessages:   37,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

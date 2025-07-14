@@ -2,7 +2,7 @@ syntax = "proto3";
 
 import "google/api/annotations.proto";
 
-option go_package = "github.com/singchia/liaison/api/v1;liaison";
+option go_package = "github.com/singchia/liaison/api/v1;v1";
 
 // 边缘
 message Edge {
@@ -176,6 +176,74 @@ message DeleteApplicationResponse {
     string message = 2;
 }
 
+// 代理
+message Proxy {
+    uint64 id = 1;
+    uint64 application_id = 2;
+    string name = 3;
+    int32 port = 4;
+    string status = 5;
+    string description = 6;
+    string created_at = 7;
+    string updated_at = 8;
+}
+
+message Proxies {
+    int32 total = 1;
+    repeated Proxy proxies = 2;
+}
+
+// 列举代理请求
+message ListProxiesRequest {
+    int32 page = 1;
+    int32 page_size = 2;
+}
+
+message ListProxiesResponse {
+    int32 code = 1;
+    string message = 2;
+    Proxies data = 3;
+}
+
+// 创建代理请求
+message CreateProxyRequest {
+    uint64 application_id = 1;
+    string name = 2;
+    int32 port = 3;
+    string description = 4;
+}
+
+message CreateProxyResponse {
+    int32 code = 1;
+    string message = 2;
+    Proxy data = 3;
+}
+
+// 更新代理请求
+message UpdateProxyRequest {
+    uint64 id = 1;
+    string name = 2;
+    int32 port = 3;
+    string status = 4;
+    string description = 5;
+}
+
+message UpdateProxyResponse {
+    int32 code = 1;
+    string message = 2;
+    Proxy data = 3;
+}
+
+// 删除代理请求
+message DeleteProxyRequest {
+    uint64 id = 1;
+}
+message DeleteProxyResponse {
+    int32 code = 1;
+    string message = 2;
+}
+
+
 // 服务
 service LiaisonService {
     // 边缘
@@ -235,6 +303,30 @@ service LiaisonService {
     rpc DeleteApplication(DeleteApplicationRequest) returns (DeleteApplicationResponse) {
         option (google.api.http) = {
             delete: "/v1/applications/{id}"
+        };
+    };
+
+    // 代理
+    rpc ListProxies(ListProxiesRequest) returns (ListProxiesResponse) {
+        option (google.api.http) = {
+            get: "/v1/proxies"
+        };
+    };
+    rpc CreateProxy(CreateProxyRequest) returns (CreateProxyResponse) {
+        option (google.api.http) = {
+            post: "/v1/proxies"
+            body: "*"
+        };
+    };
+    rpc UpdateProxy(UpdateProxyRequest) returns (UpdateProxyResponse) {
+        option (google.api.http) = {
+            put: "/v1/proxies/{id}",
+            body: "*"
+        };
+    };
+    rpc DeleteProxy(DeleteProxyRequest) returns (DeleteProxyResponse) {
+        option (google.api.http) = {
+            delete: "/v1/proxies/{id}"
         };
     };
 }

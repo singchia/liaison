@@ -4,7 +4,7 @@
 // - protoc             v4.24.4
 // source: liaison.proto
 
-package liaison
+package v1
 
 import (
 	context "context"
@@ -20,30 +20,39 @@ var _ = binding.EncodeURL
 const _ = http.SupportPackageIsVersion1
 
 const OperationLiaisonServiceCreateEdge = "/LiaisonService/CreateEdge"
+const OperationLiaisonServiceCreateProxy = "/LiaisonService/CreateProxy"
 const OperationLiaisonServiceDeleteApplication = "/LiaisonService/DeleteApplication"
 const OperationLiaisonServiceDeleteEdge = "/LiaisonService/DeleteEdge"
+const OperationLiaisonServiceDeleteProxy = "/LiaisonService/DeleteProxy"
 const OperationLiaisonServiceGetEdge = "/LiaisonService/GetEdge"
 const OperationLiaisonServiceListApplications = "/LiaisonService/ListApplications"
 const OperationLiaisonServiceListDevices = "/LiaisonService/ListDevices"
 const OperationLiaisonServiceListEdges = "/LiaisonService/ListEdges"
+const OperationLiaisonServiceListProxies = "/LiaisonService/ListProxies"
 const OperationLiaisonServiceUpdateApplication = "/LiaisonService/UpdateApplication"
 const OperationLiaisonServiceUpdateDevice = "/LiaisonService/UpdateDevice"
 const OperationLiaisonServiceUpdateEdge = "/LiaisonService/UpdateEdge"
+const OperationLiaisonServiceUpdateProxy = "/LiaisonService/UpdateProxy"
 
 type LiaisonServiceHTTPServer interface {
 	// CreateEdge 边缘
 	CreateEdge(context.Context, *CreateEdgeRequest) (*CreateEdgeResponse, error)
+	CreateProxy(context.Context, *CreateProxyRequest) (*CreateProxyResponse, error)
 	DeleteApplication(context.Context, *DeleteApplicationRequest) (*DeleteApplicationResponse, error)
 	DeleteEdge(context.Context, *DeleteEdgeRequest) (*DeleteEdgeResponse, error)
+	DeleteProxy(context.Context, *DeleteProxyRequest) (*DeleteProxyResponse, error)
 	GetEdge(context.Context, *GetEdgeRequest) (*GetEdgeResponse, error)
 	// ListApplications 应用
 	ListApplications(context.Context, *ListApplicationsRequest) (*ListApplicationsResponse, error)
 	// ListDevices 设备
 	ListDevices(context.Context, *ListDevicesRequest) (*ListDevicesResponse, error)
 	ListEdges(context.Context, *ListEdgesRequest) (*ListEdgesResponse, error)
+	// ListProxies 代理
+	ListProxies(context.Context, *ListProxiesRequest) (*ListProxiesResponse, error)
 	UpdateApplication(context.Context, *UpdateApplicationRequest) (*UpdateApplicationResponse, error)
 	UpdateDevice(context.Context, *UpdateDeviceRequest) (*UpdateDeviceResponse, error)
 	UpdateEdge(context.Context, *UpdateEdgeRequest) (*UpdateEdgeResponse, error)
+	UpdateProxy(context.Context, *UpdateProxyRequest) (*UpdateProxyResponse, error)
 }
 
 func RegisterLiaisonServiceHTTPServer(s *http.Server, srv LiaisonServiceHTTPServer) {
@@ -58,6 +67,10 @@ func RegisterLiaisonServiceHTTPServer(s *http.Server, srv LiaisonServiceHTTPServ
 	r.GET("/v1/applications", _LiaisonService_ListApplications0_HTTP_Handler(srv))
 	r.PUT("/v1/applications/{id}", _LiaisonService_UpdateApplication0_HTTP_Handler(srv))
 	r.DELETE("/v1/applications/{id}", _LiaisonService_DeleteApplication0_HTTP_Handler(srv))
+	r.GET("/v1/proxies", _LiaisonService_ListProxies0_HTTP_Handler(srv))
+	r.POST("/v1/proxies", _LiaisonService_CreateProxy0_HTTP_Handler(srv))
+	r.PUT("/v1/proxies/{id}", _LiaisonService_UpdateProxy0_HTTP_Handler(srv))
+	r.DELETE("/v1/proxies/{id}", _LiaisonService_DeleteProxy0_HTTP_Handler(srv))
 }
 
 func _LiaisonService_CreateEdge0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
@@ -280,17 +293,109 @@ func _LiaisonService_DeleteApplication0_HTTP_Handler(srv LiaisonServiceHTTPServe
 	}
 }
 
+func _LiaisonService_ListProxies0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ListProxiesRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationLiaisonServiceListProxies)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ListProxies(ctx, req.(*ListProxiesRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ListProxiesResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _LiaisonService_CreateProxy0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in CreateProxyRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationLiaisonServiceCreateProxy)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.CreateProxy(ctx, req.(*CreateProxyRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*CreateProxyResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _LiaisonService_UpdateProxy0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in UpdateProxyRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationLiaisonServiceUpdateProxy)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UpdateProxy(ctx, req.(*UpdateProxyRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*UpdateProxyResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _LiaisonService_DeleteProxy0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DeleteProxyRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationLiaisonServiceDeleteProxy)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.DeleteProxy(ctx, req.(*DeleteProxyRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*DeleteProxyResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
 type LiaisonServiceHTTPClient interface {
 	CreateEdge(ctx context.Context, req *CreateEdgeRequest, opts ...http.CallOption) (rsp *CreateEdgeResponse, err error)
+	CreateProxy(ctx context.Context, req *CreateProxyRequest, opts ...http.CallOption) (rsp *CreateProxyResponse, err error)
 	DeleteApplication(ctx context.Context, req *DeleteApplicationRequest, opts ...http.CallOption) (rsp *DeleteApplicationResponse, err error)
 	DeleteEdge(ctx context.Context, req *DeleteEdgeRequest, opts ...http.CallOption) (rsp *DeleteEdgeResponse, err error)
+	DeleteProxy(ctx context.Context, req *DeleteProxyRequest, opts ...http.CallOption) (rsp *DeleteProxyResponse, err error)
 	GetEdge(ctx context.Context, req *GetEdgeRequest, opts ...http.CallOption) (rsp *GetEdgeResponse, err error)
 	ListApplications(ctx context.Context, req *ListApplicationsRequest, opts ...http.CallOption) (rsp *ListApplicationsResponse, err error)
 	ListDevices(ctx context.Context, req *ListDevicesRequest, opts ...http.CallOption) (rsp *ListDevicesResponse, err error)
 	ListEdges(ctx context.Context, req *ListEdgesRequest, opts ...http.CallOption) (rsp *ListEdgesResponse, err error)
+	ListProxies(ctx context.Context, req *ListProxiesRequest, opts ...http.CallOption) (rsp *ListProxiesResponse, err error)
 	UpdateApplication(ctx context.Context, req *UpdateApplicationRequest, opts ...http.CallOption) (rsp *UpdateApplicationResponse, err error)
 	UpdateDevice(ctx context.Context, req *UpdateDeviceRequest, opts ...http.CallOption) (rsp *UpdateDeviceResponse, err error)
 	UpdateEdge(ctx context.Context, req *UpdateEdgeRequest, opts ...http.CallOption) (rsp *UpdateEdgeResponse, err error)
+	UpdateProxy(ctx context.Context, req *UpdateProxyRequest, opts ...http.CallOption) (rsp *UpdateProxyResponse, err error)
 }
 
 type LiaisonServiceHTTPClientImpl struct {
@@ -306,6 +411,19 @@ func (c *LiaisonServiceHTTPClientImpl) CreateEdge(ctx context.Context, in *Creat
 	pattern := "/v1/edges"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationLiaisonServiceCreateEdge))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *LiaisonServiceHTTPClientImpl) CreateProxy(ctx context.Context, in *CreateProxyRequest, opts ...http.CallOption) (*CreateProxyResponse, error) {
+	var out CreateProxyResponse
+	pattern := "/v1/proxies"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationLiaisonServiceCreateProxy))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
@@ -332,6 +450,19 @@ func (c *LiaisonServiceHTTPClientImpl) DeleteEdge(ctx context.Context, in *Delet
 	pattern := "/v1/edges/{id}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationLiaisonServiceDeleteEdge))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *LiaisonServiceHTTPClientImpl) DeleteProxy(ctx context.Context, in *DeleteProxyRequest, opts ...http.CallOption) (*DeleteProxyResponse, error) {
+	var out DeleteProxyResponse
+	pattern := "/v1/proxies/{id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationLiaisonServiceDeleteProxy))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
 	if err != nil {
@@ -392,6 +523,19 @@ func (c *LiaisonServiceHTTPClientImpl) ListEdges(ctx context.Context, in *ListEd
 	return &out, nil
 }
 
+func (c *LiaisonServiceHTTPClientImpl) ListProxies(ctx context.Context, in *ListProxiesRequest, opts ...http.CallOption) (*ListProxiesResponse, error) {
+	var out ListProxiesResponse
+	pattern := "/v1/proxies"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationLiaisonServiceListProxies))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 func (c *LiaisonServiceHTTPClientImpl) UpdateApplication(ctx context.Context, in *UpdateApplicationRequest, opts ...http.CallOption) (*UpdateApplicationResponse, error) {
 	var out UpdateApplicationResponse
 	pattern := "/v1/applications/{id}"
@@ -423,6 +567,19 @@ func (c *LiaisonServiceHTTPClientImpl) UpdateEdge(ctx context.Context, in *Updat
 	pattern := "/v1/edges/{id}"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationLiaisonServiceUpdateEdge))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *LiaisonServiceHTTPClientImpl) UpdateProxy(ctx context.Context, in *UpdateProxyRequest, opts ...http.CallOption) (*UpdateProxyResponse, error) {
+	var out UpdateProxyResponse
+	pattern := "/v1/proxies/{id}"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationLiaisonServiceUpdateProxy))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
 	if err != nil {
