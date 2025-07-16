@@ -1,31 +1,54 @@
 package web
 
 import (
-	"context"
-
+	"github.com/go-kratos/kratos/v2"
+	"github.com/go-kratos/kratos/v2/middleware/recovery"
+	"github.com/go-kratos/kratos/v2/transport/http"
 	v1 "github.com/singchia/liaison/api/v1"
+	"github.com/singchia/liaison/pkg/liaison/internal/config"
+	"github.com/singchia/liaison/pkg/utils"
 )
 
 type Web interface {
-	CreateEdge(ctx context.Context, req *v1.CreateEdgeRequest) (*v1.CreateEdgeResponse, error)
-	GetEdge(ctx context.Context, req *v1.GetEdgeRequest) (*v1.GetEdgeResponse, error)
-	ListEdges(ctx context.Context, req *v1.ListEdgesRequest) (*v1.ListEdgesResponse, error)
-	UpdateEdge(ctx context.Context, req *v1.UpdateEdgeRequest) (*v1.UpdateEdgeResponse, error)
-	DeleteEdge(ctx context.Context, req *v1.DeleteEdgeRequest) (*v1.DeleteEdgeResponse, error)
-
-	ListDevices(ctx context.Context, req *v1.ListDevicesRequest) (*v1.ListDevicesResponse, error)
-	UpdateDevice(ctx context.Context, req *v1.UpdateDeviceRequest) (*v1.UpdateDeviceResponse, error)
-
-	ListApplications(ctx context.Context, req *v1.ListApplicationsRequest) (*v1.ListApplicationsResponse, error)
-	UpdateApplication(ctx context.Context, req *v1.UpdateApplicationRequest) (*v1.UpdateApplicationResponse, error)
-	DeleteApplication(ctx context.Context, req *v1.DeleteApplicationRequest) (*v1.DeleteApplicationResponse, error)
-
-	ListProxies(ctx context.Context, req *v1.ListProxiesRequest) (*v1.ListProxiesResponse, error)
-	CreateProxy(ctx context.Context, req *v1.CreateProxyRequest) (*v1.CreateProxyResponse, error)
-	UpdateProxy(ctx context.Context, req *v1.UpdateProxyRequest) (*v1.UpdateProxyResponse, error)
-	DeleteProxy(ctx context.Context, req *v1.DeleteProxyRequest) (*v1.DeleteProxyResponse, error)
+	Serve() error
+	Close() error
 }
 
-func NewWebServer() (Web, error) {
-	return nil, nil
+type web struct {
+	app *kratos.App
+}
+
+func NewWebServer(conf *config.Configuration) (Web, error) {
+	web := &web{}
+
+	listen := &conf.Manager.Listen
+	ln, err := utils.Listen(listen)
+	if err != nil {
+		return nil, err
+	}
+	opts := []http.ServerOption{
+		http.Middleware(recovery.Recovery()),
+		http.Listener(ln),
+	}
+	srv := http.NewServer(opts...)
+	v1.RegisterLiaisonServiceHTTPServer(srv, web)
+
+	web.app = kratos.New(
+		kratos.Name("liaison"),
+		kratos.Server(srv),
+	)
+
+	return web, nil
+}
+
+func (web *web) Serve() error {
+	err := web.app.Run()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (web *web) Close() error {
+	return web.app.Stop()
 }
