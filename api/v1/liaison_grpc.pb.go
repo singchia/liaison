@@ -26,6 +26,7 @@ const (
 	LiaisonService_DeleteEdge_FullMethodName        = "/LiaisonService/DeleteEdge"
 	LiaisonService_ListDevices_FullMethodName       = "/LiaisonService/ListDevices"
 	LiaisonService_UpdateDevice_FullMethodName      = "/LiaisonService/UpdateDevice"
+	LiaisonService_GetDevice_FullMethodName         = "/LiaisonService/GetDevice"
 	LiaisonService_ListApplications_FullMethodName  = "/LiaisonService/ListApplications"
 	LiaisonService_UpdateApplication_FullMethodName = "/LiaisonService/UpdateApplication"
 	LiaisonService_DeleteApplication_FullMethodName = "/LiaisonService/DeleteApplication"
@@ -48,6 +49,7 @@ type LiaisonServiceClient interface {
 	// 设备
 	ListDevices(ctx context.Context, in *ListDevicesRequest, opts ...grpc.CallOption) (*ListDevicesResponse, error)
 	UpdateDevice(ctx context.Context, in *UpdateDeviceRequest, opts ...grpc.CallOption) (*UpdateDeviceResponse, error)
+	GetDevice(ctx context.Context, in *GetDeviceRequest, opts ...grpc.CallOption) (*GetDeviceResponse, error)
 	// 应用
 	ListApplications(ctx context.Context, in *ListApplicationsRequest, opts ...grpc.CallOption) (*ListApplicationsResponse, error)
 	UpdateApplication(ctx context.Context, in *UpdateApplicationRequest, opts ...grpc.CallOption) (*UpdateApplicationResponse, error)
@@ -130,6 +132,15 @@ func (c *liaisonServiceClient) UpdateDevice(ctx context.Context, in *UpdateDevic
 	return out, nil
 }
 
+func (c *liaisonServiceClient) GetDevice(ctx context.Context, in *GetDeviceRequest, opts ...grpc.CallOption) (*GetDeviceResponse, error) {
+	out := new(GetDeviceResponse)
+	err := c.cc.Invoke(ctx, LiaisonService_GetDevice_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *liaisonServiceClient) ListApplications(ctx context.Context, in *ListApplicationsRequest, opts ...grpc.CallOption) (*ListApplicationsResponse, error) {
 	out := new(ListApplicationsResponse)
 	err := c.cc.Invoke(ctx, LiaisonService_ListApplications_FullMethodName, in, out, opts...)
@@ -206,6 +217,7 @@ type LiaisonServiceServer interface {
 	// 设备
 	ListDevices(context.Context, *ListDevicesRequest) (*ListDevicesResponse, error)
 	UpdateDevice(context.Context, *UpdateDeviceRequest) (*UpdateDeviceResponse, error)
+	GetDevice(context.Context, *GetDeviceRequest) (*GetDeviceResponse, error)
 	// 应用
 	ListApplications(context.Context, *ListApplicationsRequest) (*ListApplicationsResponse, error)
 	UpdateApplication(context.Context, *UpdateApplicationRequest) (*UpdateApplicationResponse, error)
@@ -242,6 +254,9 @@ func (UnimplementedLiaisonServiceServer) ListDevices(context.Context, *ListDevic
 }
 func (UnimplementedLiaisonServiceServer) UpdateDevice(context.Context, *UpdateDeviceRequest) (*UpdateDeviceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateDevice not implemented")
+}
+func (UnimplementedLiaisonServiceServer) GetDevice(context.Context, *GetDeviceRequest) (*GetDeviceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDevice not implemented")
 }
 func (UnimplementedLiaisonServiceServer) ListApplications(context.Context, *ListApplicationsRequest) (*ListApplicationsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListApplications not implemented")
@@ -399,6 +414,24 @@ func _LiaisonService_UpdateDevice_Handler(srv interface{}, ctx context.Context, 
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(LiaisonServiceServer).UpdateDevice(ctx, req.(*UpdateDeviceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LiaisonService_GetDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDeviceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LiaisonServiceServer).GetDevice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LiaisonService_GetDevice_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LiaisonServiceServer).GetDevice(ctx, req.(*GetDeviceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -563,6 +596,10 @@ var LiaisonService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateDevice",
 			Handler:    _LiaisonService_UpdateDevice_Handler,
+		},
+		{
+			MethodName: "GetDevice",
+			Handler:    _LiaisonService_GetDevice_Handler,
 		},
 		{
 			MethodName: "ListApplications",

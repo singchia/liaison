@@ -1,0 +1,183 @@
+definitions:
+  v1.AccessKey:
+    properties:
+      access_key:
+        type: string
+      secret_key:
+        type: string
+    type: object
+  v1.CreateEdgeResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/v1.AccessKey'
+      message:
+        type: string
+    type: object
+  v1.DeleteEdgeResponse:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    type: object
+  v1.Edge:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      status:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  v1.Edges:
+    properties:
+      edges:
+        items:
+          $ref: '#/definitions/v1.Edge'
+        type: array
+      total:
+        type: integer
+    type: object
+  v1.GetEdgeResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/v1.Edge'
+      message:
+        type: string
+    type: object
+  v1.ListEdgesResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/v1.Edges'
+      message:
+        type: string
+    type: object
+  v1.UpdateEdgeResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/v1.Edge'
+      message:
+        type: string
+    type: object
+info:
+  contact:
+    email: singchia@163.com
+    name: Austin Zhai
+  description: Liaison Swagger API
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Liaison Swagger API
+  version: "1.0"
+paths:
+  /api/v1/edge:
+    post:
+      parameters:
+      - in: query
+        name: description
+        type: string
+      - in: query
+        name: name
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.CreateEdgeResponse'
+      summary: CreateEdge
+      tags:
+      - "1.0"
+  /api/v1/edge/{id}:
+    delete:
+      parameters:
+      - description: edge id
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.DeleteEdgeResponse'
+      summary: DeleteEdge
+      tags:
+      - "1.0"
+    get:
+      parameters:
+      - description: edge id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - in: query
+        name: id
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.GetEdgeResponse'
+      summary: GetEdge
+      tags:
+      - "1.0"
+    put:
+      parameters:
+      - description: edge id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - in: query
+        name: description
+        type: string
+      - in: query
+        name: id
+        type: integer
+      - in: query
+        name: name
+        type: string
+      - description: '1: running, 2: stopped'
+        in: query
+        name: status
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.UpdateEdgeResponse'
+      summary: UpdateEdge
+      tags:
+      - "1.0"
+  /api/v1/edges:
+    get:
+      parameters:
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.ListEdgesResponse'
+      summary: ListEdges
+      tags:
+      - "1.0"
+swagger: "2.0"

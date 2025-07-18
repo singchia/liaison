@@ -12,12 +12,7 @@ import (
 	"github.com/singchia/liaison/pkg/liaison/internal/repo/model"
 )
 
-// @Summary CreateEdge
-// @Tags 1.0
-// @Param params query v1.CreateEdgeRequest true "queriies"
-// @Success 200 {object} v1.CreateEdgeResponse
-// @Router /api/v1/edge [post]
-func (cp *controlPlane) CreateEdge(ctx context.Context, req *v1.CreateEdgeRequest) (*v1.CreateEdgeResponse, error) {
+func (cp *controlPlane) CreateEdge(_ context.Context, req *v1.CreateEdgeRequest) (*v1.CreateEdgeResponse, error) {
 	// 在事务中创建edge和ak/sk
 	tx := cp.repo.Begin()
 
@@ -63,12 +58,7 @@ func (cp *controlPlane) CreateEdge(ctx context.Context, req *v1.CreateEdgeReques
 	}, nil
 }
 
-// @Summary GetEdge
-// @Tags 1.0
-// @Param id query int true "edge id"
-// @Success 200 {object} v1.GetEdgeResponse
-// @Router /api/v1/edge/{id} [get]
-func (cp *controlPlane) GetEdge(ctx context.Context, req *v1.GetEdgeRequest) (*v1.GetEdgeResponse, error) {
+func (cp *controlPlane) GetEdge(_ context.Context, req *v1.GetEdgeRequest) (*v1.GetEdgeResponse, error) {
 	edge, err := cp.repo.GetEdge(req.Id)
 	if err != nil {
 		return nil, err
@@ -85,6 +75,67 @@ func (cp *controlPlane) GetEdge(ctx context.Context, req *v1.GetEdgeRequest) (*v
 			UpdatedAt:   edge.UpdatedAt.Format(time.DateTime),
 		},
 	}, nil
+}
+
+func (cp *controlPlane) ListEdges(_ context.Context, req *v1.ListEdgesRequest) (*v1.ListEdgesResponse, error) {
+	edges, err := cp.repo.ListEdges(int(req.Page), int(req.PageSize))
+	if err != nil {
+		return nil, err
+	}
+	return &v1.ListEdgesResponse{
+		Code:    200,
+		Message: "success",
+		Data: &v1.Edges{
+			Edges: transformEdges(edges),
+		},
+	}, nil
+}
+
+func (cp *controlPlane) UpdateEdge(_ context.Context, req *v1.UpdateEdgeRequest) (*v1.UpdateEdgeResponse, error) {
+	edge, err := cp.repo.GetEdge(req.Id)
+	if err != nil {
+		return nil, err
+	}
+	edge.Name = req.Name
+	edge.Description = req.Description
+	err = cp.repo.UpdateEdge(edge)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.UpdateEdgeResponse{
+		Code:    200,
+		Message: "success",
+	}, nil
+}
+
+func (cp *controlPlane) DeleteEdge(_ context.Context, req *v1.DeleteEdgeRequest) (*v1.DeleteEdgeResponse, error) {
+	err := cp.repo.DeleteEdge(req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.DeleteEdgeResponse{
+		Code:    200,
+		Message: "success",
+	}, nil
+}
+
+func transformEdges(edges []*model.Edge) []*v1.Edge {
+	edgesV1 := make([]*v1.Edge, len(edges))
+	for i, edge := range edges {
+		edgesV1[i] = transformEdge(edge)
+	}
+	return edgesV1
+}
+
+func transformEdge(edge *model.Edge) *v1.Edge {
+	return &v1.Edge{
+		Id:          uint64(edge.ID),
+		Name:        edge.Name,
+		Description: edge.Description,
+		Status:      int32(edge.Status),
+		CreatedAt:   edge.CreatedAt.Format(time.DateTime),
+		UpdatedAt:   edge.UpdatedAt.Format(time.DateTime),
+	}
 }
 
 // generateAccessKey 生成 Access Key

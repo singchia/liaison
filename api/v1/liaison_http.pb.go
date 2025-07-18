@@ -24,6 +24,7 @@ const OperationLiaisonServiceCreateProxy = "/LiaisonService/CreateProxy"
 const OperationLiaisonServiceDeleteApplication = "/LiaisonService/DeleteApplication"
 const OperationLiaisonServiceDeleteEdge = "/LiaisonService/DeleteEdge"
 const OperationLiaisonServiceDeleteProxy = "/LiaisonService/DeleteProxy"
+const OperationLiaisonServiceGetDevice = "/LiaisonService/GetDevice"
 const OperationLiaisonServiceGetEdge = "/LiaisonService/GetEdge"
 const OperationLiaisonServiceListApplications = "/LiaisonService/ListApplications"
 const OperationLiaisonServiceListDevices = "/LiaisonService/ListDevices"
@@ -41,6 +42,7 @@ type LiaisonServiceHTTPServer interface {
 	DeleteApplication(context.Context, *DeleteApplicationRequest) (*DeleteApplicationResponse, error)
 	DeleteEdge(context.Context, *DeleteEdgeRequest) (*DeleteEdgeResponse, error)
 	DeleteProxy(context.Context, *DeleteProxyRequest) (*DeleteProxyResponse, error)
+	GetDevice(context.Context, *GetDeviceRequest) (*GetDeviceResponse, error)
 	GetEdge(context.Context, *GetEdgeRequest) (*GetEdgeResponse, error)
 	// ListApplications 应用
 	ListApplications(context.Context, *ListApplicationsRequest) (*ListApplicationsResponse, error)
@@ -64,6 +66,7 @@ func RegisterLiaisonServiceHTTPServer(s *http.Server, srv LiaisonServiceHTTPServ
 	r.DELETE("/v1/edges/{id}", _LiaisonService_DeleteEdge0_HTTP_Handler(srv))
 	r.GET("/v1/devices", _LiaisonService_ListDevices0_HTTP_Handler(srv))
 	r.PUT("/v1/devices/{id}", _LiaisonService_UpdateDevice0_HTTP_Handler(srv))
+	r.GET("/v1/devices/{id}", _LiaisonService_GetDevice0_HTTP_Handler(srv))
 	r.GET("/v1/applications", _LiaisonService_ListApplications0_HTTP_Handler(srv))
 	r.PUT("/v1/applications/{id}", _LiaisonService_UpdateApplication0_HTTP_Handler(srv))
 	r.DELETE("/v1/applications/{id}", _LiaisonService_DeleteApplication0_HTTP_Handler(srv))
@@ -223,6 +226,28 @@ func _LiaisonService_UpdateDevice0_HTTP_Handler(srv LiaisonServiceHTTPServer) fu
 			return err
 		}
 		reply := out.(*UpdateDeviceResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _LiaisonService_GetDevice0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetDeviceRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationLiaisonServiceGetDevice)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetDevice(ctx, req.(*GetDeviceRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetDeviceResponse)
 		return ctx.Result(200, reply)
 	}
 }
@@ -387,6 +412,7 @@ type LiaisonServiceHTTPClient interface {
 	DeleteApplication(ctx context.Context, req *DeleteApplicationRequest, opts ...http.CallOption) (rsp *DeleteApplicationResponse, err error)
 	DeleteEdge(ctx context.Context, req *DeleteEdgeRequest, opts ...http.CallOption) (rsp *DeleteEdgeResponse, err error)
 	DeleteProxy(ctx context.Context, req *DeleteProxyRequest, opts ...http.CallOption) (rsp *DeleteProxyResponse, err error)
+	GetDevice(ctx context.Context, req *GetDeviceRequest, opts ...http.CallOption) (rsp *GetDeviceResponse, err error)
 	GetEdge(ctx context.Context, req *GetEdgeRequest, opts ...http.CallOption) (rsp *GetEdgeResponse, err error)
 	ListApplications(ctx context.Context, req *ListApplicationsRequest, opts ...http.CallOption) (rsp *ListApplicationsResponse, err error)
 	ListDevices(ctx context.Context, req *ListDevicesRequest, opts ...http.CallOption) (rsp *ListDevicesResponse, err error)
@@ -465,6 +491,19 @@ func (c *LiaisonServiceHTTPClientImpl) DeleteProxy(ctx context.Context, in *Dele
 	opts = append(opts, http.Operation(OperationLiaisonServiceDeleteProxy))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *LiaisonServiceHTTPClientImpl) GetDevice(ctx context.Context, in *GetDeviceRequest, opts ...http.CallOption) (*GetDeviceResponse, error) {
+	var out GetDeviceResponse
+	pattern := "/v1/devices/{id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationLiaisonServiceGetDevice))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

@@ -1,0 +1,288 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Liaison Swagger API",
+        "title": "Liaison Swagger API",
+        "contact": {
+            "name": "Austin Zhai",
+            "email": "singchia@163.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "paths": {
+        "/api/v1/edge": {
+            "post": {
+                "tags": [
+                    "1.0"
+                ],
+                "summary": "CreateEdge",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "description",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.CreateEdgeResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/edge/{id}": {
+            "get": {
+                "tags": [
+                    "1.0"
+                ],
+                "summary": "GetEdge",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "edge id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.GetEdgeResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "1.0"
+                ],
+                "summary": "UpdateEdge",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "edge id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "name": "description",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "1: running, 2: stopped",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.UpdateEdgeResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "1.0"
+                ],
+                "summary": "DeleteEdge",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "edge id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.DeleteEdgeResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/edges": {
+            "get": {
+                "tags": [
+                    "1.0"
+                ],
+                "summary": "ListEdges",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.ListEdgesResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "v1.AccessKey": {
+            "type": "object",
+            "properties": {
+                "access_key": {
+                    "type": "string"
+                },
+                "secret_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.CreateEdgeResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/v1.AccessKey"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.DeleteEdgeResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.Edge": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.Edges": {
+            "type": "object",
+            "properties": {
+                "edges": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.Edge"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "v1.GetEdgeResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/v1.Edge"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.ListEdgesResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/v1.Edges"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.UpdateEdgeResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/v1.Edge"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

@@ -102,6 +102,16 @@ message Devices {
     repeated Device devices = 2;
 }
 
+// 获取设备请求
+message GetDeviceRequest {
+    uint64 id = 1;
+}
+message GetDeviceResponse {
+    int32 code = 1;
+    string message = 2;
+    Device data = 3;
+}
+
 // 列举设备请求
 message ListDevicesRequest {
     int32 page = 1;
@@ -285,6 +295,11 @@ service LiaisonService {
         option (google.api.http) = {
             put: "/v1/devices/{id}",
             body: "*"
+        };
+    };
+    rpc GetDevice(GetDeviceRequest) returns (GetDeviceResponse) {
+        option (google.api.http) = {
+            get: "/v1/devices/{id}"
         };
     };
 

@@ -31,6 +31,8 @@ type Dao interface {
 	// Device 相关方法
 	CreateDevice(device *model.Device) error
 	GetDeviceByID(id uint) (*model.Device, error)
+	ListDevices(page, pageSize int) ([]*model.Device, error)
+	UpdateDevice(device *model.Device) error
 
 	// Application 相关方法
 	CreateApplication(application *model.Application) error
