@@ -1426,6 +1426,7 @@ type ListApplicationsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
 	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	DeviceId      uint64                 `protobuf:"varint,3,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1470,6 +1471,13 @@ func (x *ListApplicationsRequest) GetPage() int32 {
 func (x *ListApplicationsRequest) GetPageSize() int32 {
 	if x != nil {
 		return x.PageSize
+	}
+	return 0
+}
+
+func (x *ListApplicationsRequest) GetDeviceId() uint64 {
+	if x != nil {
+		return x.DeviceId
 	}
 	return 0
 }
@@ -2480,10 +2488,11 @@ const file_liaison_proto_rawDesc = "" +
 	"updated_at\x18\a \x01(\tR\tupdatedAt\"V\n" +
 	"\fApplications\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x05R\x05total\x120\n" +
-	"\fapplications\x18\x02 \x03(\v2\f.ApplicationR\fapplications\"J\n" +
+	"\fapplications\x18\x02 \x03(\v2\f.ApplicationR\fapplications\"g\n" +
 	"\x17ListApplicationsRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\"k\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x1b\n" +
+	"\tdevice_id\x18\x03 \x01(\x04R\bdeviceId\"k\n" +
 	"\x18ListApplicationsResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12!\n" +

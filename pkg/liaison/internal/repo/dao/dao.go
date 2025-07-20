@@ -37,6 +37,8 @@ type Dao interface {
 	// Application 相关方法
 	CreateApplication(application *model.Application) error
 	GetApplicationByID(id uint) (*model.Application, error)
+	ListApplications(query *ListApplicationsQuery) ([]*model.Application, error)
+	UpdateApplication(application *model.Application) error
 
 	// 资源清理
 	Close() error

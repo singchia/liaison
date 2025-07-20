@@ -157,6 +157,7 @@ message Applications {
 message ListApplicationsRequest {
     int32 page = 1;
     int32 page_size = 2;
+    uint64 device_id = 3;
 }
 
 message ListApplicationsResponse {

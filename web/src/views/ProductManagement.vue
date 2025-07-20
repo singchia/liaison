@@ -4,12 +4,10 @@
     <header class="header">
       <div class="header-content">
         <div class="logo">
-          <span>🔗</span>
           <span>Liaison 产品管理系统</span>
         </div>
         <div class="user-info">
           <div class="user-dropdown">
-            <img src="https://via.placeholder.com/32" alt="用户头像" class="avatar" />
             <span>管理员</span>
             <span>▼</span>
           </div>
@@ -27,35 +25,35 @@
             :class="['menu-item', { active: activeTab === 'dashboard' }]"
             @click.prevent="handleTabSelect('dashboard')"
           >
-            📊 仪表盘
+            仪表盘
           </a>
           <a 
             href="#" 
             :class="['menu-item', { active: activeTab === 'devices' }]"
             @click.prevent="handleTabSelect('devices')"
           >
-            📱 设备管理
+            设备管理
           </a>
           <a 
             href="#" 
             :class="['menu-item', { active: activeTab === 'connectors' }]"
             @click.prevent="handleTabSelect('connectors')"
           >
-            🔗 连接器管理
+            连接器管理
           </a>
           <a 
             href="#" 
             :class="['menu-item', { active: activeTab === 'applications' }]"
             @click.prevent="handleTabSelect('applications')"
           >
-            📦 应用管理
+            应用管理
           </a>
           <a 
             href="#" 
             :class="['menu-item', { active: activeTab === 'proxies' }]"
             @click.prevent="handleTabSelect('proxies')"
           >
-            🌐 代理管理
+            代理管理
           </a>
         </nav>
       </aside>
@@ -68,7 +66,6 @@
           <div class="stats-row">
             <div class="stat-card">
               <div class="stat-content">
-                <div class="stat-icon devices">📱</div>
                 <div class="stat-info">
                   <div class="stat-number">{{ deviceCount }}</div>
                   <div class="stat-label">设备总数</div>
@@ -77,7 +74,6 @@
             </div>
             <div class="stat-card">
               <div class="stat-content">
-                <div class="stat-icon connectors">🔗</div>
                 <div class="stat-info">
                   <div class="stat-number">{{ connectorCount }}</div>
                   <div class="stat-label">连接器总数</div>
@@ -86,7 +82,6 @@
             </div>
             <div class="stat-card">
               <div class="stat-content">
-                <div class="stat-icon applications">📦</div>
                 <div class="stat-info">
                   <div class="stat-number">{{ applicationCount }}</div>
                   <div class="stat-label">应用总数</div>
@@ -95,7 +90,6 @@
             </div>
             <div class="stat-card">
               <div class="stat-content">
-                <div class="stat-icon proxies">🌐</div>
                 <div class="stat-info">
                   <div class="stat-number">{{ proxyCount }}</div>
                   <div class="stat-label">代理总数</div>
@@ -104,19 +98,55 @@
             </div>
           </div>
 
-          <div class="charts-row">
-            <div class="chart-card">
-              <h3>设备状态分布</h3>
-              <div class="chart-placeholder">
-                📊
-                <p>设备状态统计图表</p>
+          <div class="info-section">
+            <div class="info-card">
+              <h3>系统状态概览</h3>
+              <div class="info-content">
+                <div class="status-item">
+                  <span class="status-label">设备状态：</span>
+                  <span class="status-value online">{{ devices.filter(d => d.status === 'online').length }} 台在线</span>
+                  <span class="status-value offline">{{ devices.filter(d => d.status === 'offline').length }} 台离线</span>
+                </div>
+                <div class="status-item">
+                  <span class="status-label">连接器状态：</span>
+                  <span class="status-value active">{{ connectors.filter(c => c.status === 'active').length }} 个活跃</span>
+                  <span class="status-value inactive">{{ connectors.filter(c => c.status === 'inactive').length }} 个非活跃</span>
+                </div>
+                <div class="status-item">
+                  <span class="status-label">应用状态：</span>
+                  <span class="status-value running">{{ applications.filter(a => a.status === 'running').length }} 个运行中</span>
+                  <span class="status-value stopped">{{ applications.filter(a => a.status === 'stopped').length }} 个已停止</span>
+                </div>
+                <div class="status-item">
+                  <span class="status-label">代理状态：</span>
+                  <span class="status-value active">{{ proxies.filter(p => p.status === 'active').length }} 个活跃</span>
+                  <span class="status-value inactive">{{ proxies.filter(p => p.status === 'inactive').length }} 个非活跃</span>
+                </div>
               </div>
             </div>
-            <div class="chart-card">
-              <h3>系统性能监控</h3>
-              <div class="chart-placeholder">
-                📈
-                <p>系统性能趋势图</p>
+            <div class="info-card">
+              <h3>系统活动日志</h3>
+              <div class="info-content">
+                <div class="log-item">
+                  <span class="log-time">14:30</span>
+                  <span class="log-message">设备 "IoT传感器01" 连接成功</span>
+                </div>
+                <div class="log-item">
+                  <span class="log-time">14:25</span>
+                  <span class="log-message">连接器 "HTTP网关" 状态更新为活跃</span>
+                </div>
+                <div class="log-item">
+                  <span class="log-time">14:20</span>
+                  <span class="log-message">应用 "监控系统" 启动完成</span>
+                </div>
+                <div class="log-item">
+                  <span class="log-time">14:15</span>
+                  <span class="log-message">代理 "负载均衡器" 配置已更新</span>
+                </div>
+                <div class="log-item">
+                  <span class="log-time">14:10</span>
+                  <span class="log-message">系统自检完成，所有服务正常</span>
+                </div>
               </div>
             </div>
           </div>
@@ -124,34 +154,46 @@
 
         <!-- 设备管理 -->
         <div v-if="activeTab === 'devices'" class="content-section">
-          <div class="section-header">
-            <h2>设备管理</h2>
-            <button class="btn btn-primary" @click="showDeviceModal = true">
-              ➕ 添加设备
-            </button>
-          </div>
+                      <div class="section-header">
+              <h2>设备管理</h2>
+              <div class="header-actions">
+                <div class="summary-info">
+                  <span class="summary-item">总数：{{ deviceCount }}</span>
+                  <span class="summary-item online">在线：{{ devices.filter(d => d.status === 'online').length }}</span>
+                  <span class="summary-item offline">离线：{{ devices.filter(d => d.status === 'offline').length }}</span>
+                </div>
+                <button class="btn btn-primary" @click="showDeviceModal = true">
+                  添加设备
+                </button>
+              </div>
+            </div>
           
           <div class="card">
             <div class="table-toolbar">
-              <input
-                v-model="deviceSearch"
-                type="text"
-                placeholder="搜索设备..."
-                class="search-input"
-              />
-              <select v-model="deviceStatusFilter" class="filter-select">
-                <option value="">全部状态</option>
-                <option value="online">在线</option>
-                <option value="offline">离线</option>
-              </select>
+              <div class="search-section">
+                <input
+                  v-model="deviceSearch"
+                  type="text"
+                  placeholder="搜索设备名称..."
+                  class="search-input"
+                />
+                <select v-model="deviceStatusFilter" class="filter-select">
+                  <option value="">全部状态</option>
+                  <option value="online">在线</option>
+                  <option value="offline">离线</option>
+                </select>
+              </div>
+              <div class="view-options">
+                <span class="result-count">共 {{ filteredDevices.length }} 条记录</span>
+              </div>
             </div>
 
             <div class="table-container">
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>ID</th>
-                    <th>设备名称</th>
+                    <th>#</th>
+                    <th>设备信息</th>
                     <th>类型</th>
                     <th>状态</th>
                     <th>位置</th>
@@ -160,20 +202,29 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="device in filteredDevices" :key="device.id">
-                    <td>{{ device.id }}</td>
-                    <td>{{ device.name }}</td>
-                    <td>{{ device.type }}</td>
+                  <tr v-for="device in filteredDevices" :key="device.id" class="table-row">
+                    <td class="device-id">{{ device.id }}</td>
+                    <td class="device-info">
+                      <div class="device-name">{{ device.name }}</div>
+                      <div class="device-desc">设备ID: {{ device.id }}</div>
+                    </td>
                     <td>
-                      <span :class="['status-tag', device.status === 'online' ? 'success' : 'danger']">
+                      <span class="type-badge">{{ device.type }}</span>
+                    </td>
+                    <td>
+                      <span :class="['status-badge', device.status === 'online' ? 'online' : 'offline']">
                         {{ device.status === 'online' ? '在线' : '离线' }}
                       </span>
                     </td>
-                    <td>{{ device.location }}</td>
-                    <td>{{ device.created_at }}</td>
-                    <td>
-                      <button class="btn btn-small" @click="editDevice(device)">编辑</button>
-                      <button class="btn btn-small btn-danger" @click="deleteDevice(device)">删除</button>
+                    <td class="location">{{ device.location }}</td>
+                    <td class="date">{{ device.created_at }}</td>
+                    <td class="actions">
+                      <button class="btn btn-small btn-edit" @click="editDevice(device)">
+                        编辑
+                      </button>
+                      <button class="btn btn-small btn-delete" @click="deleteDevice(device)">
+                        删除
+                      </button>
                     </td>
                   </tr>
                 </tbody>
@@ -420,6 +471,9 @@ const activeTab = ref('dashboard')
 const showDeviceModal = ref(false)
 const editingDevice = ref(null)
 
+// 从store获取数据
+const { devices, connectors, applications, proxies } = store
+
 // 搜索和筛选
 const deviceSearch = ref('')
 const deviceStatusFilter = ref('')
@@ -623,11 +677,7 @@ onMounted(() => {
   gap: 8px;
 }
 
-.avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-}
+
 
 .main-container {
   flex: 1;
@@ -693,34 +743,11 @@ onMounted(() => {
 .stat-content {
   display: flex;
   align-items: center;
-}
-
-.stat-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
   justify-content: center;
-  margin-right: 16px;
-  font-size: 32px;
+  text-align: center;
 }
 
-.stat-icon.devices {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
 
-.stat-icon.connectors {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-}
-
-.stat-icon.applications {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-}
-
-.stat-icon.proxies {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-}
 
 .stat-number {
   font-size: 28px;
@@ -735,37 +762,94 @@ onMounted(() => {
   margin-top: 4px;
 }
 
-.charts-row {
+
+
+.info-section {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
+  margin-top: 20px;
 }
 
-.chart-card {
+.info-card {
   background: #fff;
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
 }
 
-.chart-card h3 {
+.info-card h3 {
   margin: 0 0 16px 0;
   color: #303133;
 }
 
-.chart-placeholder {
-  height: 200px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: #909399;
-  font-size: 48px;
+.info-content p {
+  margin: 8px 0;
+  color: #606266;
+  font-size: 14px;
 }
 
-.chart-placeholder p {
-  margin: 16px 0 0 0;
-  font-size: 14px;
+.status-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.status-item:last-child {
+  border-bottom: none;
+}
+
+.status-label {
+  font-weight: 500;
+  color: #303133;
+  min-width: 100px;
+  margin-right: 12px;
+}
+
+.status-value {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  margin-right: 8px;
+}
+
+.status-value.online,
+.status-value.active,
+.status-value.running {
+  background: #f0f9ff;
+  color: #0369a1;
+}
+
+.status-value.offline,
+.status-value.inactive,
+.status-value.stopped {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.log-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 6px 0;
+}
+
+.log-time {
+  background: #f3f4f6;
+  color: #6b7280;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  margin-right: 8px;
+  min-width: 40px;
+  text-align: center;
+}
+
+.log-message {
+  color: #374151;
+  font-size: 13px;
 }
 
 .content-section {
@@ -785,6 +869,37 @@ onMounted(() => {
 .section-header h2 {
   margin: 0;
   color: #303133;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.summary-info {
+  display: flex;
+  gap: 16px;
+}
+
+.summary-item {
+  padding: 6px 12px;
+  background: #f8fafc;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.summary-item.online {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.summary-item.offline {
+  background: #fef2f2;
+  color: #dc2626;
 }
 
 .card {
@@ -796,8 +911,28 @@ onMounted(() => {
 
 .table-toolbar {
   display: flex;
-  gap: 16px;
-  margin-bottom: 16px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 16px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.search-section {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.view-options {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.result-count {
+  color: #6b7280;
+  font-size: 13px;
 }
 
 .search-input {
@@ -839,31 +974,98 @@ onMounted(() => {
 }
 
 .data-table tr:hover {
-  background: #f5f7fa;
+  background: #f8fafc;
 }
 
-.status-tag {
-  padding: 4px 8px;
-  border-radius: 4px;
+.table-row {
+  transition: all 0.2s ease;
+}
+
+.device-id {
+  font-weight: 600;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.device-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.device-name {
+  font-weight: 500;
+  color: #111827;
+  font-size: 14px;
+}
+
+.device-desc {
   font-size: 12px;
-  color: #fff;
+  color: #6b7280;
 }
 
-.status-tag.success {
-  background: #67c23a;
+.type-badge {
+  background: #f3f4f6;
+  color: #374151;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
-.status-tag.danger {
-  background: #f56c6c;
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
-.status-tag.warning {
-  background: #e6a23c;
+.status-badge.online {
+  background: #f0fdf4;
+  color: #16a34a;
 }
 
-.status-tag.info {
-  background: #909399;
+.status-badge.offline {
+  background: #fef2f2;
+  color: #dc2626;
 }
+
+.location {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.date {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-edit {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+}
+
+.btn-edit:hover {
+  background: #dbeafe;
+}
+
+.btn-delete {
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #dc2626;
+}
+
+.btn-delete:hover {
+  background: #fee2e2;
+}
+
+
 
 .btn {
   padding: 8px 16px;

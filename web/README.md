@@ -1,6 +1,11 @@
 # Liaison 产品管理系统
 
-基于 Vue 3 + Vite + Element Plus 构建的现代化产品管理系统。
+基于 Vue 3 + Vite 构建的现代化产品管理系统。
+
+## 系统要求
+
+- **Node.js**: v18.0.0 或更高版本（推荐 v20.x）
+- **npm**: v8.0.0 或更高版本
 
 ## 功能特性
 
@@ -9,48 +14,50 @@
 - 🔗 **连接器管理**: 管理HTTP、WebSocket、MQTT等连接器
 - 📦 **应用管理**: 管理Web应用、移动应用、微服务等
 - 🌐 **代理管理**: 管理各种类型的代理服务
-- 🎨 **现代化UI**: 基于Element Plus的响应式设计
-- 📊 **数据可视化**: 图表和统计展示
+- 🎨 **现代化UI**: 响应式设计，支持移动端
 - 🔍 **搜索筛选**: 强大的搜索和筛选功能
 
 ## 技术栈
 
 - **前端框架**: Vue 3 (Composition API)
 - **构建工具**: Vite
-- **UI组件库**: Element Plus
 - **状态管理**: Pinia
 - **路由管理**: Vue Router
-- **HTTP客户端**: Axios
-- **样式**: SCSS
+- **样式**: 原生CSS + Grid/Flexbox
 
 ## 快速开始
 
-### 安装依赖
+### 1. 检查Node.js版本
+
+```bash
+node --version
+npm --version
+```
+
+如果版本过低，请先升级Node.js。
+
+### 2. 安装依赖
 
 ```bash
 cd web
 npm install
 ```
 
-### 开发模式
+### 3. 启动开发服务器
 
+**方法一：使用启动脚本（推荐）**
+```bash
+./start.sh
+```
+
+**方法二：手动启动**
 ```bash
 npm run dev
 ```
 
-访问 http://localhost:3000
+### 4. 访问应用
 
-### 构建生产版本
-
-```bash
-npm run build
-```
-
-### 预览生产版本
-
-```bash
-npm run preview
-```
+打开浏览器访问 http://localhost:3000
 
 ## 项目结构
 
@@ -70,10 +77,10 @@ web/
 │   │   └── index.js
 │   ├── App.vue              # 根组件
 │   └── main.js              # 入口文件
-├── public/                  # 静态资源
 ├── index.html               # HTML模板
 ├── vite.config.js           # Vite配置
 ├── package.json             # 项目配置
+├── start.sh                 # 启动脚本
 └── README.md                # 项目说明
 ```
 
@@ -97,27 +104,54 @@ web/
 
 ### 样式规范
 
-- 使用 Element Plus 组件库
-- 遵循 BEM 命名规范
-- 响应式设计，支持移动端
+- 使用原生CSS，支持现代浏览器特性
+- 遵循响应式设计原则
+- 使用CSS Grid和Flexbox布局
 
 ### 代码规范
 
-- 使用 ESLint + Prettier 进行代码格式化
 - 遵循 Vue 3 Composition API 最佳实践
 - 组件使用 `<script setup>` 语法
+- 使用语义化的HTML标签
 
-## 部署
+## 构建和部署
 
-### 构建
+### 构建生产版本
 
 ```bash
 npm run build
 ```
 
+### 预览生产版本
+
+```bash
+npm run preview
+```
+
 ### 部署到服务器
 
 将 `dist` 目录下的文件部署到Web服务器即可。
+
+## 故障排除
+
+### Node.js版本问题
+
+如果遇到Node.js版本过低的问题，请升级到v18或更高版本：
+
+```bash
+# 使用Homebrew安装Node.js 20
+brew install node@20
+export PATH="/usr/local/opt/node@20/bin:$PATH"
+```
+
+### 依赖安装失败
+
+如果依赖安装失败，请尝试：
+
+```bash
+rm -rf node_modules package-lock.json
+npm install
+```
 
 ## 许可证
 

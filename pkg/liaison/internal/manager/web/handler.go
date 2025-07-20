@@ -86,6 +86,13 @@ func (web *web) UpdateDevice(ctx context.Context, req *v1.UpdateDeviceRequest) (
 	return nil, nil
 }
 
+//-- Application --//
+
+// @Summary ListApplications
+// @Tags 1.0
+// @Param params query v1.ListApplicationsRequest true "queries"
+// @Success 200 {object} v1.ListApplicationsResponse
+// @Router /api/v1/applications [get]
 func (web *web) ListApplications(ctx context.Context, req *v1.ListApplicationsRequest) (*v1.ListApplicationsResponse, error) {
 	return nil, nil
 }
