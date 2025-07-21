@@ -1,6 +1,6 @@
 package config
 
-import "github.com/singchia/frontier/pkg/config"
+import "github.com/singchia/liaison/pkg/config"
 
 // daemon related
 type RLimit struct {
@@ -17,8 +17,6 @@ type PProf struct {
 type Daemon struct {
 	RLimit RLimit `yaml:"rlimit,omitempty" json:"rlimit"`
 	PProf  PProf  `yaml:"pprof,omitempty" json:"pprof"`
-	// use with frontlas
-	FrontierID string `yaml:"frontier_id,omitempty" json:"frontier_id"`
 }
 
 type Manager struct {

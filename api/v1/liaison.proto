@@ -1,8 +1,348 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
 
-option go_package = "github.com/singchia/liaison/api/v1;liaison";
+option go_package = "github.com/singchia/liaison/api/v1;v1";
 
+// 边缘
+message Edge {
+    uint64 id = 1;
+    string name = 2;
+    string description = 3;
+    int32 status = 4;
+    string created_at = 5;
+    string updated_at = 6;
+}
+
+message Edges {
+    int32 total = 1;
+    repeated Edge edges = 2;
+}
+
+message AccessKey {
+    string access_key = 1;
+    string secret_key = 2;
+}
+
+// 创建边缘节点请求
+message CreateEdgeRequest {
+    string name = 1;
+    string description = 2;
+}
+
+message CreateEdgeResponse {
+    int32 code = 1;
+    string message = 2;
+    AccessKey data = 3;
+}
+
+// 获取边缘节点请求
+message GetEdgeRequest {
+    uint64 id = 1;
+}
+
+message GetEdgeResponse {
+    int32 code = 1;
+    string message = 2;
+    Edge data = 3;
+}
+
+// 列举边缘节点请求
+message ListEdgesRequest {
+    int32 page = 1;
+    int32 page_size = 2;
+}
+
+message ListEdgesResponse {
+    int32 code = 1;
+    string message = 2;
+    Edges data = 3;
+}
+
+// 更新边缘节点请求
+message UpdateEdgeRequest {
+    uint64 id = 1;
+    string name = 2;
+    string description = 3;
+    int32 status = 4; // 1: running, 2: stopped
+}
+
+message UpdateEdgeResponse {
+    int32 code = 1;
+    string message = 2;
+    Edge data = 3;
+}
+
+// 删除边缘节点请求
+message DeleteEdgeRequest {
+    uint64 id = 1;
+}
+
+message DeleteEdgeResponse {
+    int32 code = 1;
+    string message = 2;
+}
+
+// 设备
+message Device {
+    uint64 id = 1;
+    string name = 2;
+    string description = 3;
+    int32 cpu = 4;
+    int32 memory = 5;
+    int32 disk = 6;
+    string os = 7;
+    string version = 8;
+    string created_at = 9;
+    string updated_at = 10;
+}
+
+message Devices {
+    int32 total = 1;
+    repeated Device devices = 2;
+}
+
+// 获取设备请求
+message GetDeviceRequest {
+    uint64 id = 1;
+}
+message GetDeviceResponse {
+    int32 code = 1;
+    string message = 2;
+    Device data = 3;
+}
+
+// 列举设备请求
+message ListDevicesRequest {
+    int32 page = 1;
+    int32 page_size = 2;
+}
+
+message ListDevicesResponse {
+    int32 code = 1;
+    string message = 2;
+    Devices data = 3;
+}
+
+// 更新设备请求
+message UpdateDeviceRequest {
+    uint64 id = 1;
+    string name = 2;
+    string description = 3;
+}
+
+message UpdateDeviceResponse {
+    int32 code = 1;
+    string message = 2;
+    Device data = 3;
+}
+
+// 应用
+message Application {
+    uint64 id = 1;
+    uint64 device_id = 2;
+    string name = 3;
+    int32 port = 4;
+    string application_type = 5;
+    string created_at = 6;
+    string updated_at = 7;
+}
+
+message Applications {
+    int32 total = 1;
+    repeated Application applications = 2;
+}
+
+// 列举应用请求
+message ListApplicationsRequest {
+    int32 page = 1;
+    int32 page_size = 2;
+    uint64 device_id = 3;
+}
+
+message ListApplicationsResponse {
+    int32 code = 1;
+    string message = 2;
+    Applications data = 3;
+}
+
+// 更新应用请求
+message UpdateApplicationRequest {
+    uint64 id = 1;
+    string name = 2;
+}
+
+message UpdateApplicationResponse {
+    int32 code = 1;
+    string message = 2;
+    Application data = 3;
+}
+
+// 删除应用请求
+message DeleteApplicationRequest {
+    uint64 id = 1;
+}
+message DeleteApplicationResponse {
+    int32 code = 1;
+    string message = 2;
+}
+
+// 代理
+message Proxy {
+    uint64 id = 1;
+    uint64 application_id = 2;
+    string name = 3;
+    int32 port = 4;
+    string status = 5;
+    string description = 6;
+    string created_at = 7;
+    string updated_at = 8;
+}
+
+message Proxies {
+    int32 total = 1;
+    repeated Proxy proxies = 2;
+}
+
+// 列举代理请求
+message ListProxiesRequest {
+    int32 page = 1;
+    int32 page_size = 2;
+}
+
+message ListProxiesResponse {
+    int32 code = 1;
+    string message = 2;
+    Proxies data = 3;
+}
+
+// 创建代理请求
+message CreateProxyRequest {
+    uint64 application_id = 1;
+    string name = 2;
+    int32 port = 3;
+    string description = 4;
+}
+
+message CreateProxyResponse {
+    int32 code = 1;
+    string message = 2;
+    Proxy data = 3;
+}
+
+// 更新代理请求
+message UpdateProxyRequest {
+    uint64 id = 1;
+    string name = 2;
+    int32 port = 3;
+    string status = 4;
+    string description = 5;
+}
+
+message UpdateProxyResponse {
+    int32 code = 1;
+    string message = 2;
+    Proxy data = 3;
+}
+
+// 删除代理请求
+message DeleteProxyRequest {
+    uint64 id = 1;
+}
+message DeleteProxyResponse {
+    int32 code = 1;
+    string message = 2;
+}
+
+
+// 服务
 service LiaisonService {
+    // 边缘
+    rpc CreateEdge(CreateEdgeRequest) returns (CreateEdgeResponse) {
+        option (google.api.http) = {
+            post: "/v1/edges"
+            body: "*"
+        };
+    };
+    rpc GetEdge(GetEdgeRequest) returns (GetEdgeResponse) {
+        option (google.api.http) = {
+            get: "/v1/edges/{id}"
+        };
+    };
+    rpc ListEdges(ListEdgesRequest) returns (ListEdgesResponse) {
+        option (google.api.http) = {
+            get: "/v1/edges"
+       };
+    };
+    rpc UpdateEdge(UpdateEdgeRequest) returns (UpdateEdgeResponse) {
+        option (google.api.http) = {
+            put: "/v1/edges/{id}",
+            body: "*"
+        };
+    };
+    rpc DeleteEdge(DeleteEdgeRequest) returns (DeleteEdgeResponse) {
+        option (google.api.http) = {
+            delete: "/v1/edges/{id}"
+        };
+    };
+
+    // 设备
+    rpc ListDevices(ListDevicesRequest) returns (ListDevicesResponse) {
+        option (google.api.http) = {
+            get: "/v1/devices"
+        };
+    };
+    rpc UpdateDevice(UpdateDeviceRequest) returns (UpdateDeviceResponse) { 
+        option (google.api.http) = {
+            put: "/v1/devices/{id}",
+            body: "*"
+        };
+    };
+    rpc GetDevice(GetDeviceRequest) returns (GetDeviceResponse) {
+        option (google.api.http) = {
+            get: "/v1/devices/{id}"
+        };
+    };
+
+    // 应用
+    rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {
+        option (google.api.http) = {
+            get: "/v1/applications"
+        };
+    };
+    rpc UpdateApplication(UpdateApplicationRequest) returns (UpdateApplicationResponse) {
+        option (google.api.http) = {
+            put: "/v1/applications/{id}",
+            body: "*"
+        };
+    };
+    rpc DeleteApplication(DeleteApplicationRequest) returns (DeleteApplicationResponse) {
+        option (google.api.http) = {
+            delete: "/v1/applications/{id}"
+        };
+    };
+
+    // 代理
+    rpc ListProxies(ListProxiesRequest) returns (ListProxiesResponse) {
+        option (google.api.http) = {
+            get: "/v1/proxies"
+        };
+    };
+    rpc CreateProxy(CreateProxyRequest) returns (CreateProxyResponse) {
+        option (google.api.http) = {
+            post: "/v1/proxies"
+            body: "*"
+        };
+    };
+    rpc UpdateProxy(UpdateProxyRequest) returns (UpdateProxyResponse) {
+        option (google.api.http) = {
+            put: "/v1/proxies/{id}",
+            body: "*"
+        };
+    };
+    rpc DeleteProxy(DeleteProxyRequest) returns (DeleteProxyResponse) {
+        option (google.api.http) = {
+            delete: "/v1/proxies/{id}"
+        };
+    };
 }
