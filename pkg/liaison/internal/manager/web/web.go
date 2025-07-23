@@ -6,6 +6,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/http"
 	v1 "github.com/singchia/liaison/api/v1"
 	"github.com/singchia/liaison/pkg/liaison/internal/config"
+	"github.com/singchia/liaison/pkg/liaison/internal/manager/controlplane"
 	"github.com/singchia/liaison/pkg/utils"
 )
 
@@ -23,10 +24,15 @@ type Web interface {
 
 type web struct {
 	app *kratos.App
+
+	// deps
+	controlPlane controlplane.ControlPlane
 }
 
-func NewWebServer(conf *config.Configuration) (Web, error) {
-	web := &web{}
+func NewWebServer(conf *config.Configuration, controlPlane controlplane.ControlPlane) (Web, error) {
+	web := &web{
+		controlPlane: controlPlane,
+	}
 
 	listen := &conf.Manager.Listen
 	ln, err := utils.Listen(listen)

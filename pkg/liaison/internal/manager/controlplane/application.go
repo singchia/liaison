@@ -49,6 +49,17 @@ func (cp *controlPlane) UpdateApplication(_ context.Context, req *v1.UpdateAppli
 	}, nil
 }
 
+func (cp *controlPlane) DeleteApplication(_ context.Context, req *v1.DeleteApplicationRequest) (*v1.DeleteApplicationResponse, error) {
+	err := cp.repo.DeleteApplication(uint(req.Id))
+	if err != nil {
+		return nil, err
+	}
+	return &v1.DeleteApplicationResponse{
+		Code:    200,
+		Message: "success",
+	}, nil
+}
+
 func transformApplications(applications []*model.Application) []*v1.Application {
 	applicationsV1 := make([]*v1.Application, len(applications))
 	for i, application := range applications {

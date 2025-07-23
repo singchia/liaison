@@ -14,6 +14,10 @@ func (d *dao) GetApplicationByID(id uint) (*model.Application, error) {
 	return &application, nil
 }
 
+func (d *dao) DeleteApplication(id uint) error {
+	return d.getDB().Delete(&model.Application{}, id).Error
+}
+
 func (d *dao) UpdateApplication(application *model.Application) error {
 	return d.getDB().Save(application).Error
 }

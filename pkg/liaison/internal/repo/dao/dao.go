@@ -39,6 +39,14 @@ type Dao interface {
 	GetApplicationByID(id uint) (*model.Application, error)
 	ListApplications(query *ListApplicationsQuery) ([]*model.Application, error)
 	UpdateApplication(application *model.Application) error
+	DeleteApplication(id uint) error
+
+	// Proxy 相关方法
+	CreateProxy(proxy *model.Proxy) error
+	GetProxyByID(id uint) (*model.Proxy, error)
+	ListProxies(page, pageSize int) ([]*model.Proxy, error)
+	UpdateProxy(proxy *model.Proxy) error
+	DeleteProxy(id uint) error
 
 	// 资源清理
 	Close() error
