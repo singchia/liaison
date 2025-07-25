@@ -18,7 +18,7 @@ func (cp *controlPlane) CreateEdge(_ context.Context, req *v1.CreateEdgeRequest)
 
 	edge := &model.Edge{
 		Name:        req.Name,
-		Status:      model.EdgeStatusOffline,
+		Status:      model.EdgeStatusIniting,
 		Description: req.Description,
 	}
 

@@ -2,6 +2,7 @@ package dao
 
 import (
 	"sync"
+	"time"
 
 	"github.com/singchia/liaison/pkg/liaison/internal/config"
 	"github.com/singchia/liaison/pkg/liaison/internal/repo/model"
@@ -18,10 +19,13 @@ type Dao interface {
 
 	// Edge 相关方法
 	GetEdge(id uint64) (*model.Edge, error)
+	GetEdgeByAccessKey(accessKey string) (*model.AccessKey, *model.Edge, error)
 	CreateEdge(edge *model.Edge) error
 	GetEdgeByDeviceID(deviceID uint) (*model.Edge, error)
 	ListEdges(page, pageSize int) ([]*model.Edge, error)
 	UpdateEdge(edge *model.Edge) error
+	UpdateEdgeOnlineStatus(edgeID uint64, onlineStatus model.EdgeOnlineStatus) error
+	UpdateEdgeHeartbeatAt(edgeID uint64, heartbeatAt time.Time) error
 	DeleteEdge(id uint64) error
 
 	// AccessKey 相关方法

@@ -17,6 +17,9 @@ type Device struct {
 	Disk        int    `gorm:"column:disk;type:int;not null"`
 	OS          string `gorm:"column:os;type:varchar(255);not null"`
 	Version     string `gorm:"column:version;type:varchar(255);not null"`
+	CPUUsage    int    `gorm:"column:cpu_usage;type:int;not null"`
+	MemoryUsage int    `gorm:"column:memory_usage;type:int;not null"`
+	DiskUsage   int    `gorm:"column:disk_usage;type:int;not null"`
 	Description string `gorm:"column:description;type:varchar(255);not null"`
 }
 

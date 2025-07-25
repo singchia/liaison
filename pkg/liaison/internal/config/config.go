@@ -24,7 +24,12 @@ type Manager struct {
 	DB     string        `yaml:"db,omitempty" json:"db"`
 }
 
+type Frontier struct {
+	Addr string `yaml:"addr,omitempty" json:"addr"`
+}
+
 type Configuration struct {
-	Daemon  Daemon  `yaml:"daemon,omitempty" json:"daemon"`
-	Manager Manager `yaml:"manager,omitempty" json:"manager"`
+	Daemon   Daemon   `yaml:"daemon,omitempty" json:"daemon"`
+	Manager  Manager  `yaml:"manager,omitempty" json:"manager"`
+	Frontier Frontier `yaml:"frontier,omitempty" json:"frontier"`
 }

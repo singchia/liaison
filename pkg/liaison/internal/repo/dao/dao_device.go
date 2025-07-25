@@ -23,5 +23,18 @@ func (d *dao) ListDevices(page, pageSize int) ([]*model.Device, error) {
 }
 
 func (d *dao) UpdateDevice(device *model.Device) error {
-	return d.getDB().Save(device).Error
+	if device.Name != "" {
+		if err := d.getDB().Model(&model.Device{}).Where("id = ?", device.ID).Update("name", device.Name).Error; err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (d *dao) UpdateDeviceUsage(deviceID uint, cpuUsage, memoryUsage, diskUsage int) error {
+	return d.getDB().Model(&model.Device{}).Where("id = ?", deviceID).Omit("updated_at").Updates(map[string]interface{}{
+		"cpu_usage":    cpuUsage,
+		"memory_usage": memoryUsage,
+		"disk_usage":   diskUsage,
+	}).Error
 }
