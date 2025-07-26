@@ -24,8 +24,10 @@ type Dao interface {
 	GetEdgeByDeviceID(deviceID uint) (*model.Edge, error)
 	ListEdges(page, pageSize int) ([]*model.Edge, error)
 	UpdateEdge(edge *model.Edge) error
+	UpdateEdgeStatus(edgeID uint64, status model.EdgeStatus) error
 	UpdateEdgeOnlineStatus(edgeID uint64, onlineStatus model.EdgeOnlineStatus) error
 	UpdateEdgeHeartbeatAt(edgeID uint64, heartbeatAt time.Time) error
+	UpdateEdgeDeviceID(edgeID uint64, deviceID uint) error
 	DeleteEdge(id uint64) error
 
 	// AccessKey 相关方法
@@ -34,9 +36,11 @@ type Dao interface {
 
 	// Device 相关方法
 	CreateDevice(device *model.Device) error
+	CreateEthernetInterface(iface *model.EthernetInterface) error
 	GetDeviceByID(id uint) (*model.Device, error)
 	ListDevices(page, pageSize int) ([]*model.Device, error)
 	UpdateDevice(device *model.Device) error
+	UpdateDeviceUsage(deviceID uint, cpuUsage, memoryUsage, diskUsage float32) error
 
 	// Application 相关方法
 	CreateApplication(application *model.Application) error

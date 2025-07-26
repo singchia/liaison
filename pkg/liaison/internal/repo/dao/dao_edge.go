@@ -46,6 +46,7 @@ func (d *dao) ListEdges(page, pageSize int) ([]*model.Edge, error) {
 	return edges, nil
 }
 
+// 更新Name Description
 func (d *dao) UpdateEdge(edge *model.Edge) error {
 	if edge.Name != "" {
 		if err := d.getDB().Model(&model.Edge{}).Where("id = ?", edge.ID).Update("name", edge.Name).Error; err != nil {
@@ -57,12 +58,11 @@ func (d *dao) UpdateEdge(edge *model.Edge) error {
 			return err
 		}
 	}
-	if edge.Status != 0 {
-		if err := d.getDB().Model(&model.Edge{}).Where("id = ?", edge.ID).Update("status", edge.Status).Error; err != nil {
-			return err
-		}
-	}
 	return nil
+}
+
+func (d *dao) UpdateEdgeStatus(edgeID uint64, status model.EdgeStatus) error {
+	return d.getDB().Model(&model.Edge{}).Where("id = ?", edgeID).Update("status", status).Error
 }
 
 func (d *dao) UpdateEdgeOnlineStatus(edgeID uint64, onlineStatus model.EdgeOnlineStatus) error {
@@ -71,6 +71,10 @@ func (d *dao) UpdateEdgeOnlineStatus(edgeID uint64, onlineStatus model.EdgeOnlin
 
 func (d *dao) UpdateEdgeHeartbeatAt(edgeID uint64, heartbeatAt time.Time) error {
 	return d.getDB().Model(&model.Edge{}).Where("id = ?", edgeID).Update("heartbeat_at", heartbeatAt).Error
+}
+
+func (d *dao) UpdateEdgeDeviceID(edgeID uint64, deviceID uint) error {
+	return d.getDB().Model(&model.Edge{}).Where("id = ?", edgeID).Update("device_id", deviceID).Error
 }
 
 func (d *dao) DeleteEdge(id uint64) error {
