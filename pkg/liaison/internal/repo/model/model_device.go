@@ -7,11 +7,13 @@ const (
 	TableNameEthernetInterface = "ethernet_interface"
 )
 
+type DeviceOnlineStatus int
+
 type Device struct {
 	gorm.Model
+	Fingerprint string `gorm:"column:fingerprint;type:varchar(255);not null"`
 	Name        string `gorm:"column:name;type:varchar(255);not null"`
 	HostName    string `gorm:"column:host_name;type:varchar(255);not null"`
-	Status      string `gorm:"column:status;type:varchar(255);not null"`
 	CPU         int    `gorm:"column:cpu;type:int;not null"`
 	Memory      int    `gorm:"column:memory;type:int;not null"`
 	Disk        int    `gorm:"column:disk;type:int;not null"`

@@ -10,6 +10,7 @@ import (
 	"github.com/singchia/liaison/pkg/liaison/internal/config"
 	"github.com/singchia/liaison/pkg/liaison/internal/repo"
 	"github.com/singchia/liaison/pkg/liaison/internal/repo/model"
+	"github.com/singchia/liaison/pkg/proto"
 )
 
 type FrontierBound interface {
@@ -55,14 +56,9 @@ func NewFrontierBound(conf *config.Configuration, repo repo.Repo) (FrontierBound
 	return fb, nil
 }
 
-type Meta struct {
-	AccessKey string `json:"access_key"`
-	SecretKey string `json:"secret_key"`
-}
-
 // 获取设备ID
 func (fb *frontierBound) getID(meta []byte) (uint64, error) {
-	var m Meta
+	var m proto.Meta
 	if err := json.Unmarshal(meta, &m); err != nil {
 		return 0, err
 	}
