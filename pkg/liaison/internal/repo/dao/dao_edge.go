@@ -61,10 +61,6 @@ func (d *dao) UpdateEdge(edge *model.Edge) error {
 	return nil
 }
 
-func (d *dao) UpdateEdgeStatus(edgeID uint64, status model.EdgeStatus) error {
-	return d.getDB().Model(&model.Edge{}).Where("id = ?", edgeID).Update("status", status).Error
-}
-
 func (d *dao) UpdateEdgeOnlineStatus(edgeID uint64, onlineStatus model.EdgeOnlineStatus) error {
 	return d.getDB().Model(&model.Edge{}).Where("id = ?", edgeID).Update("online", onlineStatus).Error
 }

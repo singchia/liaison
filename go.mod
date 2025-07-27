@@ -2,8 +2,6 @@ module github.com/singchia/liaison
 
 go 1.22
 
-toolchain go1.23.11
-
 require (
 	github.com/go-kratos/kratos/v2 v2.7.2
 	github.com/pion/transport/v2 v2.2.10

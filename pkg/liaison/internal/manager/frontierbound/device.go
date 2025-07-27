@@ -23,8 +23,6 @@ func (fb *frontierBound) reportDeviceUsage(ctx context.Context, req geminio.Requ
 		rsp.SetError(err)
 		return
 	}
-	// 同时更新
-	return
 }
 
 // 上报设备
@@ -81,5 +79,4 @@ func (fb *frontierBound) reportDevice(ctx context.Context, req geminio.Request, 
 		rsp.SetError(err)
 		return
 	}
-	return
 }

@@ -18,8 +18,8 @@ func (cp *controlPlane) CreateEdge(_ context.Context, req *v1.CreateEdgeRequest)
 
 	edge := &model.Edge{
 		Name:        req.Name,
-		Status:      model.EdgeStatusIniting,
 		Description: req.Description,
+		Online:      model.EdgeOnlineStatusOffline,
 	}
 
 	err := tx.CreateEdge(edge)
@@ -70,7 +70,7 @@ func (cp *controlPlane) GetEdge(_ context.Context, req *v1.GetEdgeRequest) (*v1.
 			Id:          uint64(edge.ID),
 			Name:        edge.Name,
 			Description: edge.Description,
-			Status:      int32(edge.Status),
+			Online:      int32(edge.Online),
 			CreatedAt:   edge.CreatedAt.Format(time.DateTime),
 			UpdatedAt:   edge.UpdatedAt.Format(time.DateTime),
 		},
@@ -132,7 +132,7 @@ func transformEdge(edge *model.Edge) *v1.Edge {
 		Id:          uint64(edge.ID),
 		Name:        edge.Name,
 		Description: edge.Description,
-		Status:      int32(edge.Status),
+		Online:      int32(edge.Online),
 		CreatedAt:   edge.CreatedAt.Format(time.DateTime),
 		UpdatedAt:   edge.UpdatedAt.Format(time.DateTime),
 	}

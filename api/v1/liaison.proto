@@ -10,8 +10,9 @@ message Edge {
     string name = 2;
     string description = 3;
     int32 status = 4;
-    string created_at = 5;
-    string updated_at = 6;
+    int32 online = 5;
+    string created_at = 6;
+    string updated_at = 7;
 }
 
 message Edges {

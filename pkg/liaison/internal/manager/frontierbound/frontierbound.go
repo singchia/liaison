@@ -43,7 +43,15 @@ func NewFrontierBound(conf *config.Configuration, repo repo.Repo) (FrontierBound
 		return nil, err
 	}
 	// 注册liaison函数
+	err = svc.Register(context.Background(), "report_device", fb.reportDevice)
+	if err != nil {
+		return nil, err
+	}
 	err = svc.Register(context.Background(), "report_device_usage", fb.reportDeviceUsage)
+	if err != nil {
+		return nil, err
+	}
+	err = svc.Register(context.Background(), "report_edge", fb.reportEdge)
 	if err != nil {
 		return nil, err
 	}

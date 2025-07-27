@@ -29,8 +29,9 @@ type Edge struct {
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
 	Status        int32                  `protobuf:"varint,4,opt,name=status,proto3" json:"status,omitempty"`
-	CreatedAt     string                 `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     string                 `protobuf:"bytes,6,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Online        int32                  `protobuf:"varint,5,opt,name=online,proto3" json:"online,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     string                 `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -89,6 +90,13 @@ func (x *Edge) GetDescription() string {
 func (x *Edge) GetStatus() int32 {
 	if x != nil {
 		return x.Status
+	}
+	return 0
+}
+
+func (x *Edge) GetOnline() int32 {
+	if x != nil {
+		return x.Online
 	}
 	return 0
 }
@@ -2385,16 +2393,17 @@ var File_liaison_proto protoreflect.FileDescriptor
 
 const file_liaison_proto_rawDesc = "" +
 	"\n" +
-	"\rliaison.proto\x1a\x1cgoogle/api/annotations.proto\"\xa2\x01\n" +
+	"\rliaison.proto\x1a\x1cgoogle/api/annotations.proto\"\xba\x01\n" +
 	"\x04Edge\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x16\n" +
-	"\x06status\x18\x04 \x01(\x05R\x06status\x12\x1d\n" +
+	"\x06status\x18\x04 \x01(\x05R\x06status\x12\x16\n" +
+	"\x06online\x18\x05 \x01(\x05R\x06online\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\x05 \x01(\tR\tcreatedAt\x12\x1d\n" +
+	"created_at\x18\x06 \x01(\tR\tcreatedAt\x12\x1d\n" +
 	"\n" +
-	"updated_at\x18\x06 \x01(\tR\tupdatedAt\":\n" +
+	"updated_at\x18\a \x01(\tR\tupdatedAt\":\n" +
 	"\x05Edges\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x05R\x05total\x12\x1b\n" +
 	"\x05edges\x18\x02 \x03(\v2\x05.EdgeR\x05edges\"I\n" +
