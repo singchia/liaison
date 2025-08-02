@@ -19,21 +19,23 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	LiaisonService_CreateEdge_FullMethodName        = "/LiaisonService/CreateEdge"
-	LiaisonService_GetEdge_FullMethodName           = "/LiaisonService/GetEdge"
-	LiaisonService_ListEdges_FullMethodName         = "/LiaisonService/ListEdges"
-	LiaisonService_UpdateEdge_FullMethodName        = "/LiaisonService/UpdateEdge"
-	LiaisonService_DeleteEdge_FullMethodName        = "/LiaisonService/DeleteEdge"
-	LiaisonService_ListDevices_FullMethodName       = "/LiaisonService/ListDevices"
-	LiaisonService_UpdateDevice_FullMethodName      = "/LiaisonService/UpdateDevice"
-	LiaisonService_GetDevice_FullMethodName         = "/LiaisonService/GetDevice"
-	LiaisonService_ListApplications_FullMethodName  = "/LiaisonService/ListApplications"
-	LiaisonService_UpdateApplication_FullMethodName = "/LiaisonService/UpdateApplication"
-	LiaisonService_DeleteApplication_FullMethodName = "/LiaisonService/DeleteApplication"
-	LiaisonService_ListProxies_FullMethodName       = "/LiaisonService/ListProxies"
-	LiaisonService_CreateProxy_FullMethodName       = "/LiaisonService/CreateProxy"
-	LiaisonService_UpdateProxy_FullMethodName       = "/LiaisonService/UpdateProxy"
-	LiaisonService_DeleteProxy_FullMethodName       = "/LiaisonService/DeleteProxy"
+	LiaisonService_CreateEdge_FullMethodName                    = "/LiaisonService/CreateEdge"
+	LiaisonService_GetEdge_FullMethodName                       = "/LiaisonService/GetEdge"
+	LiaisonService_ListEdges_FullMethodName                     = "/LiaisonService/ListEdges"
+	LiaisonService_UpdateEdge_FullMethodName                    = "/LiaisonService/UpdateEdge"
+	LiaisonService_DeleteEdge_FullMethodName                    = "/LiaisonService/DeleteEdge"
+	LiaisonService_ListDevices_FullMethodName                   = "/LiaisonService/ListDevices"
+	LiaisonService_UpdateDevice_FullMethodName                  = "/LiaisonService/UpdateDevice"
+	LiaisonService_GetDevice_FullMethodName                     = "/LiaisonService/GetDevice"
+	LiaisonService_ListApplications_FullMethodName              = "/LiaisonService/ListApplications"
+	LiaisonService_UpdateApplication_FullMethodName             = "/LiaisonService/UpdateApplication"
+	LiaisonService_DeleteApplication_FullMethodName             = "/LiaisonService/DeleteApplication"
+	LiaisonService_ListProxies_FullMethodName                   = "/LiaisonService/ListProxies"
+	LiaisonService_CreateProxy_FullMethodName                   = "/LiaisonService/CreateProxy"
+	LiaisonService_UpdateProxy_FullMethodName                   = "/LiaisonService/UpdateProxy"
+	LiaisonService_DeleteProxy_FullMethodName                   = "/LiaisonService/DeleteProxy"
+	LiaisonService_CreateEdgeScanApplicationTask_FullMethodName = "/LiaisonService/CreateEdgeScanApplicationTask"
+	LiaisonService_GetEdgeScanApplicationTask_FullMethodName    = "/LiaisonService/GetEdgeScanApplicationTask"
 )
 
 // LiaisonServiceClient is the client API for LiaisonService service.
@@ -59,6 +61,9 @@ type LiaisonServiceClient interface {
 	CreateProxy(ctx context.Context, in *CreateProxyRequest, opts ...grpc.CallOption) (*CreateProxyResponse, error)
 	UpdateProxy(ctx context.Context, in *UpdateProxyRequest, opts ...grpc.CallOption) (*UpdateProxyResponse, error)
 	DeleteProxy(ctx context.Context, in *DeleteProxyRequest, opts ...grpc.CallOption) (*DeleteProxyResponse, error)
+	// 任务
+	CreateEdgeScanApplicationTask(ctx context.Context, in *CreateEdgeScanApplicationTaskRequest, opts ...grpc.CallOption) (*CreateEdgeScanApplicationTaskResponse, error)
+	GetEdgeScanApplicationTask(ctx context.Context, in *GetEdgeScanApplicationTaskRequest, opts ...grpc.CallOption) (*GetEdgeScanApplicationTaskResponse, error)
 }
 
 type liaisonServiceClient struct {
@@ -204,6 +209,24 @@ func (c *liaisonServiceClient) DeleteProxy(ctx context.Context, in *DeleteProxyR
 	return out, nil
 }
 
+func (c *liaisonServiceClient) CreateEdgeScanApplicationTask(ctx context.Context, in *CreateEdgeScanApplicationTaskRequest, opts ...grpc.CallOption) (*CreateEdgeScanApplicationTaskResponse, error) {
+	out := new(CreateEdgeScanApplicationTaskResponse)
+	err := c.cc.Invoke(ctx, LiaisonService_CreateEdgeScanApplicationTask_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *liaisonServiceClient) GetEdgeScanApplicationTask(ctx context.Context, in *GetEdgeScanApplicationTaskRequest, opts ...grpc.CallOption) (*GetEdgeScanApplicationTaskResponse, error) {
+	out := new(GetEdgeScanApplicationTaskResponse)
+	err := c.cc.Invoke(ctx, LiaisonService_GetEdgeScanApplicationTask_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // LiaisonServiceServer is the server API for LiaisonService service.
 // All implementations must embed UnimplementedLiaisonServiceServer
 // for forward compatibility
@@ -227,6 +250,9 @@ type LiaisonServiceServer interface {
 	CreateProxy(context.Context, *CreateProxyRequest) (*CreateProxyResponse, error)
 	UpdateProxy(context.Context, *UpdateProxyRequest) (*UpdateProxyResponse, error)
 	DeleteProxy(context.Context, *DeleteProxyRequest) (*DeleteProxyResponse, error)
+	// 任务
+	CreateEdgeScanApplicationTask(context.Context, *CreateEdgeScanApplicationTaskRequest) (*CreateEdgeScanApplicationTaskResponse, error)
+	GetEdgeScanApplicationTask(context.Context, *GetEdgeScanApplicationTaskRequest) (*GetEdgeScanApplicationTaskResponse, error)
 	mustEmbedUnimplementedLiaisonServiceServer()
 }
 
@@ -278,6 +304,12 @@ func (UnimplementedLiaisonServiceServer) UpdateProxy(context.Context, *UpdatePro
 }
 func (UnimplementedLiaisonServiceServer) DeleteProxy(context.Context, *DeleteProxyRequest) (*DeleteProxyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteProxy not implemented")
+}
+func (UnimplementedLiaisonServiceServer) CreateEdgeScanApplicationTask(context.Context, *CreateEdgeScanApplicationTaskRequest) (*CreateEdgeScanApplicationTaskResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateEdgeScanApplicationTask not implemented")
+}
+func (UnimplementedLiaisonServiceServer) GetEdgeScanApplicationTask(context.Context, *GetEdgeScanApplicationTaskRequest) (*GetEdgeScanApplicationTaskResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetEdgeScanApplicationTask not implemented")
 }
 func (UnimplementedLiaisonServiceServer) mustEmbedUnimplementedLiaisonServiceServer() {}
 
@@ -562,6 +594,42 @@ func _LiaisonService_DeleteProxy_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _LiaisonService_CreateEdgeScanApplicationTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateEdgeScanApplicationTaskRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LiaisonServiceServer).CreateEdgeScanApplicationTask(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LiaisonService_CreateEdgeScanApplicationTask_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LiaisonServiceServer).CreateEdgeScanApplicationTask(ctx, req.(*CreateEdgeScanApplicationTaskRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LiaisonService_GetEdgeScanApplicationTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetEdgeScanApplicationTaskRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LiaisonServiceServer).GetEdgeScanApplicationTask(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LiaisonService_GetEdgeScanApplicationTask_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LiaisonServiceServer).GetEdgeScanApplicationTask(ctx, req.(*GetEdgeScanApplicationTaskRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // LiaisonService_ServiceDesc is the grpc.ServiceDesc for LiaisonService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -628,6 +696,14 @@ var LiaisonService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteProxy",
 			Handler:    _LiaisonService_DeleteProxy_Handler,
+		},
+		{
+			MethodName: "CreateEdgeScanApplicationTask",
+			Handler:    _LiaisonService_CreateEdgeScanApplicationTask_Handler,
+		},
+		{
+			MethodName: "GetEdgeScanApplicationTask",
+			Handler:    _LiaisonService_GetEdgeScanApplicationTask_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

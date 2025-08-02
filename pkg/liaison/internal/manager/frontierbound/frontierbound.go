@@ -55,6 +55,10 @@ func NewFrontierBound(conf *config.Configuration, repo repo.Repo) (FrontierBound
 	if err != nil {
 		return nil, err
 	}
+	err = svc.Register(context.Background(), "report_task", fb.reportTask)
+	if err != nil {
+		return nil, err
+	}
 
 	fb.svc = svc
 	return fb, nil

@@ -55,6 +55,12 @@ type Dao interface {
 	UpdateProxy(proxy *model.Proxy) error
 	DeleteProxy(id uint) error
 
+	// Task 相关方法
+	CreateTask(task *model.Task) error
+	UpdateTaskStatus(taskID uint, status model.TaskStatus) error
+	UpdateTaskResult(taskID uint, result []byte) error
+	UpdateTaskError(taskID uint, error string) error
+
 	// 资源清理
 	Close() error
 }

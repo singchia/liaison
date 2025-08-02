@@ -31,3 +31,9 @@ type DeviceUsage struct {
 	MemoryUsage float32 `json:"memory_usage"`
 	DiskUsage   float32 `json:"disk_usage"`
 }
+
+type Task struct {
+	ID         uint   `json:"id"`
+	TaskResult []byte `json:"task_result"`
+	Error      string `json:"error"`
+}

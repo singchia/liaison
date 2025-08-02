@@ -255,6 +255,37 @@ message DeleteProxyResponse {
     string message = 2;
 }
 
+// 任务
+message EdgeScanApplicationTask {
+    uint64 id = 1;
+    uint64 edge_id = 2;
+    string task_status = 3;
+    string created_at = 4;
+    string updated_at = 5;
+    repeated string applications = 6;
+    string error = 7;
+}
+
+// 创建扫描应用任务
+message CreateEdgeScanApplicationTaskRequest {
+    uint64 edge_id = 1;
+}
+
+message CreateEdgeScanApplicationTaskResponse {
+    int32 code = 1;
+    string message = 2;
+}
+
+// 获取扫描应用任务
+message GetEdgeScanApplicationTaskRequest {
+    uint64 edge_id = 1;
+}
+
+message GetEdgeScanApplicationTaskResponse {
+    int32 code = 1;
+    string message = 2;
+    EdgeScanApplicationTask data = 3;
+}
 
 // 服务
 service LiaisonService {
@@ -344,6 +375,19 @@ service LiaisonService {
     rpc DeleteProxy(DeleteProxyRequest) returns (DeleteProxyResponse) {
         option (google.api.http) = {
             delete: "/v1/proxies/{id}"
+        };
+    };
+
+    // 任务
+    rpc CreateEdgeScanApplicationTask(CreateEdgeScanApplicationTaskRequest) returns (CreateEdgeScanApplicationTaskResponse) {
+        option (google.api.http) = {
+            post: "/v1/edges/{edge_id}/scan_application_tasks"
+             body: "*"
+        };
+    };
+    rpc GetEdgeScanApplicationTask(GetEdgeScanApplicationTaskRequest) returns (GetEdgeScanApplicationTaskResponse) {
+        option (google.api.http) = {
+            get: "/v1/edges/{edge_id}/scan_application_tasks"
         };
     };
 }

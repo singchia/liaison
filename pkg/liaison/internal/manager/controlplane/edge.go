@@ -119,6 +119,14 @@ func (cp *controlPlane) DeleteEdge(_ context.Context, req *v1.DeleteEdgeRequest)
 	}, nil
 }
 
+func (cp *controlPlane) CreateEdgeScanApplicationTask(_ context.Context, req *v1.CreateEdgeScanApplicationTaskRequest) (*v1.CreateEdgeScanApplicationTaskResponse, error) {
+
+}
+
+func (cp *controlPlane) GetEdgeScanApplicationTask(_ context.Context, req *v1.GetEdgeScanApplicationTaskRequest) (*v1.GetEdgeScanApplicationTaskResponse, error) {
+
+}
+
 func transformEdges(edges []*model.Edge) []*v1.Edge {
 	edgesV1 := make([]*v1.Edge, len(edges))
 	for i, edge := range edges {
