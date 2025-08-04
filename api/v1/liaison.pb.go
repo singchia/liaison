@@ -29,8 +29,9 @@ type Edge struct {
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
 	Status        int32                  `protobuf:"varint,4,opt,name=status,proto3" json:"status,omitempty"`
-	CreatedAt     string                 `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     string                 `protobuf:"bytes,6,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Online        int32                  `protobuf:"varint,5,opt,name=online,proto3" json:"online,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     string                 `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -89,6 +90,13 @@ func (x *Edge) GetDescription() string {
 func (x *Edge) GetStatus() int32 {
 	if x != nil {
 		return x.Status
+	}
+	return 0
+}
+
+func (x *Edge) GetOnline() int32 {
+	if x != nil {
+		return x.Online
 	}
 	return 0
 }
@@ -2381,20 +2389,316 @@ func (x *DeleteProxyResponse) GetMessage() string {
 	return ""
 }
 
+// 任务
+type EdgeScanApplicationTask struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	EdgeId        uint64                 `protobuf:"varint,2,opt,name=edge_id,json=edgeId,proto3" json:"edge_id,omitempty"`
+	TaskStatus    string                 `protobuf:"bytes,3,opt,name=task_status,json=taskStatus,proto3" json:"task_status,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     string                 `protobuf:"bytes,5,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Applications  []string               `protobuf:"bytes,6,rep,name=applications,proto3" json:"applications,omitempty"`
+	Error         string                 `protobuf:"bytes,7,opt,name=error,proto3" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EdgeScanApplicationTask) Reset() {
+	*x = EdgeScanApplicationTask{}
+	mi := &file_liaison_proto_msgTypes[39]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EdgeScanApplicationTask) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EdgeScanApplicationTask) ProtoMessage() {}
+
+func (x *EdgeScanApplicationTask) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[39]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EdgeScanApplicationTask.ProtoReflect.Descriptor instead.
+func (*EdgeScanApplicationTask) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{39}
+}
+
+func (x *EdgeScanApplicationTask) GetId() uint64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *EdgeScanApplicationTask) GetEdgeId() uint64 {
+	if x != nil {
+		return x.EdgeId
+	}
+	return 0
+}
+
+func (x *EdgeScanApplicationTask) GetTaskStatus() string {
+	if x != nil {
+		return x.TaskStatus
+	}
+	return ""
+}
+
+func (x *EdgeScanApplicationTask) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+func (x *EdgeScanApplicationTask) GetUpdatedAt() string {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return ""
+}
+
+func (x *EdgeScanApplicationTask) GetApplications() []string {
+	if x != nil {
+		return x.Applications
+	}
+	return nil
+}
+
+func (x *EdgeScanApplicationTask) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
+
+// 创建扫描应用任务
+type CreateEdgeScanApplicationTaskRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EdgeId        uint64                 `protobuf:"varint,1,opt,name=edge_id,json=edgeId,proto3" json:"edge_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateEdgeScanApplicationTaskRequest) Reset() {
+	*x = CreateEdgeScanApplicationTaskRequest{}
+	mi := &file_liaison_proto_msgTypes[40]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateEdgeScanApplicationTaskRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateEdgeScanApplicationTaskRequest) ProtoMessage() {}
+
+func (x *CreateEdgeScanApplicationTaskRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[40]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateEdgeScanApplicationTaskRequest.ProtoReflect.Descriptor instead.
+func (*CreateEdgeScanApplicationTaskRequest) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{40}
+}
+
+func (x *CreateEdgeScanApplicationTaskRequest) GetEdgeId() uint64 {
+	if x != nil {
+		return x.EdgeId
+	}
+	return 0
+}
+
+type CreateEdgeScanApplicationTaskResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateEdgeScanApplicationTaskResponse) Reset() {
+	*x = CreateEdgeScanApplicationTaskResponse{}
+	mi := &file_liaison_proto_msgTypes[41]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateEdgeScanApplicationTaskResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateEdgeScanApplicationTaskResponse) ProtoMessage() {}
+
+func (x *CreateEdgeScanApplicationTaskResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[41]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateEdgeScanApplicationTaskResponse.ProtoReflect.Descriptor instead.
+func (*CreateEdgeScanApplicationTaskResponse) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{41}
+}
+
+func (x *CreateEdgeScanApplicationTaskResponse) GetCode() int32 {
+	if x != nil {
+		return x.Code
+	}
+	return 0
+}
+
+func (x *CreateEdgeScanApplicationTaskResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+// 获取扫描应用任务
+type GetEdgeScanApplicationTaskRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EdgeId        uint64                 `protobuf:"varint,1,opt,name=edge_id,json=edgeId,proto3" json:"edge_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEdgeScanApplicationTaskRequest) Reset() {
+	*x = GetEdgeScanApplicationTaskRequest{}
+	mi := &file_liaison_proto_msgTypes[42]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEdgeScanApplicationTaskRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEdgeScanApplicationTaskRequest) ProtoMessage() {}
+
+func (x *GetEdgeScanApplicationTaskRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[42]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEdgeScanApplicationTaskRequest.ProtoReflect.Descriptor instead.
+func (*GetEdgeScanApplicationTaskRequest) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{42}
+}
+
+func (x *GetEdgeScanApplicationTaskRequest) GetEdgeId() uint64 {
+	if x != nil {
+		return x.EdgeId
+	}
+	return 0
+}
+
+type GetEdgeScanApplicationTaskResponse struct {
+	state         protoimpl.MessageState   `protogen:"open.v1"`
+	Code          int32                    `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+	Message       string                   `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Data          *EdgeScanApplicationTask `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEdgeScanApplicationTaskResponse) Reset() {
+	*x = GetEdgeScanApplicationTaskResponse{}
+	mi := &file_liaison_proto_msgTypes[43]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEdgeScanApplicationTaskResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEdgeScanApplicationTaskResponse) ProtoMessage() {}
+
+func (x *GetEdgeScanApplicationTaskResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[43]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEdgeScanApplicationTaskResponse.ProtoReflect.Descriptor instead.
+func (*GetEdgeScanApplicationTaskResponse) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{43}
+}
+
+func (x *GetEdgeScanApplicationTaskResponse) GetCode() int32 {
+	if x != nil {
+		return x.Code
+	}
+	return 0
+}
+
+func (x *GetEdgeScanApplicationTaskResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *GetEdgeScanApplicationTaskResponse) GetData() *EdgeScanApplicationTask {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
 var File_liaison_proto protoreflect.FileDescriptor
 
 const file_liaison_proto_rawDesc = "" +
 	"\n" +
-	"\rliaison.proto\x1a\x1cgoogle/api/annotations.proto\"\xa2\x01\n" +
+	"\rliaison.proto\x1a\x1cgoogle/api/annotations.proto\"\xba\x01\n" +
 	"\x04Edge\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x16\n" +
-	"\x06status\x18\x04 \x01(\x05R\x06status\x12\x1d\n" +
+	"\x06status\x18\x04 \x01(\x05R\x06status\x12\x16\n" +
+	"\x06online\x18\x05 \x01(\x05R\x06online\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\x05 \x01(\tR\tcreatedAt\x12\x1d\n" +
+	"created_at\x18\x06 \x01(\tR\tcreatedAt\x12\x1d\n" +
 	"\n" +
-	"updated_at\x18\x06 \x01(\tR\tupdatedAt\":\n" +
+	"updated_at\x18\a \x01(\tR\tupdatedAt\":\n" +
 	"\x05Edges\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x05R\x05total\x12\x1b\n" +
 	"\x05edges\x18\x02 \x03(\v2\x05.EdgeR\x05edges\"I\n" +
@@ -2553,8 +2857,29 @@ const file_liaison_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\"C\n" +
 	"\x13DeleteProxyResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage2\x8a\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"\xdb\x01\n" +
+	"\x17EdgeScanApplicationTask\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x17\n" +
+	"\aedge_id\x18\x02 \x01(\x04R\x06edgeId\x12\x1f\n" +
+	"\vtask_status\x18\x03 \x01(\tR\n" +
+	"taskStatus\x12\x1d\n" +
 	"\n" +
+	"created_at\x18\x04 \x01(\tR\tcreatedAt\x12\x1d\n" +
+	"\n" +
+	"updated_at\x18\x05 \x01(\tR\tupdatedAt\x12\"\n" +
+	"\fapplications\x18\x06 \x03(\tR\fapplications\x12\x14\n" +
+	"\x05error\x18\a \x01(\tR\x05error\"?\n" +
+	"$CreateEdgeScanApplicationTaskRequest\x12\x17\n" +
+	"\aedge_id\x18\x01 \x01(\x04R\x06edgeId\"U\n" +
+	"%CreateEdgeScanApplicationTaskResponse\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"<\n" +
+	"!GetEdgeScanApplicationTaskRequest\x12\x17\n" +
+	"\aedge_id\x18\x01 \x01(\x04R\x06edgeId\"\x80\x01\n" +
+	"\"GetEdgeScanApplicationTaskResponse\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12,\n" +
+	"\x04data\x18\x03 \x01(\v2\x18.EdgeScanApplicationTaskR\x04data2\xce\f\n" +
 	"\x0eLiaisonService\x12K\n" +
 	"\n" +
 	"CreateEdge\x12\x12.CreateEdgeRequest\x1a\x13.CreateEdgeResponse\"\x14\x82\xd3\xe4\x93\x02\x0e:\x01*\"\t/v1/edges\x12D\n" +
@@ -2573,7 +2898,9 @@ const file_liaison_proto_rawDesc = "" +
 	"\vListProxies\x12\x13.ListProxiesRequest\x1a\x14.ListProxiesResponse\"\x13\x82\xd3\xe4\x93\x02\r\x12\v/v1/proxies\x12P\n" +
 	"\vCreateProxy\x12\x13.CreateProxyRequest\x1a\x14.CreateProxyResponse\"\x16\x82\xd3\xe4\x93\x02\x10:\x01*\"\v/v1/proxies\x12U\n" +
 	"\vUpdateProxy\x12\x13.UpdateProxyRequest\x1a\x14.UpdateProxyResponse\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\x1a\x10/v1/proxies/{id}\x12R\n" +
-	"\vDeleteProxy\x12\x13.DeleteProxyRequest\x1a\x14.DeleteProxyResponse\"\x18\x82\xd3\xe4\x93\x02\x12*\x10/v1/proxies/{id}B'Z%github.com/singchia/liaison/api/v1;v1b\x06proto3"
+	"\vDeleteProxy\x12\x13.DeleteProxyRequest\x1a\x14.DeleteProxyResponse\"\x18\x82\xd3\xe4\x93\x02\x12*\x10/v1/proxies/{id}\x12\xa5\x01\n" +
+	"\x1dCreateEdgeScanApplicationTask\x12%.CreateEdgeScanApplicationTaskRequest\x1a&.CreateEdgeScanApplicationTaskResponse\"5\x82\xd3\xe4\x93\x02/:\x01*\"*/v1/edges/{edge_id}/scan_application_tasks\x12\x99\x01\n" +
+	"\x1aGetEdgeScanApplicationTask\x12\".GetEdgeScanApplicationTaskRequest\x1a#.GetEdgeScanApplicationTaskResponse\"2\x82\xd3\xe4\x93\x02,\x12*/v1/edges/{edge_id}/scan_application_tasksB'Z%github.com/singchia/liaison/api/v1;v1b\x06proto3"
 
 var (
 	file_liaison_proto_rawDescOnce sync.Once
@@ -2587,47 +2914,52 @@ func file_liaison_proto_rawDescGZIP() []byte {
 	return file_liaison_proto_rawDescData
 }
 
-var file_liaison_proto_msgTypes = make([]protoimpl.MessageInfo, 39)
+var file_liaison_proto_msgTypes = make([]protoimpl.MessageInfo, 44)
 var file_liaison_proto_goTypes = []any{
-	(*Edge)(nil),                      // 0: Edge
-	(*Edges)(nil),                     // 1: Edges
-	(*AccessKey)(nil),                 // 2: AccessKey
-	(*CreateEdgeRequest)(nil),         // 3: CreateEdgeRequest
-	(*CreateEdgeResponse)(nil),        // 4: CreateEdgeResponse
-	(*GetEdgeRequest)(nil),            // 5: GetEdgeRequest
-	(*GetEdgeResponse)(nil),           // 6: GetEdgeResponse
-	(*ListEdgesRequest)(nil),          // 7: ListEdgesRequest
-	(*ListEdgesResponse)(nil),         // 8: ListEdgesResponse
-	(*UpdateEdgeRequest)(nil),         // 9: UpdateEdgeRequest
-	(*UpdateEdgeResponse)(nil),        // 10: UpdateEdgeResponse
-	(*DeleteEdgeRequest)(nil),         // 11: DeleteEdgeRequest
-	(*DeleteEdgeResponse)(nil),        // 12: DeleteEdgeResponse
-	(*Device)(nil),                    // 13: Device
-	(*Devices)(nil),                   // 14: Devices
-	(*GetDeviceRequest)(nil),          // 15: GetDeviceRequest
-	(*GetDeviceResponse)(nil),         // 16: GetDeviceResponse
-	(*ListDevicesRequest)(nil),        // 17: ListDevicesRequest
-	(*ListDevicesResponse)(nil),       // 18: ListDevicesResponse
-	(*UpdateDeviceRequest)(nil),       // 19: UpdateDeviceRequest
-	(*UpdateDeviceResponse)(nil),      // 20: UpdateDeviceResponse
-	(*Application)(nil),               // 21: Application
-	(*Applications)(nil),              // 22: Applications
-	(*ListApplicationsRequest)(nil),   // 23: ListApplicationsRequest
-	(*ListApplicationsResponse)(nil),  // 24: ListApplicationsResponse
-	(*UpdateApplicationRequest)(nil),  // 25: UpdateApplicationRequest
-	(*UpdateApplicationResponse)(nil), // 26: UpdateApplicationResponse
-	(*DeleteApplicationRequest)(nil),  // 27: DeleteApplicationRequest
-	(*DeleteApplicationResponse)(nil), // 28: DeleteApplicationResponse
-	(*Proxy)(nil),                     // 29: Proxy
-	(*Proxies)(nil),                   // 30: Proxies
-	(*ListProxiesRequest)(nil),        // 31: ListProxiesRequest
-	(*ListProxiesResponse)(nil),       // 32: ListProxiesResponse
-	(*CreateProxyRequest)(nil),        // 33: CreateProxyRequest
-	(*CreateProxyResponse)(nil),       // 34: CreateProxyResponse
-	(*UpdateProxyRequest)(nil),        // 35: UpdateProxyRequest
-	(*UpdateProxyResponse)(nil),       // 36: UpdateProxyResponse
-	(*DeleteProxyRequest)(nil),        // 37: DeleteProxyRequest
-	(*DeleteProxyResponse)(nil),       // 38: DeleteProxyResponse
+	(*Edge)(nil),                                  // 0: Edge
+	(*Edges)(nil),                                 // 1: Edges
+	(*AccessKey)(nil),                             // 2: AccessKey
+	(*CreateEdgeRequest)(nil),                     // 3: CreateEdgeRequest
+	(*CreateEdgeResponse)(nil),                    // 4: CreateEdgeResponse
+	(*GetEdgeRequest)(nil),                        // 5: GetEdgeRequest
+	(*GetEdgeResponse)(nil),                       // 6: GetEdgeResponse
+	(*ListEdgesRequest)(nil),                      // 7: ListEdgesRequest
+	(*ListEdgesResponse)(nil),                     // 8: ListEdgesResponse
+	(*UpdateEdgeRequest)(nil),                     // 9: UpdateEdgeRequest
+	(*UpdateEdgeResponse)(nil),                    // 10: UpdateEdgeResponse
+	(*DeleteEdgeRequest)(nil),                     // 11: DeleteEdgeRequest
+	(*DeleteEdgeResponse)(nil),                    // 12: DeleteEdgeResponse
+	(*Device)(nil),                                // 13: Device
+	(*Devices)(nil),                               // 14: Devices
+	(*GetDeviceRequest)(nil),                      // 15: GetDeviceRequest
+	(*GetDeviceResponse)(nil),                     // 16: GetDeviceResponse
+	(*ListDevicesRequest)(nil),                    // 17: ListDevicesRequest
+	(*ListDevicesResponse)(nil),                   // 18: ListDevicesResponse
+	(*UpdateDeviceRequest)(nil),                   // 19: UpdateDeviceRequest
+	(*UpdateDeviceResponse)(nil),                  // 20: UpdateDeviceResponse
+	(*Application)(nil),                           // 21: Application
+	(*Applications)(nil),                          // 22: Applications
+	(*ListApplicationsRequest)(nil),               // 23: ListApplicationsRequest
+	(*ListApplicationsResponse)(nil),              // 24: ListApplicationsResponse
+	(*UpdateApplicationRequest)(nil),              // 25: UpdateApplicationRequest
+	(*UpdateApplicationResponse)(nil),             // 26: UpdateApplicationResponse
+	(*DeleteApplicationRequest)(nil),              // 27: DeleteApplicationRequest
+	(*DeleteApplicationResponse)(nil),             // 28: DeleteApplicationResponse
+	(*Proxy)(nil),                                 // 29: Proxy
+	(*Proxies)(nil),                               // 30: Proxies
+	(*ListProxiesRequest)(nil),                    // 31: ListProxiesRequest
+	(*ListProxiesResponse)(nil),                   // 32: ListProxiesResponse
+	(*CreateProxyRequest)(nil),                    // 33: CreateProxyRequest
+	(*CreateProxyResponse)(nil),                   // 34: CreateProxyResponse
+	(*UpdateProxyRequest)(nil),                    // 35: UpdateProxyRequest
+	(*UpdateProxyResponse)(nil),                   // 36: UpdateProxyResponse
+	(*DeleteProxyRequest)(nil),                    // 37: DeleteProxyRequest
+	(*DeleteProxyResponse)(nil),                   // 38: DeleteProxyResponse
+	(*EdgeScanApplicationTask)(nil),               // 39: EdgeScanApplicationTask
+	(*CreateEdgeScanApplicationTaskRequest)(nil),  // 40: CreateEdgeScanApplicationTaskRequest
+	(*CreateEdgeScanApplicationTaskResponse)(nil), // 41: CreateEdgeScanApplicationTaskResponse
+	(*GetEdgeScanApplicationTaskRequest)(nil),     // 42: GetEdgeScanApplicationTaskRequest
+	(*GetEdgeScanApplicationTaskResponse)(nil),    // 43: GetEdgeScanApplicationTaskResponse
 }
 var file_liaison_proto_depIdxs = []int32{
 	0,  // 0: Edges.edges:type_name -> Edge
@@ -2646,41 +2978,46 @@ var file_liaison_proto_depIdxs = []int32{
 	30, // 13: ListProxiesResponse.data:type_name -> Proxies
 	29, // 14: CreateProxyResponse.data:type_name -> Proxy
 	29, // 15: UpdateProxyResponse.data:type_name -> Proxy
-	3,  // 16: LiaisonService.CreateEdge:input_type -> CreateEdgeRequest
-	5,  // 17: LiaisonService.GetEdge:input_type -> GetEdgeRequest
-	7,  // 18: LiaisonService.ListEdges:input_type -> ListEdgesRequest
-	9,  // 19: LiaisonService.UpdateEdge:input_type -> UpdateEdgeRequest
-	11, // 20: LiaisonService.DeleteEdge:input_type -> DeleteEdgeRequest
-	17, // 21: LiaisonService.ListDevices:input_type -> ListDevicesRequest
-	19, // 22: LiaisonService.UpdateDevice:input_type -> UpdateDeviceRequest
-	15, // 23: LiaisonService.GetDevice:input_type -> GetDeviceRequest
-	23, // 24: LiaisonService.ListApplications:input_type -> ListApplicationsRequest
-	25, // 25: LiaisonService.UpdateApplication:input_type -> UpdateApplicationRequest
-	27, // 26: LiaisonService.DeleteApplication:input_type -> DeleteApplicationRequest
-	31, // 27: LiaisonService.ListProxies:input_type -> ListProxiesRequest
-	33, // 28: LiaisonService.CreateProxy:input_type -> CreateProxyRequest
-	35, // 29: LiaisonService.UpdateProxy:input_type -> UpdateProxyRequest
-	37, // 30: LiaisonService.DeleteProxy:input_type -> DeleteProxyRequest
-	4,  // 31: LiaisonService.CreateEdge:output_type -> CreateEdgeResponse
-	6,  // 32: LiaisonService.GetEdge:output_type -> GetEdgeResponse
-	8,  // 33: LiaisonService.ListEdges:output_type -> ListEdgesResponse
-	10, // 34: LiaisonService.UpdateEdge:output_type -> UpdateEdgeResponse
-	12, // 35: LiaisonService.DeleteEdge:output_type -> DeleteEdgeResponse
-	18, // 36: LiaisonService.ListDevices:output_type -> ListDevicesResponse
-	20, // 37: LiaisonService.UpdateDevice:output_type -> UpdateDeviceResponse
-	16, // 38: LiaisonService.GetDevice:output_type -> GetDeviceResponse
-	24, // 39: LiaisonService.ListApplications:output_type -> ListApplicationsResponse
-	26, // 40: LiaisonService.UpdateApplication:output_type -> UpdateApplicationResponse
-	28, // 41: LiaisonService.DeleteApplication:output_type -> DeleteApplicationResponse
-	32, // 42: LiaisonService.ListProxies:output_type -> ListProxiesResponse
-	34, // 43: LiaisonService.CreateProxy:output_type -> CreateProxyResponse
-	36, // 44: LiaisonService.UpdateProxy:output_type -> UpdateProxyResponse
-	38, // 45: LiaisonService.DeleteProxy:output_type -> DeleteProxyResponse
-	31, // [31:46] is the sub-list for method output_type
-	16, // [16:31] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	39, // 16: GetEdgeScanApplicationTaskResponse.data:type_name -> EdgeScanApplicationTask
+	3,  // 17: LiaisonService.CreateEdge:input_type -> CreateEdgeRequest
+	5,  // 18: LiaisonService.GetEdge:input_type -> GetEdgeRequest
+	7,  // 19: LiaisonService.ListEdges:input_type -> ListEdgesRequest
+	9,  // 20: LiaisonService.UpdateEdge:input_type -> UpdateEdgeRequest
+	11, // 21: LiaisonService.DeleteEdge:input_type -> DeleteEdgeRequest
+	17, // 22: LiaisonService.ListDevices:input_type -> ListDevicesRequest
+	19, // 23: LiaisonService.UpdateDevice:input_type -> UpdateDeviceRequest
+	15, // 24: LiaisonService.GetDevice:input_type -> GetDeviceRequest
+	23, // 25: LiaisonService.ListApplications:input_type -> ListApplicationsRequest
+	25, // 26: LiaisonService.UpdateApplication:input_type -> UpdateApplicationRequest
+	27, // 27: LiaisonService.DeleteApplication:input_type -> DeleteApplicationRequest
+	31, // 28: LiaisonService.ListProxies:input_type -> ListProxiesRequest
+	33, // 29: LiaisonService.CreateProxy:input_type -> CreateProxyRequest
+	35, // 30: LiaisonService.UpdateProxy:input_type -> UpdateProxyRequest
+	37, // 31: LiaisonService.DeleteProxy:input_type -> DeleteProxyRequest
+	40, // 32: LiaisonService.CreateEdgeScanApplicationTask:input_type -> CreateEdgeScanApplicationTaskRequest
+	42, // 33: LiaisonService.GetEdgeScanApplicationTask:input_type -> GetEdgeScanApplicationTaskRequest
+	4,  // 34: LiaisonService.CreateEdge:output_type -> CreateEdgeResponse
+	6,  // 35: LiaisonService.GetEdge:output_type -> GetEdgeResponse
+	8,  // 36: LiaisonService.ListEdges:output_type -> ListEdgesResponse
+	10, // 37: LiaisonService.UpdateEdge:output_type -> UpdateEdgeResponse
+	12, // 38: LiaisonService.DeleteEdge:output_type -> DeleteEdgeResponse
+	18, // 39: LiaisonService.ListDevices:output_type -> ListDevicesResponse
+	20, // 40: LiaisonService.UpdateDevice:output_type -> UpdateDeviceResponse
+	16, // 41: LiaisonService.GetDevice:output_type -> GetDeviceResponse
+	24, // 42: LiaisonService.ListApplications:output_type -> ListApplicationsResponse
+	26, // 43: LiaisonService.UpdateApplication:output_type -> UpdateApplicationResponse
+	28, // 44: LiaisonService.DeleteApplication:output_type -> DeleteApplicationResponse
+	32, // 45: LiaisonService.ListProxies:output_type -> ListProxiesResponse
+	34, // 46: LiaisonService.CreateProxy:output_type -> CreateProxyResponse
+	36, // 47: LiaisonService.UpdateProxy:output_type -> UpdateProxyResponse
+	38, // 48: LiaisonService.DeleteProxy:output_type -> DeleteProxyResponse
+	41, // 49: LiaisonService.CreateEdgeScanApplicationTask:output_type -> CreateEdgeScanApplicationTaskResponse
+	43, // 50: LiaisonService.GetEdgeScanApplicationTask:output_type -> GetEdgeScanApplicationTaskResponse
+	34, // [34:51] is the sub-list for method output_type
+	17, // [17:34] is the sub-list for method input_type
+	17, // [17:17] is the sub-list for extension type_name
+	17, // [17:17] is the sub-list for extension extendee
+	0,  // [0:17] is the sub-list for field type_name
 }
 
 func init() { file_liaison_proto_init() }
@@ -2694,7 +3031,7 @@ func file_liaison_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_liaison_proto_rawDesc), len(file_liaison_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   39,
+			NumMessages:   44,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

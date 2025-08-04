@@ -20,12 +20,14 @@ var _ = binding.EncodeURL
 const _ = http.SupportPackageIsVersion1
 
 const OperationLiaisonServiceCreateEdge = "/LiaisonService/CreateEdge"
+const OperationLiaisonServiceCreateEdgeScanApplicationTask = "/LiaisonService/CreateEdgeScanApplicationTask"
 const OperationLiaisonServiceCreateProxy = "/LiaisonService/CreateProxy"
 const OperationLiaisonServiceDeleteApplication = "/LiaisonService/DeleteApplication"
 const OperationLiaisonServiceDeleteEdge = "/LiaisonService/DeleteEdge"
 const OperationLiaisonServiceDeleteProxy = "/LiaisonService/DeleteProxy"
 const OperationLiaisonServiceGetDevice = "/LiaisonService/GetDevice"
 const OperationLiaisonServiceGetEdge = "/LiaisonService/GetEdge"
+const OperationLiaisonServiceGetEdgeScanApplicationTask = "/LiaisonService/GetEdgeScanApplicationTask"
 const OperationLiaisonServiceListApplications = "/LiaisonService/ListApplications"
 const OperationLiaisonServiceListDevices = "/LiaisonService/ListDevices"
 const OperationLiaisonServiceListEdges = "/LiaisonService/ListEdges"
@@ -38,12 +40,15 @@ const OperationLiaisonServiceUpdateProxy = "/LiaisonService/UpdateProxy"
 type LiaisonServiceHTTPServer interface {
 	// CreateEdge 边缘
 	CreateEdge(context.Context, *CreateEdgeRequest) (*CreateEdgeResponse, error)
+	// CreateEdgeScanApplicationTask 任务
+	CreateEdgeScanApplicationTask(context.Context, *CreateEdgeScanApplicationTaskRequest) (*CreateEdgeScanApplicationTaskResponse, error)
 	CreateProxy(context.Context, *CreateProxyRequest) (*CreateProxyResponse, error)
 	DeleteApplication(context.Context, *DeleteApplicationRequest) (*DeleteApplicationResponse, error)
 	DeleteEdge(context.Context, *DeleteEdgeRequest) (*DeleteEdgeResponse, error)
 	DeleteProxy(context.Context, *DeleteProxyRequest) (*DeleteProxyResponse, error)
 	GetDevice(context.Context, *GetDeviceRequest) (*GetDeviceResponse, error)
 	GetEdge(context.Context, *GetEdgeRequest) (*GetEdgeResponse, error)
+	GetEdgeScanApplicationTask(context.Context, *GetEdgeScanApplicationTaskRequest) (*GetEdgeScanApplicationTaskResponse, error)
 	// ListApplications 应用
 	ListApplications(context.Context, *ListApplicationsRequest) (*ListApplicationsResponse, error)
 	// ListDevices 设备
@@ -74,6 +79,8 @@ func RegisterLiaisonServiceHTTPServer(s *http.Server, srv LiaisonServiceHTTPServ
 	r.POST("/v1/proxies", _LiaisonService_CreateProxy0_HTTP_Handler(srv))
 	r.PUT("/v1/proxies/{id}", _LiaisonService_UpdateProxy0_HTTP_Handler(srv))
 	r.DELETE("/v1/proxies/{id}", _LiaisonService_DeleteProxy0_HTTP_Handler(srv))
+	r.POST("/v1/edges/{edge_id}/scan_application_tasks", _LiaisonService_CreateEdgeScanApplicationTask0_HTTP_Handler(srv))
+	r.GET("/v1/edges/{edge_id}/scan_application_tasks", _LiaisonService_GetEdgeScanApplicationTask0_HTTP_Handler(srv))
 }
 
 func _LiaisonService_CreateEdge0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
@@ -406,14 +413,63 @@ func _LiaisonService_DeleteProxy0_HTTP_Handler(srv LiaisonServiceHTTPServer) fun
 	}
 }
 
+func _LiaisonService_CreateEdgeScanApplicationTask0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in CreateEdgeScanApplicationTaskRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationLiaisonServiceCreateEdgeScanApplicationTask)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.CreateEdgeScanApplicationTask(ctx, req.(*CreateEdgeScanApplicationTaskRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*CreateEdgeScanApplicationTaskResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _LiaisonService_GetEdgeScanApplicationTask0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetEdgeScanApplicationTaskRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationLiaisonServiceGetEdgeScanApplicationTask)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetEdgeScanApplicationTask(ctx, req.(*GetEdgeScanApplicationTaskRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetEdgeScanApplicationTaskResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
 type LiaisonServiceHTTPClient interface {
 	CreateEdge(ctx context.Context, req *CreateEdgeRequest, opts ...http.CallOption) (rsp *CreateEdgeResponse, err error)
+	CreateEdgeScanApplicationTask(ctx context.Context, req *CreateEdgeScanApplicationTaskRequest, opts ...http.CallOption) (rsp *CreateEdgeScanApplicationTaskResponse, err error)
 	CreateProxy(ctx context.Context, req *CreateProxyRequest, opts ...http.CallOption) (rsp *CreateProxyResponse, err error)
 	DeleteApplication(ctx context.Context, req *DeleteApplicationRequest, opts ...http.CallOption) (rsp *DeleteApplicationResponse, err error)
 	DeleteEdge(ctx context.Context, req *DeleteEdgeRequest, opts ...http.CallOption) (rsp *DeleteEdgeResponse, err error)
 	DeleteProxy(ctx context.Context, req *DeleteProxyRequest, opts ...http.CallOption) (rsp *DeleteProxyResponse, err error)
 	GetDevice(ctx context.Context, req *GetDeviceRequest, opts ...http.CallOption) (rsp *GetDeviceResponse, err error)
 	GetEdge(ctx context.Context, req *GetEdgeRequest, opts ...http.CallOption) (rsp *GetEdgeResponse, err error)
+	GetEdgeScanApplicationTask(ctx context.Context, req *GetEdgeScanApplicationTaskRequest, opts ...http.CallOption) (rsp *GetEdgeScanApplicationTaskResponse, err error)
 	ListApplications(ctx context.Context, req *ListApplicationsRequest, opts ...http.CallOption) (rsp *ListApplicationsResponse, err error)
 	ListDevices(ctx context.Context, req *ListDevicesRequest, opts ...http.CallOption) (rsp *ListDevicesResponse, err error)
 	ListEdges(ctx context.Context, req *ListEdgesRequest, opts ...http.CallOption) (rsp *ListEdgesResponse, err error)
@@ -437,6 +493,19 @@ func (c *LiaisonServiceHTTPClientImpl) CreateEdge(ctx context.Context, in *Creat
 	pattern := "/v1/edges"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationLiaisonServiceCreateEdge))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *LiaisonServiceHTTPClientImpl) CreateEdgeScanApplicationTask(ctx context.Context, in *CreateEdgeScanApplicationTaskRequest, opts ...http.CallOption) (*CreateEdgeScanApplicationTaskResponse, error) {
+	var out CreateEdgeScanApplicationTaskResponse
+	pattern := "/v1/edges/{edge_id}/scan_application_tasks"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationLiaisonServiceCreateEdgeScanApplicationTask))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
@@ -515,6 +584,19 @@ func (c *LiaisonServiceHTTPClientImpl) GetEdge(ctx context.Context, in *GetEdgeR
 	pattern := "/v1/edges/{id}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationLiaisonServiceGetEdge))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *LiaisonServiceHTTPClientImpl) GetEdgeScanApplicationTask(ctx context.Context, in *GetEdgeScanApplicationTaskRequest, opts ...http.CallOption) (*GetEdgeScanApplicationTaskResponse, error) {
+	var out GetEdgeScanApplicationTaskResponse
+	pattern := "/v1/edges/{edge_id}/scan_application_tasks"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationLiaisonServiceGetEdgeScanApplicationTask))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {

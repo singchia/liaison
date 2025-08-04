@@ -1,10 +1,12 @@
 module github.com/singchia/liaison
 
-go 1.22.3
+go 1.22
 
 require (
 	github.com/go-kratos/kratos/v2 v2.7.2
 	github.com/pion/transport/v2 v2.2.10
+	github.com/singchia/frontier v1.1.0
+	github.com/singchia/geminio v1.1.7-rc.1
 	github.com/swaggo/swag v1.16.5
 	google.golang.org/genproto/googleapis/api v0.0.0-20240304212257-790db918fca8
 	google.golang.org/grpc v1.62.1
@@ -18,6 +20,7 @@ require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
+	github.com/deckarep/golang-set/v2 v2.6.0 // indirect
 	github.com/go-kratos/aegis v0.2.0 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
@@ -31,10 +34,13 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
+	github.com/jumboframes/armorigo v0.4.1 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/mattn/go-sqlite3 v1.14.17 // indirect
 	github.com/pion/logging v0.2.2 // indirect
 	github.com/pion/transport/v3 v3.0.7 // indirect
+	github.com/singchia/go-timer/v2 v2.2.1 // indirect
+	github.com/singchia/yafsm v1.0.1 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
 	golang.org/x/mod v0.17.0 // indirect
 	golang.org/x/net v0.34.0 // indirect

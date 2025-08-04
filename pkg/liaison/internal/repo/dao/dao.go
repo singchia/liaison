@@ -2,6 +2,7 @@ package dao
 
 import (
 	"sync"
+	"time"
 
 	"github.com/singchia/liaison/pkg/liaison/internal/config"
 	"github.com/singchia/liaison/pkg/liaison/internal/repo/model"
@@ -18,10 +19,14 @@ type Dao interface {
 
 	// Edge 相关方法
 	GetEdge(id uint64) (*model.Edge, error)
+	GetEdgeByAccessKey(accessKey string) (*model.AccessKey, *model.Edge, error)
 	CreateEdge(edge *model.Edge) error
 	GetEdgeByDeviceID(deviceID uint) (*model.Edge, error)
 	ListEdges(page, pageSize int) ([]*model.Edge, error)
 	UpdateEdge(edge *model.Edge) error
+	UpdateEdgeOnlineStatus(edgeID uint64, onlineStatus model.EdgeOnlineStatus) error
+	UpdateEdgeHeartbeatAt(edgeID uint64, heartbeatAt time.Time) error
+	UpdateEdgeDeviceID(edgeID uint64, deviceID uint) error
 	DeleteEdge(id uint64) error
 
 	// AccessKey 相关方法
@@ -30,15 +35,31 @@ type Dao interface {
 
 	// Device 相关方法
 	CreateDevice(device *model.Device) error
+	CreateEthernetInterface(iface *model.EthernetInterface) error
 	GetDeviceByID(id uint) (*model.Device, error)
 	ListDevices(page, pageSize int) ([]*model.Device, error)
 	UpdateDevice(device *model.Device) error
+	UpdateDeviceUsage(deviceID uint, cpuUsage, memoryUsage, diskUsage float32) error
 
 	// Application 相关方法
 	CreateApplication(application *model.Application) error
 	GetApplicationByID(id uint) (*model.Application, error)
 	ListApplications(query *ListApplicationsQuery) ([]*model.Application, error)
 	UpdateApplication(application *model.Application) error
+	DeleteApplication(id uint) error
+
+	// Proxy 相关方法
+	CreateProxy(proxy *model.Proxy) error
+	GetProxyByID(id uint) (*model.Proxy, error)
+	ListProxies(page, pageSize int) ([]*model.Proxy, error)
+	UpdateProxy(proxy *model.Proxy) error
+	DeleteProxy(id uint) error
+
+	// Task 相关方法
+	CreateTask(task *model.Task) error
+	UpdateTaskStatus(taskID uint, status model.TaskStatus) error
+	UpdateTaskResult(taskID uint, result []byte) error
+	UpdateTaskError(taskID uint, error string) error
 
 	// 资源清理
 	Close() error
