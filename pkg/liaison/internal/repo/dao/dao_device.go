@@ -19,6 +19,9 @@ func (d *dao) GetDeviceByID(id uint) (*model.Device, error) {
 	if err := d.getDB().Where("id = ?", id).First(&device).Error; err != nil {
 		return nil, err
 	}
+	if err := d.getDB().Where("device_id = ?", id).Find(&device.Interfaces).Error; err != nil {
+		return nil, err
+	}
 	return &device, nil
 }
 

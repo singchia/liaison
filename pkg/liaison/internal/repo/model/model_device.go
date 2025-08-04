@@ -27,8 +27,9 @@ type Device struct {
 	Online      DeviceOnlineStatus `gorm:"column:online;type:int;not null"`
 	HeartbeatAt time.Time          `gorm:"column:heartbeat_at;type:datetime;not null"`
 	// device info
-	CPU    int `gorm:"column:cpu;type:int;not null"`
-	Memory int `gorm:"column:memory;type:int;not null"`
+	CPU        int                 `gorm:"column:cpu;type:int;not null"`
+	Memory     int                 `gorm:"column:memory;type:int;not null"`
+	Interfaces []EthernetInterface `gorm:"-"`
 	//Disk      int    `gorm:"column:disk;type:int;not null"`
 	OS        string `gorm:"column:os;type:varchar(255);not null"`
 	OSVersion string `gorm:"column:os_version;type:varchar(255);not null"`

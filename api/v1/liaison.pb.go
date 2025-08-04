@@ -2486,6 +2486,8 @@ func (x *EdgeScanApplicationTask) GetError() string {
 type CreateEdgeScanApplicationTaskRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	EdgeId        uint64                 `protobuf:"varint,1,opt,name=edge_id,json=edgeId,proto3" json:"edge_id,omitempty"`
+	Protocol      string                 `protobuf:"bytes,2,opt,name=protocol,proto3" json:"protocol,omitempty"`
+	Port          int32                  `protobuf:"varint,3,opt,name=port,proto3" json:"port,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2523,6 +2525,20 @@ func (*CreateEdgeScanApplicationTaskRequest) Descriptor() ([]byte, []int) {
 func (x *CreateEdgeScanApplicationTaskRequest) GetEdgeId() uint64 {
 	if x != nil {
 		return x.EdgeId
+	}
+	return 0
+}
+
+func (x *CreateEdgeScanApplicationTaskRequest) GetProtocol() string {
+	if x != nil {
+		return x.Protocol
+	}
+	return ""
+}
+
+func (x *CreateEdgeScanApplicationTaskRequest) GetPort() int32 {
+	if x != nil {
+		return x.Port
 	}
 	return 0
 }
@@ -2868,9 +2884,11 @@ const file_liaison_proto_rawDesc = "" +
 	"\n" +
 	"updated_at\x18\x05 \x01(\tR\tupdatedAt\x12\"\n" +
 	"\fapplications\x18\x06 \x03(\tR\fapplications\x12\x14\n" +
-	"\x05error\x18\a \x01(\tR\x05error\"?\n" +
+	"\x05error\x18\a \x01(\tR\x05error\"o\n" +
 	"$CreateEdgeScanApplicationTaskRequest\x12\x17\n" +
-	"\aedge_id\x18\x01 \x01(\x04R\x06edgeId\"U\n" +
+	"\aedge_id\x18\x01 \x01(\x04R\x06edgeId\x12\x1a\n" +
+	"\bprotocol\x18\x02 \x01(\tR\bprotocol\x12\x12\n" +
+	"\x04port\x18\x03 \x01(\x05R\x04port\"U\n" +
 	"%CreateEdgeScanApplicationTaskResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\"<\n" +
