@@ -46,12 +46,11 @@ type TaskScanApplicationParams struct {
 }
 
 type ScannedApplication struct {
-	Network  string `json:"network"`
 	IP       string `json:"ip"`
 	Port     int    `json:"port"`
 	Protocol string `json:"protocol"`
 }
 
 type TaskScanApplicationResult struct {
-	Applications []ScannedApplication `json:"applications"`
+	ScannedApplications []ScannedApplication `json:"scanned_applications"`
 }

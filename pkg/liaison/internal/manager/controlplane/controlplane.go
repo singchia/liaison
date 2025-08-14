@@ -4,6 +4,7 @@ import (
 	"context"
 
 	v1 "github.com/singchia/liaison/api/v1"
+	"github.com/singchia/liaison/pkg/liaison/internal/manager/frontierbound"
 	"github.com/singchia/liaison/pkg/liaison/internal/repo"
 )
 
@@ -26,8 +27,12 @@ type ControlPlane interface {
 	CreateProxy(ctx context.Context, req *v1.CreateProxyRequest) (*v1.CreateProxyResponse, error)
 	UpdateProxy(ctx context.Context, req *v1.UpdateProxyRequest) (*v1.UpdateProxyResponse, error)
 	DeleteProxy(ctx context.Context, req *v1.DeleteProxyRequest) (*v1.DeleteProxyResponse, error)
+
+	CreateEdgeScanApplicationTask(ctx context.Context, req *v1.CreateEdgeScanApplicationTaskRequest) (*v1.CreateEdgeScanApplicationTaskResponse, error)
+	GetEdgeScanApplicationTask(ctx context.Context, req *v1.GetEdgeScanApplicationTaskRequest) (*v1.GetEdgeScanApplicationTaskResponse, error)
 }
 
 type controlPlane struct {
-	repo repo.Repo
+	repo          repo.Repo
+	frontierBound frontierbound.FrontierBound
 }

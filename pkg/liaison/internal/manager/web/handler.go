@@ -154,3 +154,23 @@ func (web *web) UpdateProxy(ctx context.Context, req *v1.UpdateProxyRequest) (*v
 func (web *web) DeleteProxy(ctx context.Context, req *v1.DeleteProxyRequest) (*v1.DeleteProxyResponse, error) {
 	return web.controlPlane.DeleteProxy(ctx, req)
 }
+
+//-- Task --//
+
+// @Summary CreateEdgeScanApplicationTask
+// @Tags 1.0
+// @Param params query v1.CreateEdgeScanApplicationTaskRequest true "queries"
+// @Success 200 {object} v1.CreateEdgeScanApplicationTaskResponse
+// @Router /api/v1/edges/{edge_id}/scan_application_tasks [post]
+func (web *web) CreateEdgeScanApplicationTask(ctx context.Context, req *v1.CreateEdgeScanApplicationTaskRequest) (*v1.CreateEdgeScanApplicationTaskResponse, error) {
+	return web.controlPlane.CreateEdgeScanApplicationTask(ctx, req)
+}
+
+// @Summary GetEdgeScanApplicationTask
+// @Tags 1.0
+// @Param params query v1.GetEdgeScanApplicationTaskRequest true "queries"
+// @Success 200 {object} v1.GetEdgeScanApplicationTaskResponse
+// @Router /api/v1/edges/{edge_id}/scan_application_tasks [get]
+func (web *web) GetEdgeScanApplicationTask(ctx context.Context, req *v1.GetEdgeScanApplicationTaskRequest) (*v1.GetEdgeScanApplicationTaskResponse, error) {
+	return web.controlPlane.GetEdgeScanApplicationTask(ctx, req)
+}

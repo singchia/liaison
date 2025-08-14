@@ -10,6 +10,7 @@ import (
 )
 
 type FrontierBound interface {
+	EmitScanApplications(ctx context.Context, taskID uint, edgeID uint64, net *Net) error
 }
 
 type frontierBound struct {
@@ -55,7 +56,7 @@ func NewFrontierBound(conf *config.Configuration, repo repo.Repo) (FrontierBound
 	if err != nil {
 		return nil, err
 	}
-	err = svc.Register(context.Background(), "report_task", fb.reportTask)
+	err = svc.Register(context.Background(), "report_task_scan_application", fb.reportTaskScanApplication)
 	if err != nil {
 		return nil, err
 	}

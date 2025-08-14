@@ -5,10 +5,13 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"fmt"
+	"net"
 	"time"
 
 	v1 "github.com/singchia/liaison/api/v1"
+	"github.com/singchia/liaison/pkg/liaison/internal/manager/frontierbound"
 	"github.com/singchia/liaison/pkg/liaison/internal/repo/model"
 )
 
@@ -120,11 +123,57 @@ func (cp *controlPlane) DeleteEdge(_ context.Context, req *v1.DeleteEdgeRequest)
 }
 
 func (cp *controlPlane) CreateEdgeScanApplicationTask(_ context.Context, req *v1.CreateEdgeScanApplicationTaskRequest) (*v1.CreateEdgeScanApplicationTaskResponse, error) {
+	// 获取edge
+	edge, err := cp.repo.GetEdge(req.EdgeId)
+	if err != nil {
+		return nil, err
+	}
+	if edge.Online != model.EdgeOnlineStatusOnline {
+		return nil, errors.New("edge is not online")
+	}
 
+	// 获取设备
+	device, err := cp.repo.GetDeviceByID(uint(edge.DeviceID))
+	if err != nil {
+		return nil, err
+	}
+	nets := []string{}
+	for _, iface := range device.Interfaces {
+		// 获取IP地址所在网段
+		ip := net.ParseIP(iface.IP)
+		if ip == nil {
+			continue
+		}
+		nets = append(nets, fmt.Sprintf("%s/%s", ip.Mask(net.IPMask(iface.Netmask)), iface.Netmask))
+	}
+
+	// 创建任务
+	task := &model.Task{
+		EdgeID:      req.EdgeId,
+		TaskType:    model.TaskTypeScan,
+		TaskSubType: model.TaskSubTypeScanApplication,
+		TaskStatus:  model.TaskStatusPending,
+	}
+	err = cp.repo.CreateTask(task)
+	if err != nil {
+		return nil, err
+	}
+
+	// 下发扫描任务
+	cp.frontierBound.EmitScanApplications(context.Background(), task.ID, req.EdgeId, &frontierbound.Net{
+		Nets:     nets,
+		Protocol: req.Protocol,
+		Port:     int(req.Port),
+	})
+
+	return &v1.CreateEdgeScanApplicationTaskResponse{
+		Code:    200,
+		Message: "success",
+	}, nil
 }
 
 func (cp *controlPlane) GetEdgeScanApplicationTask(_ context.Context, req *v1.GetEdgeScanApplicationTaskRequest) (*v1.GetEdgeScanApplicationTaskResponse, error) {
-
+	return nil, nil
 }
 
 func transformEdges(edges []*model.Edge) []*v1.Edge {

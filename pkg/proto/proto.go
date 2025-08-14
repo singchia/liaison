@@ -5,6 +5,7 @@ type Meta struct {
 	SecretKey string `json:"secret_key"`
 }
 
+// device
 type Device struct {
 	Fingerprint string                    `json:"fingerprint"`
 	HostName    string                    `json:"host_name"`
@@ -32,8 +33,23 @@ type DeviceUsage struct {
 	DiskUsage   float32 `json:"disk_usage"`
 }
 
-type Task struct {
-	ID         uint   `json:"id"`
-	TaskResult []byte `json:"task_result"`
-	Error      string `json:"error"`
+// task
+type ScanApplicationTaskRequest struct {
+	TaskID   uint     `json:"task_id"`
+	Nets     []string `json:"nets"`
+	Port     int      `json:"port"`
+	Protocol string   `json:"protocol"`
+}
+
+type ScannedApplication struct {
+	IP       string `json:"ip"`
+	Port     int    `json:"port"`
+	Protocol string `json:"protocol"`
+}
+
+type ScanApplicationTaskResult struct {
+	TaskID              uint                 `json:"task_id"`
+	ScannedApplications []ScannedApplication `json:"scanned_applications"`
+	Error               string               `json:"error"`
+	Status              string               `json:"status"` // running, completed, failed
 }

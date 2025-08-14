@@ -10,10 +10,10 @@ func (d *dao) UpdateTaskStatus(taskID uint, status model.TaskStatus) error {
 	return d.getDB().Model(&model.Task{}).Where("id = ?", taskID).Update("task_status", status).Error
 }
 
-func (d *dao) UpdateTaskResult(taskID uint, result []byte) error {
+func (d *dao) UpdateTaskResult(taskID uint, status model.TaskStatus, result []byte) error {
 	return d.getDB().Model(&model.Task{}).Where("id = ?", taskID).Updates(map[string]interface{}{
 		"task_result": result,
-		"task_status": model.TaskStatusCompleted,
+		"task_status": status,
 	}).Error
 }
 
