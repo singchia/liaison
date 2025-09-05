@@ -1,19 +1,22 @@
-package internal
+package scanner
 
 import (
 	"context"
 	"encoding/json"
 
 	"github.com/singchia/geminio"
+	"github.com/singchia/liaison/pkg/edge/frontierbound"
 	"github.com/singchia/liaison/pkg/proto"
 	"github.com/sirupsen/logrus"
 )
 
+type Scanner interface{}
+
 type scanner struct {
-	frontierBound FrontierBound
+	frontierBound frontierbound.FrontierBound
 }
 
-func NewScanner(frontierBound FrontierBound) (*scanner, error) {
+func NewScanner(frontierBound frontierbound.FrontierBound) (Scanner, error) {
 
 	s := &scanner{
 		frontierBound: frontierBound,
@@ -38,4 +41,8 @@ func (s *scanner) scan(ctx context.Context, req geminio.Request, rsp geminio.Res
 	}
 
 	// 开始扫描
+}
+
+func (s *scanner) Close() error {
+	return nil
 }

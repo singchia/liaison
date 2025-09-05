@@ -79,6 +79,8 @@ github.com/singchia/frontier v1.1.0 h1:X3WYG8/zfyzHs1Dc8x0W2EK44GAJGZnSI+wGxbRUK
 github.com/singchia/frontier v1.1.0/go.mod h1:pcwPupbL9ae4xnF9aAxqoVdjMElB4RIp1ECt8O6G+WM=
 github.com/singchia/geminio v1.1.7-rc.1 h1:JZxEOHqN1oUt/RnJtzff37Iap8pOmgr1zXM7B5ZUHLo=
 github.com/singchia/geminio v1.1.7-rc.1/go.mod h1:LkgZj4Ddja97vP7NWQk7TffFLZAosHe/PZtyW8vnFBQ=
+github.com/singchia/go-hammer v0.0.2-0.20220516141917-9d83fc02d653 h1:gG/deqGKj9NPQuNYjc2Xq/F8ye//d4tD2hteVxNe/sw=
+github.com/singchia/go-hammer v0.0.2-0.20220516141917-9d83fc02d653/go.mod h1:ZnHQPGlM+VoTnPOBBD6bU11dOsxebJflOohewlfLpA8=
 github.com/singchia/go-timer/v2 v2.0.3/go.mod h1:PgkEQc6io8slCUiT5rHzWKU4/P2HXHWk3WWfijZXAf4=
 github.com/singchia/go-timer/v2 v2.2.1 h1:gJucmL99fkuNzGk2AfNPFpa1X3/4+aGO21KkjFAG624=
 github.com/singchia/go-timer/v2 v2.2.1/go.mod h1:PgkEQc6io8slCUiT5rHzWKU4/P2HXHWk3WWfijZXAf4=
@@ -171,6 +173,8 @@ gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127/go.mod h1:Co6ibVJAznAaIkqp8
 gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c h1:Hei/4ADfdWqJk1ZMxUNpqntNwaWcugrBjAiHlqqRiVk=
 gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c/go.mod h1:JHkPIbrfpd72SG/EVd6muEfDQjcINNoR0C8j2r3qZ4Q=
+gopkg.in/natefinch/lumberjack.v2 v2.2.1 h1:bBRl1b0OH9s/DuPhuXpNl+VtCaJXFZ5/uEFST95x9zc=
+gopkg.in/natefinch/lumberjack.v2 v2.2.1/go.mod h1:YD8tP3GAjkrDg1eZH7EGmyESg/lsYskCTPBJVb9jqSc=
 gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
 gopkg.in/yaml.v2 v2.4.0 h1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=
 gopkg.in/yaml.v2 v2.4.0/go.mod h1:RDklbk79AGWmwhnvt/jBztapEOGDOx6ZbXqjP6csGnQ=

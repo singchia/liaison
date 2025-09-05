@@ -1,5 +1,7 @@
 include ./Makefile.defs
 
+all: liaison-edge
+
 .PHONY: image-gen-swagger
 image-gen-swagger:
 	docker buildx build -t liaison-gen-swagger:${VERSION} -f images/Dockerfile.liaison-swagger .
@@ -7,6 +9,11 @@ image-gen-swagger:
 .PHONY: image-gen-api
 image-gen-api:
 	docker buildx build -t image-gen-api:${VERSION} -f images/Dockerfile.liaison-api .
+
+# binary
+.PHONY: liaison-edge
+liaison-edge:
+	go build -trimpath -ldflags "-s -w" -o ./bin/liaison-edge cmd/edge/main.go
 
 # api
 .PHONY: gen-api

@@ -1,4 +1,4 @@
-package internal
+package frontierbound
 
 import (
 	"context"
@@ -17,12 +17,15 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// FrontierBound 处于依赖链的最低端，负责与frontier通信
 type FrontierBound interface {
 	// RPC
 	RegisterRPCHandler(name string, f func(ctx context.Context, req geminio.Request, rsp geminio.Response)) error
 	Call(ctx context.Context, name string, req geminio.Request) (geminio.Response, error)
 	// Stream
 	RegisterStreamHandler(handler func(ctx context.Context, stream geminio.Stream))
+	// Close
+	Close() error
 }
 
 type frontierBound struct {
@@ -116,4 +119,8 @@ func (fb *frontierBound) loopAccept(ctx context.Context) {
 		}
 		go handler(ctx, stream)
 	}
+}
+
+func (fb *frontierBound) Close() error {
+	return fb.end.Close()
 }
