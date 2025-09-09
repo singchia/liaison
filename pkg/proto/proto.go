@@ -53,3 +53,7 @@ type ScanApplicationTaskResult struct {
 	Error               string               `json:"error"`
 	Status              string               `json:"status"` // running, completed, failed
 }
+
+type Dst struct {
+	Addr string `json:"addr"`
+}
