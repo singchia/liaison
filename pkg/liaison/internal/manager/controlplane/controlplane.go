@@ -30,9 +30,14 @@ type ControlPlane interface {
 
 	CreateEdgeScanApplicationTask(ctx context.Context, req *v1.CreateEdgeScanApplicationTaskRequest) (*v1.CreateEdgeScanApplicationTaskResponse, error)
 	GetEdgeScanApplicationTask(ctx context.Context, req *v1.GetEdgeScanApplicationTaskRequest) (*v1.GetEdgeScanApplicationTaskResponse, error)
+
+	RegisterProxyManager(proxyManager ProxyManager)
 }
 
 type controlPlane struct {
 	repo          repo.Repo
 	frontierBound frontierbound.FrontierBound
+
+	// deps
+	proxyManager ProxyManager
 }

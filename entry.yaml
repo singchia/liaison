@@ -1,0 +1,4 @@
+manager:
+  addr: "localhost:8080"
+  access_key: "default_access_key"
+  secret_key: "default_secret_key"

@@ -8,6 +8,23 @@ import (
 	"github.com/singchia/liaison/pkg/liaison/internal/repo/model"
 )
 
+// 一个Proxy是三元组
+type Proxy struct {
+	Name      string
+	ProxyPort int
+	IP        string
+	Port      string
+}
+
+type ProxyManager interface {
+	CreateProxy(ctx context.Context, proxy *Proxy) error
+	DeleteProxy(ctx context.Context, proxy *Proxy) error
+}
+
+func (cp *controlPlane) RegisterProxyManager(proxyManager ProxyManager) {
+	cp.proxyManager = proxyManager
+}
+
 func (cp *controlPlane) CreateProxy(_ context.Context, req *v1.CreateProxyRequest) (*v1.CreateProxyResponse, error) {
 	proxy := &model.Proxy{
 		Name: req.Name,
