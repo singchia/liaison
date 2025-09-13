@@ -31,6 +31,10 @@ func NewProxy(frontierBound frontierbound.FrontierBound) (Proxy, error) {
 }
 
 func (p *proxy) proxy(ctx context.Context, stream geminio.Stream) {
+	// 读取前4个字节获取meta长度
+	buf := make([]byte, 4)
+	stream.Read(buf)
+
 	meta := stream.Meta()
 	var dst proto.Dst
 	if err := json.Unmarshal(meta, &dst); err != nil {

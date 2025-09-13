@@ -2,10 +2,15 @@ package transport
 
 import (
 	"context"
+	"encoding/binary"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"sync"
 
+	"github.com/jumboframes/armorigo/rproxy"
+	"github.com/singchia/liaison/pkg/entry/frontierbound"
 	"github.com/singchia/liaison/pkg/lerrors"
 	"github.com/singchia/liaison/pkg/proto"
 	"github.com/sirupsen/logrus"
@@ -16,6 +21,11 @@ type Gatekeeper struct {
 	mu             sync.RWMutex
 	proxies        map[int]*proxy // id -> listener
 	proxiesIdxPort map[int]int    // port -> id
+
+	rp *rproxy.RProxy
+
+	// frontier
+	frontier frontierbound.FrontierBound
 }
 
 func NewGatekeeper() *Gatekeeper {
@@ -44,9 +54,64 @@ func (m *Gatekeeper) CreateProxy(protoproxy *proto.Proxy) error {
 		return lerrors.ErrPortConflict
 	}
 
-	// 启动新的监听器
-	m.startListener(protoproxy)
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", protoproxy.ProxyPort))
+	if err != nil {
+		logrus.Errorf("failed to listen on port %d: %s", protoproxy.ProxyPort, err)
+		return err
+	}
+	// hook 函数
+	postAccept := func(_ net.Addr, _ net.Addr) (custom interface{}, err error) {
+		pc := proxyContext{
+			edgeID: protoproxy.EdgeID,
+			dst:    protoproxy.Dst,
+		}
+		return &pc, nil
+	}
+	proxyDial := func(dst net.Addr, custom interface{}) (target net.Conn, err error) {
+		pc := custom.(*proxyContext)
+		return m.frontier.OpenStream(context.TODO(), pc.edgeID)
+	}
+	preWrite := func(writer io.Writer, custom interface{}) error {
+		pc := custom.(*proxyContext)
+		dst := proto.Dst{
+			Addr: pc.dst,
+		}
+		data, err := json.Marshal(dst)
+		if err != nil {
+			logrus.Errorf("failed to marshal dst: %s", err)
+			return err
+		}
+		buf := make([]byte, 4)
+		binary.BigEndian.PutUint32(buf, uint32(len(data)))
+		_, err = writer.Write(buf)
+		if err != nil {
+			logrus.Errorf("failed to write dst length: %s", err)
+			return err
+		}
+		_, err = writer.Write(data)
+		if err != nil {
+			logrus.Errorf("failed to write dst: %s", err)
+			return err
+		}
+		return nil
+	}
+
+	rp, err := rproxy.NewRProxy(listener,
+		rproxy.OptionRProxyPostAccept(postAccept),
+		rproxy.OptionRProxyDial(proxyDial),
+		rproxy.OptionRProxyPreWrite(preWrite))
+	if err != nil {
+		logrus.Errorf("failed to create rproxy: %s", err)
+		return err
+	}
+
+	go rp.Proxy(context.Background())
 	return nil
+}
+
+type proxyContext struct {
+	edgeID uint64
+	dst    string
 }
 
 func (m *Gatekeeper) DeleteProxy(protoproxy *proto.Proxy) error {
