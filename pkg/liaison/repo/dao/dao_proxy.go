@@ -1,6 +1,6 @@
 package dao
 
-import "github.com/singchia/liaison/pkg/liaison/internal/repo/model"
+import "github.com/singchia/liaison/pkg/liaison/repo/model"
 
 func (d *dao) CreateProxy(proxy *model.Proxy) error {
 	return d.getDB().Create(proxy).Error

@@ -11,8 +11,8 @@ import (
 	"time"
 
 	v1 "github.com/singchia/liaison/api/v1"
-	"github.com/singchia/liaison/pkg/liaison/internal/manager/frontierbound"
-	"github.com/singchia/liaison/pkg/liaison/internal/repo/model"
+	"github.com/singchia/liaison/pkg/liaison/manager/frontierbound"
+	"github.com/singchia/liaison/pkg/liaison/repo/model"
 )
 
 func (cp *controlPlane) CreateEdge(_ context.Context, req *v1.CreateEdgeRequest) (*v1.CreateEdgeResponse, error) {

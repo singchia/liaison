@@ -5,8 +5,8 @@ import (
 	"time"
 
 	v1 "github.com/singchia/liaison/api/v1"
-	"github.com/singchia/liaison/pkg/liaison/internal/repo/dao"
-	"github.com/singchia/liaison/pkg/liaison/internal/repo/model"
+	"github.com/singchia/liaison/pkg/liaison/repo/dao"
+	"github.com/singchia/liaison/pkg/liaison/repo/model"
 )
 
 func (cp *controlPlane) ListApplications(_ context.Context, req *v1.ListApplicationsRequest) (*v1.ListApplicationsResponse, error) {

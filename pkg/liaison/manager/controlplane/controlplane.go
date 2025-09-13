@@ -4,8 +4,9 @@ import (
 	"context"
 
 	v1 "github.com/singchia/liaison/api/v1"
-	"github.com/singchia/liaison/pkg/liaison/internal/manager/frontierbound"
-	"github.com/singchia/liaison/pkg/liaison/internal/repo"
+	"github.com/singchia/liaison/pkg/liaison/manager/frontierbound"
+	"github.com/singchia/liaison/pkg/liaison/repo"
+	"github.com/singchia/liaison/pkg/proto"
 )
 
 type ControlPlane interface {
@@ -31,7 +32,14 @@ type ControlPlane interface {
 	CreateEdgeScanApplicationTask(ctx context.Context, req *v1.CreateEdgeScanApplicationTaskRequest) (*v1.CreateEdgeScanApplicationTaskResponse, error)
 	GetEdgeScanApplicationTask(ctx context.Context, req *v1.GetEdgeScanApplicationTaskRequest) (*v1.GetEdgeScanApplicationTaskResponse, error)
 
-	RegisterProxyManager(proxyManager ProxyManager)
+	RegisterProxyManager(proxyManager proto.ProxyManager)
+}
+
+func NewControlPlane(repo repo.Repo, frontierBound frontierbound.FrontierBound) ControlPlane {
+	return &controlPlane{
+		repo:          repo,
+		frontierBound: frontierBound,
+	}
 }
 
 type controlPlane struct {
@@ -39,5 +47,5 @@ type controlPlane struct {
 	frontierBound frontierbound.FrontierBound
 
 	// deps
-	proxyManager ProxyManager
+	proxyManager proto.ProxyManager
 }

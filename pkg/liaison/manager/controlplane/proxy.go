@@ -5,23 +5,11 @@ import (
 	"time"
 
 	v1 "github.com/singchia/liaison/api/v1"
-	"github.com/singchia/liaison/pkg/liaison/internal/repo/model"
+	"github.com/singchia/liaison/pkg/liaison/repo/model"
+	"github.com/singchia/liaison/pkg/proto"
 )
 
-// 一个Proxy是三元组
-type Proxy struct {
-	Name      string
-	ProxyPort int
-	IP        string
-	Port      string
-}
-
-type ProxyManager interface {
-	CreateProxy(ctx context.Context, proxy *Proxy) error
-	DeleteProxy(ctx context.Context, proxy *Proxy) error
-}
-
-func (cp *controlPlane) RegisterProxyManager(proxyManager ProxyManager) {
+func (cp *controlPlane) RegisterProxyManager(proxyManager proto.ProxyManager) {
 	cp.proxyManager = proxyManager
 }
 

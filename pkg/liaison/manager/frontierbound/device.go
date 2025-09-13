@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/singchia/geminio"
-	"github.com/singchia/liaison/pkg/liaison/internal/repo/model"
+	"github.com/singchia/liaison/pkg/liaison/repo/model"
 	"github.com/singchia/liaison/pkg/proto"
 )
 

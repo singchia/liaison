@@ -3,7 +3,7 @@ package dao
 import (
 	"time"
 
-	"github.com/singchia/liaison/pkg/liaison/internal/repo/model"
+	"github.com/singchia/liaison/pkg/liaison/repo/model"
 )
 
 func (d *dao) CreateDevice(device *model.Device) error {

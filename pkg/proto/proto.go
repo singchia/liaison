@@ -1,5 +1,23 @@
 package proto
 
+import "context"
+
+// manager <-> entry
+// 一个Proxy是三元组
+type Proxy struct {
+	ID        int
+	Name      string
+	ProxyPort int
+	IP        string
+	Port      int
+}
+
+type ProxyManager interface {
+	CreateProxy(ctx context.Context, proxy *Proxy) error
+	DeleteProxy(ctx context.Context, proxy *Proxy) error
+}
+
+// manager <-> edge
 type Meta struct {
 	AccessKey string `json:"access_key"`
 	SecretKey string `json:"secret_key"`
