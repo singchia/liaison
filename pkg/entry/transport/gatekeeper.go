@@ -32,7 +32,7 @@ func NewGatekeeper() *Gatekeeper {
 	}
 }
 
-func (m *Gatekeeper) CreateProxy(protoproxy *proto.Proxy) error {
+func (m *Gatekeeper) CreateProxy(ctx context.Context, protoproxy *proto.Proxy) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -113,7 +113,7 @@ func (m *Gatekeeper) CreateProxy(protoproxy *proto.Proxy) error {
 	return nil
 }
 
-func (m *Gatekeeper) DeleteProxy(id int) error {
+func (m *Gatekeeper) DeleteProxy(ctx context.Context, id int) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 

@@ -1288,7 +1288,7 @@ func (x *UpdateDeviceResponse) GetData() *Device {
 type Application struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Id              uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	DeviceId        uint64                 `protobuf:"varint,2,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
+	Device          *Device                `protobuf:"bytes,2,opt,name=device,proto3" json:"device,omitempty"`
 	Name            string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	Port            int32                  `protobuf:"varint,4,opt,name=port,proto3" json:"port,omitempty"`
 	ApplicationType string                 `protobuf:"bytes,5,opt,name=application_type,json=applicationType,proto3" json:"application_type,omitempty"`
@@ -1335,11 +1335,11 @@ func (x *Application) GetId() uint64 {
 	return 0
 }
 
-func (x *Application) GetDeviceId() uint64 {
+func (x *Application) GetDevice() *Device {
 	if x != nil {
-		return x.DeviceId
+		return x.Device
 	}
-	return 0
+	return nil
 }
 
 func (x *Application) GetName() string {
@@ -1764,10 +1764,10 @@ func (x *DeleteApplicationResponse) GetMessage() string {
 type Proxy struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	ApplicationId uint64                 `protobuf:"varint,2,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
-	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Port          int32                  `protobuf:"varint,4,opt,name=port,proto3" json:"port,omitempty"`
-	Status        string                 `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Port          int32                  `protobuf:"varint,3,opt,name=port,proto3" json:"port,omitempty"`
+	Status        string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
+	Application   *Application           `protobuf:"bytes,5,opt,name=application,proto3" json:"application,omitempty"`
 	Description   string                 `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`
 	CreatedAt     string                 `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     string                 `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
@@ -1812,13 +1812,6 @@ func (x *Proxy) GetId() uint64 {
 	return 0
 }
 
-func (x *Proxy) GetApplicationId() uint64 {
-	if x != nil {
-		return x.ApplicationId
-	}
-	return 0
-}
-
 func (x *Proxy) GetName() string {
 	if x != nil {
 		return x.Name
@@ -1838,6 +1831,13 @@ func (x *Proxy) GetStatus() string {
 		return x.Status
 	}
 	return ""
+}
+
+func (x *Proxy) GetApplication() *Application {
+	if x != nil {
+		return x.Application
+	}
+	return nil
 }
 
 func (x *Proxy) GetDescription() string {
@@ -2795,10 +2795,10 @@ const file_liaison_proto_rawDesc = "" +
 	"\x14UpdateDeviceResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1b\n" +
-	"\x04data\x18\x03 \x01(\v2\a.DeviceR\x04data\"\xcb\x01\n" +
+	"\x04data\x18\x03 \x01(\v2\a.DeviceR\x04data\"\xcf\x01\n" +
 	"\vApplication\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x1b\n" +
-	"\tdevice_id\x18\x02 \x01(\x04R\bdeviceId\x12\x12\n" +
+	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x1f\n" +
+	"\x06device\x18\x02 \x01(\v2\a.DeviceR\x06device\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12\x12\n" +
 	"\x04port\x18\x04 \x01(\x05R\x04port\x12)\n" +
 	"\x10application_type\x18\x05 \x01(\tR\x0fapplicationType\x12\x1d\n" +
@@ -2828,13 +2828,13 @@ const file_liaison_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\"I\n" +
 	"\x19DeleteApplicationResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\"\xde\x01\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"\xe7\x01\n" +
 	"\x05Proxy\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x04R\x02id\x12%\n" +
-	"\x0eapplication_id\x18\x02 \x01(\x04R\rapplicationId\x12\x12\n" +
-	"\x04name\x18\x03 \x01(\tR\x04name\x12\x12\n" +
-	"\x04port\x18\x04 \x01(\x05R\x04port\x12\x16\n" +
-	"\x06status\x18\x05 \x01(\tR\x06status\x12 \n" +
+	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
+	"\x04port\x18\x03 \x01(\x05R\x04port\x12\x16\n" +
+	"\x06status\x18\x04 \x01(\tR\x06status\x12.\n" +
+	"\vapplication\x18\x05 \x01(\v2\f.ApplicationR\vapplication\x12 \n" +
 	"\vdescription\x18\x06 \x01(\tR\vdescription\x12\x1d\n" +
 	"\n" +
 	"created_at\x18\a \x01(\tR\tcreatedAt\x12\x1d\n" +
@@ -2989,53 +2989,55 @@ var file_liaison_proto_depIdxs = []int32{
 	13, // 6: GetDeviceResponse.data:type_name -> Device
 	14, // 7: ListDevicesResponse.data:type_name -> Devices
 	13, // 8: UpdateDeviceResponse.data:type_name -> Device
-	21, // 9: Applications.applications:type_name -> Application
-	22, // 10: ListApplicationsResponse.data:type_name -> Applications
-	21, // 11: UpdateApplicationResponse.data:type_name -> Application
-	29, // 12: Proxies.proxies:type_name -> Proxy
-	30, // 13: ListProxiesResponse.data:type_name -> Proxies
-	29, // 14: CreateProxyResponse.data:type_name -> Proxy
-	29, // 15: UpdateProxyResponse.data:type_name -> Proxy
-	39, // 16: GetEdgeScanApplicationTaskResponse.data:type_name -> EdgeScanApplicationTask
-	3,  // 17: LiaisonService.CreateEdge:input_type -> CreateEdgeRequest
-	5,  // 18: LiaisonService.GetEdge:input_type -> GetEdgeRequest
-	7,  // 19: LiaisonService.ListEdges:input_type -> ListEdgesRequest
-	9,  // 20: LiaisonService.UpdateEdge:input_type -> UpdateEdgeRequest
-	11, // 21: LiaisonService.DeleteEdge:input_type -> DeleteEdgeRequest
-	17, // 22: LiaisonService.ListDevices:input_type -> ListDevicesRequest
-	19, // 23: LiaisonService.UpdateDevice:input_type -> UpdateDeviceRequest
-	15, // 24: LiaisonService.GetDevice:input_type -> GetDeviceRequest
-	23, // 25: LiaisonService.ListApplications:input_type -> ListApplicationsRequest
-	25, // 26: LiaisonService.UpdateApplication:input_type -> UpdateApplicationRequest
-	27, // 27: LiaisonService.DeleteApplication:input_type -> DeleteApplicationRequest
-	31, // 28: LiaisonService.ListProxies:input_type -> ListProxiesRequest
-	33, // 29: LiaisonService.CreateProxy:input_type -> CreateProxyRequest
-	35, // 30: LiaisonService.UpdateProxy:input_type -> UpdateProxyRequest
-	37, // 31: LiaisonService.DeleteProxy:input_type -> DeleteProxyRequest
-	40, // 32: LiaisonService.CreateEdgeScanApplicationTask:input_type -> CreateEdgeScanApplicationTaskRequest
-	42, // 33: LiaisonService.GetEdgeScanApplicationTask:input_type -> GetEdgeScanApplicationTaskRequest
-	4,  // 34: LiaisonService.CreateEdge:output_type -> CreateEdgeResponse
-	6,  // 35: LiaisonService.GetEdge:output_type -> GetEdgeResponse
-	8,  // 36: LiaisonService.ListEdges:output_type -> ListEdgesResponse
-	10, // 37: LiaisonService.UpdateEdge:output_type -> UpdateEdgeResponse
-	12, // 38: LiaisonService.DeleteEdge:output_type -> DeleteEdgeResponse
-	18, // 39: LiaisonService.ListDevices:output_type -> ListDevicesResponse
-	20, // 40: LiaisonService.UpdateDevice:output_type -> UpdateDeviceResponse
-	16, // 41: LiaisonService.GetDevice:output_type -> GetDeviceResponse
-	24, // 42: LiaisonService.ListApplications:output_type -> ListApplicationsResponse
-	26, // 43: LiaisonService.UpdateApplication:output_type -> UpdateApplicationResponse
-	28, // 44: LiaisonService.DeleteApplication:output_type -> DeleteApplicationResponse
-	32, // 45: LiaisonService.ListProxies:output_type -> ListProxiesResponse
-	34, // 46: LiaisonService.CreateProxy:output_type -> CreateProxyResponse
-	36, // 47: LiaisonService.UpdateProxy:output_type -> UpdateProxyResponse
-	38, // 48: LiaisonService.DeleteProxy:output_type -> DeleteProxyResponse
-	41, // 49: LiaisonService.CreateEdgeScanApplicationTask:output_type -> CreateEdgeScanApplicationTaskResponse
-	43, // 50: LiaisonService.GetEdgeScanApplicationTask:output_type -> GetEdgeScanApplicationTaskResponse
-	34, // [34:51] is the sub-list for method output_type
-	17, // [17:34] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	13, // 9: Application.device:type_name -> Device
+	21, // 10: Applications.applications:type_name -> Application
+	22, // 11: ListApplicationsResponse.data:type_name -> Applications
+	21, // 12: UpdateApplicationResponse.data:type_name -> Application
+	21, // 13: Proxy.application:type_name -> Application
+	29, // 14: Proxies.proxies:type_name -> Proxy
+	30, // 15: ListProxiesResponse.data:type_name -> Proxies
+	29, // 16: CreateProxyResponse.data:type_name -> Proxy
+	29, // 17: UpdateProxyResponse.data:type_name -> Proxy
+	39, // 18: GetEdgeScanApplicationTaskResponse.data:type_name -> EdgeScanApplicationTask
+	3,  // 19: LiaisonService.CreateEdge:input_type -> CreateEdgeRequest
+	5,  // 20: LiaisonService.GetEdge:input_type -> GetEdgeRequest
+	7,  // 21: LiaisonService.ListEdges:input_type -> ListEdgesRequest
+	9,  // 22: LiaisonService.UpdateEdge:input_type -> UpdateEdgeRequest
+	11, // 23: LiaisonService.DeleteEdge:input_type -> DeleteEdgeRequest
+	17, // 24: LiaisonService.ListDevices:input_type -> ListDevicesRequest
+	19, // 25: LiaisonService.UpdateDevice:input_type -> UpdateDeviceRequest
+	15, // 26: LiaisonService.GetDevice:input_type -> GetDeviceRequest
+	23, // 27: LiaisonService.ListApplications:input_type -> ListApplicationsRequest
+	25, // 28: LiaisonService.UpdateApplication:input_type -> UpdateApplicationRequest
+	27, // 29: LiaisonService.DeleteApplication:input_type -> DeleteApplicationRequest
+	31, // 30: LiaisonService.ListProxies:input_type -> ListProxiesRequest
+	33, // 31: LiaisonService.CreateProxy:input_type -> CreateProxyRequest
+	35, // 32: LiaisonService.UpdateProxy:input_type -> UpdateProxyRequest
+	37, // 33: LiaisonService.DeleteProxy:input_type -> DeleteProxyRequest
+	40, // 34: LiaisonService.CreateEdgeScanApplicationTask:input_type -> CreateEdgeScanApplicationTaskRequest
+	42, // 35: LiaisonService.GetEdgeScanApplicationTask:input_type -> GetEdgeScanApplicationTaskRequest
+	4,  // 36: LiaisonService.CreateEdge:output_type -> CreateEdgeResponse
+	6,  // 37: LiaisonService.GetEdge:output_type -> GetEdgeResponse
+	8,  // 38: LiaisonService.ListEdges:output_type -> ListEdgesResponse
+	10, // 39: LiaisonService.UpdateEdge:output_type -> UpdateEdgeResponse
+	12, // 40: LiaisonService.DeleteEdge:output_type -> DeleteEdgeResponse
+	18, // 41: LiaisonService.ListDevices:output_type -> ListDevicesResponse
+	20, // 42: LiaisonService.UpdateDevice:output_type -> UpdateDeviceResponse
+	16, // 43: LiaisonService.GetDevice:output_type -> GetDeviceResponse
+	24, // 44: LiaisonService.ListApplications:output_type -> ListApplicationsResponse
+	26, // 45: LiaisonService.UpdateApplication:output_type -> UpdateApplicationResponse
+	28, // 46: LiaisonService.DeleteApplication:output_type -> DeleteApplicationResponse
+	32, // 47: LiaisonService.ListProxies:output_type -> ListProxiesResponse
+	34, // 48: LiaisonService.CreateProxy:output_type -> CreateProxyResponse
+	36, // 49: LiaisonService.UpdateProxy:output_type -> UpdateProxyResponse
+	38, // 50: LiaisonService.DeleteProxy:output_type -> DeleteProxyResponse
+	41, // 51: LiaisonService.CreateEdgeScanApplicationTask:output_type -> CreateEdgeScanApplicationTaskResponse
+	43, // 52: LiaisonService.GetEdgeScanApplicationTask:output_type -> GetEdgeScanApplicationTaskResponse
+	36, // [36:53] is the sub-list for method output_type
+	19, // [19:36] is the sub-list for method input_type
+	19, // [19:19] is the sub-list for extension type_name
+	19, // [19:19] is the sub-list for extension extendee
+	0,  // [0:19] is the sub-list for field type_name
 }
 
 func init() { file_liaison_proto_init() }

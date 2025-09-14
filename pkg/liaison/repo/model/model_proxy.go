@@ -20,4 +20,6 @@ type Proxy struct {
 	Port          int         `gorm:"column:port;type:int;not null"`
 	Status        ProxyStatus `gorm:"column:status;type:int;not null"`
 	Description   string      `gorm:"column:description;type:varchar(255);not null"`
+	// 以下用于中间使用
+	Application *Application `gorm:"-"`
 }

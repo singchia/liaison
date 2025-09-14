@@ -17,7 +17,7 @@ type Proxy struct {
 
 type ProxyManager interface {
 	CreateProxy(ctx context.Context, proxy *Proxy) error
-	DeleteProxy(ctx context.Context, proxy *Proxy) error
+	DeleteProxy(ctx context.Context, id int) error
 }
 
 // manager <-> edge

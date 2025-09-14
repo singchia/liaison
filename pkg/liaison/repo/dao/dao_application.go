@@ -33,6 +33,10 @@ func (d *dao) ListApplications(query *ListApplicationsQuery) ([]*model.Applicati
 	if query.Page > 0 && query.PageSize > 0 {
 		db = db.Offset((query.Page - 1) * query.PageSize).Limit(query.PageSize)
 	}
+	// ids
+	if len(query.IDs) > 0 {
+		db = db.Where("id IN ?", query.IDs)
+	}
 
 	if err := db.Find(&applications).Error; err != nil {
 		return nil, err
@@ -44,4 +48,5 @@ type ListApplicationsQuery struct {
 	Page     int
 	PageSize int
 	DeviceID uint
+	IDs      []uint
 }

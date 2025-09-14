@@ -5,6 +5,7 @@ import (
 	"time"
 
 	v1 "github.com/singchia/liaison/api/v1"
+	"github.com/singchia/liaison/pkg/liaison/repo/dao"
 	"github.com/singchia/liaison/pkg/liaison/repo/model"
 	"github.com/singchia/liaison/pkg/proto"
 )
@@ -28,10 +29,29 @@ func (cp *controlPlane) CreateProxy(_ context.Context, req *v1.CreateProxyReques
 }
 
 func (cp *controlPlane) ListProxies(_ context.Context, req *v1.ListProxiesRequest) (*v1.ListProxiesResponse, error) {
+	// list proxies
 	proxies, err := cp.repo.ListProxies(int(req.Page), int(req.PageSize))
 	if err != nil {
 		return nil, err
 	}
+	ids := make([]uint, len(proxies))
+	for i, proxy := range proxies {
+		ids[i] = proxy.ApplicationID
+	}
+	// list applications
+	applications, err := cp.repo.ListApplications(&dao.ListApplicationsQuery{
+		Page:     int(req.Page),
+		PageSize: int(req.PageSize),
+		IDs:      ids,
+	})
+	if err != nil {
+		return nil, err
+	}
+	// add applications to proxies
+	for i := range proxies {
+		proxies[i].Application = applications[i]
+	}
+
 	return &v1.ListProxiesResponse{
 		Code:    200,
 		Message: "success",
@@ -83,10 +103,14 @@ func transformProxies(proxies []*model.Proxy) []*v1.Proxy {
 }
 
 func transformProxy(proxy *model.Proxy) *v1.Proxy {
+	application := transformApplication(proxy.Application)
 	return &v1.Proxy{
-		Id:        uint64(proxy.ID),
-		Name:      proxy.Name,
-		CreatedAt: proxy.CreatedAt.Format(time.DateTime),
-		UpdatedAt: proxy.UpdatedAt.Format(time.DateTime),
+		Id:          uint64(proxy.ID),
+		Name:        proxy.Name,
+		Port:        int32(proxy.Port),
+		Application: application,
+		Description: proxy.Description,
+		CreatedAt:   proxy.CreatedAt.Format(time.DateTime),
+		UpdatedAt:   proxy.UpdatedAt.Format(time.DateTime),
 	}
 }

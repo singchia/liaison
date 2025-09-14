@@ -141,7 +141,7 @@ message UpdateDeviceResponse {
 // 应用
 message Application {
     uint64 id = 1;
-    uint64 device_id = 2;
+    Device device = 2;  
     string name = 3;
     int32 port = 4;
     string application_type = 5;
@@ -191,10 +191,10 @@ message DeleteApplicationResponse {
 // 代理
 message Proxy {
     uint64 id = 1;
-    uint64 application_id = 2;
-    string name = 3;
-    int32 port = 4;
-    string status = 5;
+    string name = 2;
+    int32 port = 3;
+    string status = 4;
+    Application application = 5;
     string description = 6;
     string created_at = 7;
     string updated_at = 8;
