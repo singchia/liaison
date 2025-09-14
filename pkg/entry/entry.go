@@ -5,13 +5,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/singchia/liaison/pkg/entry/config"
 	"github.com/singchia/liaison/pkg/entry/transport"
 )
 
 type Entry struct {
-	config *config.Configuration
-
 	gatekeeper *transport.Gatekeeper
 	ctx        context.Context
 	cancel     context.CancelFunc
@@ -19,21 +16,14 @@ type Entry struct {
 }
 
 func NewEntry() (*Entry, error) {
-	// 初始化配置
-	cfg, err := config.Init()
-	if err != nil {
-		return nil, err
-	}
 
 	// 创建端口管理器
-	portManager := transport.NewGatekeeper()
+	gatekeeper := transport.NewGatekeeper()
 
 	ctx, cancel := context.WithCancel(context.Background())
 
 	entry := &Entry{
-		config: cfg,
-
-		gatekeeper: portManager,
+		gatekeeper: gatekeeper,
 		ctx:        ctx,
 		cancel:     cancel,
 	}
