@@ -25,7 +25,7 @@ type Manager struct {
 }
 
 type Frontier struct {
-	Addr string `yaml:"addr,omitempty" json:"addr"`
+	Dial config.Dial `yaml:"dial,omitempty" json:"dial"`
 }
 
 type Configuration struct {

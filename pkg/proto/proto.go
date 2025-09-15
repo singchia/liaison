@@ -5,16 +5,19 @@ import "context"
 // manager <-> entry
 // 一个Proxy是三元组
 type Proxy struct {
-	ID        int
-	Name      string
+	ID   int
+	Name string
+	// 代理端口
 	ProxyPort int
-	IP        string
-	Port      int
+	// 边缘ID
+	EdgeID uint64
+	// 目的地址
+	Dst string
 }
 
 type ProxyManager interface {
 	CreateProxy(ctx context.Context, proxy *Proxy) error
-	DeleteProxy(ctx context.Context, proxy *Proxy) error
+	DeleteProxy(ctx context.Context, id int) error
 }
 
 // manager <-> edge

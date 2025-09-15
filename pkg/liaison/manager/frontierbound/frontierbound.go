@@ -2,11 +2,14 @@ package frontierbound
 
 import (
 	"context"
+	"errors"
+	"math/rand"
 	"net"
 
 	"github.com/singchia/frontier/api/dataplane/v1/service"
 	"github.com/singchia/liaison/pkg/liaison/config"
 	"github.com/singchia/liaison/pkg/liaison/repo"
+	"github.com/singchia/liaison/pkg/utils"
 )
 
 type FrontierBound interface {
@@ -19,12 +22,16 @@ type frontierBound struct {
 }
 
 func NewFrontierBound(conf *config.Configuration, repo repo.Repo) (FrontierBound, error) {
+	dial := conf.Frontier.Dial
+	if len(dial.Addrs) == 0 {
+		return nil, errors.New("dial addr is empty")
+	}
 	fb := &frontierBound{
 		repo: repo,
 	}
 
 	dialer := func() (net.Conn, error) {
-		return net.Dial("tcp", conf.Frontier.Addr)
+		return utils.Dial(&dial, rand.Intn(len(dial.Addrs)))
 	}
 	svc, err := service.NewService(dialer)
 	if err != nil {
@@ -63,4 +70,8 @@ func NewFrontierBound(conf *config.Configuration, repo repo.Repo) (FrontierBound
 
 	fb.svc = svc
 	return fb, nil
+}
+
+func (fb *frontierBound) Close() error {
+	return fb.svc.Close()
 }

@@ -1,75 +1,37 @@
 package entry
 
 import (
-	"context"
-	"sync"
-	"time"
-
-	"github.com/singchia/liaison/pkg/entry/config"
 	"github.com/singchia/liaison/pkg/entry/transport"
+	"github.com/singchia/liaison/pkg/liaison/manager/controlplane"
 )
 
 type Entry struct {
-	config *config.Configuration
-
 	gatekeeper *transport.Gatekeeper
-	ctx        context.Context
-	cancel     context.CancelFunc
-	wg         sync.WaitGroup
+	// liaison manager
+	manager controlplane.ControlPlane
 }
 
-func NewEntry() (*Entry, error) {
-	// 初始化配置
-	cfg, err := config.Init()
-	if err != nil {
-		return nil, err
-	}
+func NewEntry(manager controlplane.ControlPlane) (*Entry, error) {
 
 	// 创建端口管理器
-	portManager := transport.NewGatekeeper()
-
-	ctx, cancel := context.WithCancel(context.Background())
+	gatekeeper := transport.NewGatekeeper()
+	manager.RegisterProxyManager(gatekeeper)
 
 	entry := &Entry{
-		config: cfg,
-
-		gatekeeper: portManager,
-		ctx:        ctx,
-		cancel:     cancel,
+		gatekeeper: gatekeeper,
+		manager:    manager,
 	}
 
-	// 启动配置同步
-	entry.wg.Add(1)
-	go entry.syncProxyConfigs()
+	entry.pullProxyConfigs()
 
 	return entry, nil
 }
 
-// syncProxyConfigs 定期从manager同步Proxy配置
-func (e *Entry) syncProxyConfigs() {
-	defer e.wg.Done()
-
-	ticker := time.NewTicker(5 * time.Second) // 每5秒同步一次
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-e.ctx.Done():
-			return
-		case <-ticker.C:
-			e.updateProxyConfigs()
-		}
-	}
-}
-
-// updateProxyConfigs 更新代理配置
-func (e *Entry) updateProxyConfigs() {
+// pullProxyConfigs 定期从manager同步Proxy配置
+func (e *Entry) pullProxyConfigs() {
 
 }
 
 func (e *Entry) Close() error {
-	e.cancel()
-	e.wg.Wait()
-
 	return nil
 }
