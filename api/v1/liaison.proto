@@ -141,12 +141,14 @@ message UpdateDeviceResponse {
 // 应用
 message Application {
     uint64 id = 1;
-    Device device = 2;  
-    string name = 3;
-    int32 port = 4;
-    string application_type = 5;
-    string created_at = 6;
-    string updated_at = 7;
+    uint64 edge_id = 2;
+    Device device = 3;  
+    string name = 4;
+    string ip = 5;
+    int32 port = 6;
+    string application_type = 7;
+    string created_at = 8;
+    string updated_at = 9;
 }
 
 message Applications {

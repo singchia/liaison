@@ -77,9 +77,9 @@ func (m *Gatekeeper) CreateProxy(ctx context.Context, protoproxy *proto.Proxy) e
 			logrus.Errorf("failed to marshal dst: %s", err)
 			return err
 		}
-		buf := make([]byte, 4)
-		binary.BigEndian.PutUint32(buf, uint32(len(data)))
-		_, err = writer.Write(buf)
+		lengthBuf := make([]byte, 4)
+		binary.BigEndian.PutUint32(lengthBuf, uint32(len(data)))
+		_, err = writer.Write(lengthBuf)
 		if err != nil {
 			logrus.Errorf("failed to write dst length: %s", err)
 			return err

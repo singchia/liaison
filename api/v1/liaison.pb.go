@@ -1288,12 +1288,14 @@ func (x *UpdateDeviceResponse) GetData() *Device {
 type Application struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Id              uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Device          *Device                `protobuf:"bytes,2,opt,name=device,proto3" json:"device,omitempty"`
-	Name            string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Port            int32                  `protobuf:"varint,4,opt,name=port,proto3" json:"port,omitempty"`
-	ApplicationType string                 `protobuf:"bytes,5,opt,name=application_type,json=applicationType,proto3" json:"application_type,omitempty"`
-	CreatedAt       string                 `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt       string                 `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	EdgeId          uint64                 `protobuf:"varint,2,opt,name=edge_id,json=edgeId,proto3" json:"edge_id,omitempty"`
+	Device          *Device                `protobuf:"bytes,3,opt,name=device,proto3" json:"device,omitempty"`
+	Name            string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
+	Ip              string                 `protobuf:"bytes,5,opt,name=ip,proto3" json:"ip,omitempty"`
+	Port            int32                  `protobuf:"varint,6,opt,name=port,proto3" json:"port,omitempty"`
+	ApplicationType string                 `protobuf:"bytes,7,opt,name=application_type,json=applicationType,proto3" json:"application_type,omitempty"`
+	CreatedAt       string                 `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt       string                 `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -1335,6 +1337,13 @@ func (x *Application) GetId() uint64 {
 	return 0
 }
 
+func (x *Application) GetEdgeId() uint64 {
+	if x != nil {
+		return x.EdgeId
+	}
+	return 0
+}
+
 func (x *Application) GetDevice() *Device {
 	if x != nil {
 		return x.Device
@@ -1345,6 +1354,13 @@ func (x *Application) GetDevice() *Device {
 func (x *Application) GetName() string {
 	if x != nil {
 		return x.Name
+	}
+	return ""
+}
+
+func (x *Application) GetIp() string {
+	if x != nil {
+		return x.Ip
 	}
 	return ""
 }
@@ -2795,17 +2811,19 @@ const file_liaison_proto_rawDesc = "" +
 	"\x14UpdateDeviceResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1b\n" +
-	"\x04data\x18\x03 \x01(\v2\a.DeviceR\x04data\"\xcf\x01\n" +
+	"\x04data\x18\x03 \x01(\v2\a.DeviceR\x04data\"\xf8\x01\n" +
 	"\vApplication\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x1f\n" +
-	"\x06device\x18\x02 \x01(\v2\a.DeviceR\x06device\x12\x12\n" +
-	"\x04name\x18\x03 \x01(\tR\x04name\x12\x12\n" +
-	"\x04port\x18\x04 \x01(\x05R\x04port\x12)\n" +
-	"\x10application_type\x18\x05 \x01(\tR\x0fapplicationType\x12\x1d\n" +
+	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x17\n" +
+	"\aedge_id\x18\x02 \x01(\x04R\x06edgeId\x12\x1f\n" +
+	"\x06device\x18\x03 \x01(\v2\a.DeviceR\x06device\x12\x12\n" +
+	"\x04name\x18\x04 \x01(\tR\x04name\x12\x0e\n" +
+	"\x02ip\x18\x05 \x01(\tR\x02ip\x12\x12\n" +
+	"\x04port\x18\x06 \x01(\x05R\x04port\x12)\n" +
+	"\x10application_type\x18\a \x01(\tR\x0fapplicationType\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\x06 \x01(\tR\tcreatedAt\x12\x1d\n" +
+	"created_at\x18\b \x01(\tR\tcreatedAt\x12\x1d\n" +
 	"\n" +
-	"updated_at\x18\a \x01(\tR\tupdatedAt\"V\n" +
+	"updated_at\x18\t \x01(\tR\tupdatedAt\"V\n" +
 	"\fApplications\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x05R\x05total\x120\n" +
 	"\fapplications\x18\x02 \x03(\v2\f.ApplicationR\fapplications\"g\n" +
