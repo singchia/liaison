@@ -20,6 +20,7 @@ type ControlPlane interface {
 	GetDevice(ctx context.Context, req *v1.GetDeviceRequest) (*v1.GetDeviceResponse, error)
 	UpdateDevice(ctx context.Context, req *v1.UpdateDeviceRequest) (*v1.UpdateDeviceResponse, error)
 
+	CreateApplication(ctx context.Context, req *v1.CreateApplicationRequest) (*v1.CreateApplicationResponse, error)
 	ListApplications(ctx context.Context, req *v1.ListApplicationsRequest) (*v1.ListApplicationsResponse, error)
 	UpdateApplication(ctx context.Context, req *v1.UpdateApplicationRequest) (*v1.UpdateApplicationResponse, error)
 	DeleteApplication(ctx context.Context, req *v1.DeleteApplicationRequest) (*v1.DeleteApplicationResponse, error)
@@ -35,11 +36,11 @@ type ControlPlane interface {
 	RegisterProxyManager(proxyManager proto.ProxyManager)
 }
 
-func NewControlPlane(repo repo.Repo, frontierBound frontierbound.FrontierBound) ControlPlane {
+func NewControlPlane(repo repo.Repo, frontierBound frontierbound.FrontierBound) (ControlPlane, error) {
 	return &controlPlane{
 		repo:          repo,
 		frontierBound: frontierBound,
-	}
+	}, nil
 }
 
 type controlPlane struct {

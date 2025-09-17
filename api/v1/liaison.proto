@@ -156,6 +156,21 @@ message Applications {
     repeated Application applications = 2;
 }
 
+// 添加应用请求
+message CreateApplicationRequest {
+    string name = 1;
+    string ip = 2;
+    int32 port = 3;
+    string application_type = 4;
+    uint64 edge_id = 5;
+    optional uint64 device_id = 6;
+}
+
+message CreateApplicationResponse {
+    int32 code = 1;
+    string message = 2;
+}
+
 // 列举应用请求
 message ListApplicationsRequest {
     int32 page = 1;
@@ -341,6 +356,12 @@ service LiaisonService {
     };
 
     // 应用
+    rpc CreateApplication(CreateApplicationRequest) returns (CreateApplicationResponse) {
+        option (google.api.http) = {
+            post: "/v1/applications",
+            body: "*"
+        };
+    };
     rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {
         option (google.api.http) = {
             get: "/v1/applications"

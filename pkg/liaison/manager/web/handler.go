@@ -88,6 +88,15 @@ func (web *web) UpdateDevice(ctx context.Context, req *v1.UpdateDeviceRequest) (
 
 //-- Application --//
 
+// @Summary CreateApplication
+// @Tags 1.0
+// @Param params query v1.CreateApplicationRequest true "queries"
+// @Success 200 {object} v1.CreateApplicationResponse
+// @Router /api/v1/application [post]
+func (web *web) CreateApplication(ctx context.Context, req *v1.CreateApplicationRequest) (*v1.CreateApplicationResponse, error) {
+	return web.controlPlane.CreateApplication(ctx, req)
+}
+
 // @Summary ListApplications
 // @Tags 1.0
 // @Param params query v1.ListApplicationsRequest true "queries"

@@ -9,6 +9,31 @@ import (
 	"github.com/singchia/liaison/pkg/liaison/repo/model"
 )
 
+func (cp *controlPlane) CreateApplication(_ context.Context, req *v1.CreateApplicationRequest) (*v1.CreateApplicationResponse, error) {
+	deviceID := uint(0)
+	if req.DeviceId != nil {
+		deviceID = uint(*req.DeviceId)
+	}
+
+	// 注意如果edge id不在线，应用可能无法访问
+	application := &model.Application{
+		Name:            req.Name,
+		IP:              req.Ip,
+		Port:            int(req.Port),
+		ApplicationType: model.ApplicationType(req.ApplicationType),
+		EdgeIDs:         []uint{uint(req.EdgeId)},
+		DeviceID:        deviceID,
+	}
+	err := cp.repo.CreateApplication(application)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.CreateApplicationResponse{
+		Code:    200,
+		Message: "success",
+	}, nil
+}
+
 func (cp *controlPlane) ListApplications(_ context.Context, req *v1.ListApplicationsRequest) (*v1.ListApplicationsResponse, error) {
 	applications, err := cp.repo.ListApplications(&dao.ListApplicationsQuery{
 		Page:     int(req.Page),
