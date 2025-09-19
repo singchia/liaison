@@ -75,10 +75,14 @@ type dao struct {
 }
 
 func NewDao(config *config.Configuration) (Dao, error) {
+	d := &dao{
+		config: config,
+	}
 	db, err := gorm.Open(sqlite.Open(config.Manager.DB), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
+	d.db = db
 	sqlDB, err := db.DB()
 	if err != nil {
 		return nil, err
@@ -91,10 +95,23 @@ func NewDao(config *config.Configuration) (Dao, error) {
 	sqlDB.Exec("PRAGMA mmap_size = 268435456;") // 256MB memory map size
 	sqlDB.SetMaxOpenConns(0)
 
-	return &dao{
-		db:     db,
-		config: config,
-	}, nil
+	if err := d.initDB(); err != nil {
+		return nil, err
+	}
+
+	return d, nil
+}
+
+func (d *dao) initDB() error {
+	return d.db.AutoMigrate(
+		&model.Edge{},
+		&model.AccessKey{},
+		&model.Device{},
+		&model.EthernetInterface{},
+		&model.Application{},
+		&model.Proxy{},
+		&model.Task{},
+	)
 }
 
 // Begin 开始事务 - 返回新的事务 DAO 实例
