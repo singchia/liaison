@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/singchia/go-hammer/log"
+	"github.com/jumboframes/armorigo/log"
 	"github.com/singchia/liaison/pkg/config"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"gopkg.in/yaml.v2"
