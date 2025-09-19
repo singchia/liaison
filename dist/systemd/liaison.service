@@ -1,0 +1,51 @@
+[Unit]
+Description=Liaison Edge Computing Management Service
+Documentation=https://github.com/singchia/liaison
+After=network.target network-online.target
+Wants=network-online.target
+StartLimitInterval=60s
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=liaison
+Group=liaison
+WorkingDirectory=/opt/liaison
+ExecStart=/opt/liaison/bin/liaison -c /opt/liaison/conf/liaison.yaml
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStop=/bin/kill -TERM $MAINPID
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=30s
+Restart=always
+RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=liaison
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/liaison/data /opt/liaison/logs
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+RemoveIPC=true
+RestrictNamespaces=true
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=32768
+MemoryMax=2G
+CPUQuota=200%
+
+# Environment
+Environment=GOMAXPROCS=auto
+Environment=GOGC=100
+
+[Install]
+WantedBy=multi-user.target
