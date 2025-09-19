@@ -1,0 +1,18 @@
+manager:
+  listen:
+    addr: 0.0.0.0:8080
+    network: tcp
+    tls:
+      enable: false
+  db: /opt/liaison/data/liaison.db
+frontier:
+  dial:
+    addr: 127.0.0.1:30011
+    network: tcp
+    tls:
+      enable: false
+log:
+  level: info
+  file: /opt/liaison/logs/liaison.log
+  maxsize: 100
+  maxrolls: 10

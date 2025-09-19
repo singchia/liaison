@@ -14,6 +14,7 @@ import (
 
 type FrontierBound interface {
 	EmitScanApplications(ctx context.Context, taskID uint, edgeID uint64, net *Net) error
+	Close() error
 }
 
 type frontierBound struct {

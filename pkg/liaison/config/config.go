@@ -2,12 +2,12 @@ package config
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"time"
 
 	"github.com/jumboframes/armorigo/log"
 	"github.com/singchia/liaison/pkg/config"
+	"github.com/singchia/liaison/pkg/lerrors"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"gopkg.in/yaml.v2"
 )
@@ -47,17 +47,19 @@ type Frontier struct {
 	Dial config.Dial `yaml:"dial,omitempty" json:"dial"`
 }
 
+type Log struct {
+	Level    string `yaml:"level"`
+	File     string `yaml:"file"`
+	MaxSize  int    `yaml:"maxsize"`
+	MaxRolls int    `yaml:"maxrolls"`
+}
+
 type Configuration struct {
 	Daemon   Daemon   `yaml:"daemon,omitempty" json:"daemon"`
 	Manager  Manager  `yaml:"manager,omitempty" json:"manager"`
 	Frontier Frontier `yaml:"frontier,omitempty" json:"frontier"`
 
-	Log struct {
-		Level    string `yaml:"level"`
-		File     string `yaml:"file"`
-		MaxSize  int    `yaml:"maxsize"`
-		MaxRolls int    `yaml:"maxrolls"`
-	} `yaml:"log"`
+	Log Log `yaml:"log"`
 }
 
 func Init() error {
@@ -86,7 +88,7 @@ func initCmd() error {
 	flag.Parse()
 	if h {
 		flag.Usage()
-		return fmt.Errorf("invalid usage for command line")
+		return lerrors.ErrInvalidUsage
 	}
 	return nil
 }
