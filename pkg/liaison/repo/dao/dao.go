@@ -87,13 +87,15 @@ func NewDao(config *config.Configuration) (Dao, error) {
 	if err != nil {
 		return nil, err
 	}
-	sqlDB.Exec("PRAGMA synchronous = OFF;")
-	sqlDB.Exec("PRAGMA journal_mode = DELETE;")
+	sqlDB.Exec("PRAGMA synchronous = NORMAL;")
+	sqlDB.Exec("PRAGMA journal_mode = WAL;")
 	sqlDB.Exec("PRAGMA cache_size = -2000;") // 2MB cache
 	sqlDB.Exec("PRAGMA temp_store = MEMORY;")
-	sqlDB.Exec("PRAGMA locking_mode = EXCLUSIVE;")
+	sqlDB.Exec("PRAGMA locking_mode = NORMAL;")
 	sqlDB.Exec("PRAGMA mmap_size = 268435456;") // 256MB memory map size
-	sqlDB.SetMaxOpenConns(0)
+	sqlDB.SetMaxOpenConns(1)
+	sqlDB.SetMaxIdleConns(1)
+	sqlDB.SetConnMaxLifetime(time.Hour)
 
 	if err := d.initDB(); err != nil {
 		return nil, err

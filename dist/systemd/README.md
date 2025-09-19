@@ -38,8 +38,8 @@ This directory contains systemd service files and installation scripts for the L
 
 4. Copy the configuration file:
    ```bash
-   sudo cp /path/to/liaison.yaml /opt/liaison/etc/
-   sudo chown liaison:liaison /opt/liaison/etc/liaison.yaml
+   sudo cp /path/to/liaison.yaml /opt/liaison/conf/
+   sudo chown liaison:liaison /opt/liaison/conf/liaison.yaml
    ```
 
 5. Start the service:
@@ -58,7 +58,7 @@ If you prefer to install manually:
 
 2. Create directories:
    ```bash
-   sudo mkdir -p /opt/liaison/{bin,etc,data,logs}
+   sudo mkdir -p /opt/liaison/{bin,conf,data,logs}
    sudo chown -R liaison:liaison /opt/liaison
    sudo chmod 750 /opt/liaison/{data,logs}
    ```
@@ -117,7 +117,7 @@ sudo journalctl -u liaison -o short-iso
 
 ## Configuration
 
-The service expects the configuration file at `/opt/liaison/etc/liaison.yaml`. Make sure to:
+The service expects the configuration file at `/opt/liaison/conf/liaison.yaml`. Make sure to:
 
 1. Update the configuration file according to your environment
 2. Ensure the database path is writable by the liaison user
@@ -192,7 +192,7 @@ The service is configured with several security features:
 
 2. Check that the configuration file is readable:
    ```bash
-   sudo -u liaison cat /opt/liaison/etc/liaison.yaml
+   sudo -u liaison cat /opt/liaison/conf/liaison.yaml
    ```
 
 ### Database Issues
@@ -236,7 +236,7 @@ After installation, the directory structure will be:
 /opt/liaison/
 ├── bin/
 │   └── liaison          # Liaison binary
-├── etc/
+├── conf/
 │   └── liaison.yaml     # Configuration file
 ├── data/
 │   └── liaison.db       # Database file

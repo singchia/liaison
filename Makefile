@@ -17,7 +17,7 @@ liaison:
 
 .PHONY: liaison-edge
 liaison-edge:
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build -trimpath -ldflags "-s -w" -o ./bin/liaison-edge cmd/edge/main.go
+	GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o ./bin/liaison-edge cmd/edge/main.go
 
 # api
 .PHONY: gen-api
