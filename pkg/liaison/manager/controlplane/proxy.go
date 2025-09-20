@@ -52,8 +52,17 @@ func (cp *controlPlane) ListProxies(_ context.Context, req *v1.ListProxiesReques
 		return nil, err
 	}
 	// add applications to proxies
+	// 创建一个 map 来快速查找 application
+	appMap := make(map[uint]*model.Application)
+	for _, app := range applications {
+		appMap[app.ID] = app
+	}
+
 	for i := range proxies {
-		proxies[i].Application = applications[i]
+		if app, exists := appMap[proxies[i].ApplicationID]; exists {
+			proxies[i].Application = app
+		}
+		// 如果 application 不存在，Application 字段会保持为 nil
 	}
 
 	return &v1.ListProxiesResponse{
@@ -108,7 +117,10 @@ func transformProxies(proxies []*model.Proxy) []*v1.Proxy {
 }
 
 func transformProxy(proxy *model.Proxy) *v1.Proxy {
-	application := transformApplication(proxy.Application)
+	var application *v1.Application
+	if proxy.Application != nil {
+		application = transformApplication(proxy.Application)
+	}
 
 	// 将 ProxyStatus 转换为字符串
 	var status string
