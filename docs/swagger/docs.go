@@ -9,20 +9,272 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {
-            "name": "Austin Zhai",
-            "email": "singchia@163.com"
-        },
-        "license": {
-            "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
-        },
+        "contact": {},
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/edge": {
+        "/v1/applications": {
+            "get": {
+                "tags": [
+                    "1.0"
+                ],
+                "summary": "ListApplications",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "device_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.ListApplicationsResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "1.0"
+                ],
+                "summary": "CreateApplication",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "application_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "device_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "edge_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "ip",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "port",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.CreateApplicationResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/applications/{id}": {
+            "put": {
+                "tags": [
+                    "1.0"
+                ],
+                "summary": "UpdateApplication",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "application id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.UpdateApplicationResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "1.0"
+                ],
+                "summary": "DeleteApplication",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "application id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.DeleteApplicationResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/devices": {
+            "get": {
+                "tags": [
+                    "1.0"
+                ],
+                "summary": "ListDevices",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.ListDevicesResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/devices/{id}": {
+            "get": {
+                "tags": [
+                    "1.0"
+                ],
+                "summary": "GetDevice",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "device id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.GetDeviceResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "1.0"
+                ],
+                "summary": "UpdateDevice",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "device id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "name": "description",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.UpdateDeviceResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/edges": {
+            "get": {
+                "tags": [
+                    "1.0"
+                ],
+                "summary": "ListEdges",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.ListEdgesResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "tags": [
                     "1.0"
@@ -50,7 +302,61 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/edge/{id}": {
+        "/v1/edges/{edge_id}/scan_application_tasks": {
+            "get": {
+                "tags": [
+                    "1.0"
+                ],
+                "summary": "GetEdgeScanApplicationTask",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "edge_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.GetEdgeScanApplicationTaskResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "1.0"
+                ],
+                "summary": "CreateEdgeScanApplicationTask",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "edge_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "port",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "protocol",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.CreateEdgeScanApplicationTaskResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/edges/{id}": {
             "get": {
                 "tags": [
                     "1.0"
@@ -147,12 +453,12 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/edges": {
+        "/v1/proxies": {
             "get": {
                 "tags": [
                     "1.0"
                 ],
-                "summary": "ListEdges",
+                "summary": "ListProxies",
                 "parameters": [
                     {
                         "type": "integer",
@@ -169,7 +475,116 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/v1.ListEdgesResponse"
+                            "$ref": "#/definitions/v1.ListProxiesResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "1.0"
+                ],
+                "summary": "CreateProxy",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "application_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "description",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "port",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.CreateProxyResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/proxies/{id}": {
+            "put": {
+                "tags": [
+                    "1.0"
+                ],
+                "summary": "UpdateProxy",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "proxy id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "name": "description",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "port",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.UpdateProxyResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "1.0"
+                ],
+                "summary": "DeleteProxy",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "proxy id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.DeleteProxyResponse"
                         }
                     }
                 }
@@ -188,6 +603,63 @@ const docTemplate = `{
                 }
             }
         },
+        "v1.Application": {
+            "type": "object",
+            "properties": {
+                "application_type": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "device": {
+                    "$ref": "#/definitions/v1.Device"
+                },
+                "edge_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.Applications": {
+            "type": "object",
+            "properties": {
+                "applications": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.Application"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "v1.CreateApplicationResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "v1.CreateEdgeResponse": {
             "type": "object",
             "properties": {
@@ -202,6 +674,42 @@ const docTemplate = `{
                 }
             }
         },
+        "v1.CreateEdgeScanApplicationTaskResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.CreateProxyResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/v1.Proxy"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.DeleteApplicationResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "v1.DeleteEdgeResponse": {
             "type": "object",
             "properties": {
@@ -210,6 +718,66 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "v1.DeleteProxyResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.Device": {
+            "type": "object",
+            "properties": {
+                "cpu": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "disk": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "memory": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "os": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.Devices": {
+            "type": "object",
+            "properties": {
+                "devices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.Device"
+                    }
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
@@ -228,8 +796,40 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "online": {
+                    "type": "integer"
+                },
                 "status": {
                     "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.EdgeScanApplicationTask": {
+            "type": "object",
+            "properties": {
+                "applications": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "edge_id": {
+                    "type": "integer"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "task_status": {
+                    "type": "string"
                 },
                 "updated_at": {
                     "type": "string"
@@ -250,6 +850,20 @@ const docTemplate = `{
                 }
             }
         },
+        "v1.GetDeviceResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/v1.Device"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "v1.GetEdgeResponse": {
             "type": "object",
             "properties": {
@@ -258,6 +872,48 @@ const docTemplate = `{
                 },
                 "data": {
                     "$ref": "#/definitions/v1.Edge"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.GetEdgeScanApplicationTaskResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/v1.EdgeScanApplicationTask"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.ListApplicationsResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/v1.Applications"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.ListDevicesResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/v1.Devices"
                 },
                 "message": {
                     "type": "string"
@@ -278,6 +934,91 @@ const docTemplate = `{
                 }
             }
         },
+        "v1.ListProxiesResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/v1.Proxies"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.Proxies": {
+            "type": "object",
+            "properties": {
+                "proxies": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.Proxy"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "v1.Proxy": {
+            "type": "object",
+            "properties": {
+                "application": {
+                    "$ref": "#/definitions/v1.Application"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.UpdateApplicationResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/v1.Application"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.UpdateDeviceResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/v1.Device"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "v1.UpdateEdgeResponse": {
             "type": "object",
             "properties": {
@@ -291,18 +1032,32 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "v1.UpdateProxyResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/v1.Proxy"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
+	Version:          "",
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "Liaison Swagger API",
-	Description:      "Liaison Swagger API",
+	Title:            "",
+	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

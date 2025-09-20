@@ -34,6 +34,10 @@ func (cp *controlPlane) ListProxies(_ context.Context, req *v1.ListProxiesReques
 	if err != nil {
 		return nil, err
 	}
+	count, err := cp.repo.CountProxies()
+	if err != nil {
+		return nil, err
+	}
 	ids := make([]uint, len(proxies))
 	for i, proxy := range proxies {
 		ids[i] = proxy.ApplicationID
@@ -56,6 +60,7 @@ func (cp *controlPlane) ListProxies(_ context.Context, req *v1.ListProxiesReques
 		Code:    200,
 		Message: "success",
 		Data: &v1.Proxies{
+			Total:   int32(count),
 			Proxies: transformProxies(proxies),
 		},
 	}, nil
@@ -104,10 +109,23 @@ func transformProxies(proxies []*model.Proxy) []*v1.Proxy {
 
 func transformProxy(proxy *model.Proxy) *v1.Proxy {
 	application := transformApplication(proxy.Application)
+
+	// 将 ProxyStatus 转换为字符串
+	var status string
+	switch proxy.Status {
+	case model.ProxyStatusRunning:
+		status = "running"
+	case model.ProxyStatusStopped:
+		status = "stopped"
+	default:
+		status = "unknown"
+	}
+
 	return &v1.Proxy{
 		Id:          uint64(proxy.ID),
 		Name:        proxy.Name,
 		Port:        int32(proxy.Port),
+		Status:      status,
 		Application: application,
 		Description: proxy.Description,
 		CreatedAt:   proxy.CreatedAt.Format(time.DateTime),

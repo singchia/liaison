@@ -9,6 +9,31 @@ import (
 	"github.com/singchia/liaison/pkg/liaison/repo/model"
 )
 
+func (cp *controlPlane) CreateApplication(_ context.Context, req *v1.CreateApplicationRequest) (*v1.CreateApplicationResponse, error) {
+	deviceID := uint(0)
+	if req.DeviceId != nil {
+		deviceID = uint(*req.DeviceId)
+	}
+
+	// 注意如果edge id不在线，应用可能无法访问
+	application := &model.Application{
+		Name:            req.Name,
+		IP:              req.Ip,
+		Port:            int(req.Port),
+		ApplicationType: model.ApplicationType(req.ApplicationType),
+		EdgeIDs:         model.UintSlice{uint(req.EdgeId)},
+		DeviceID:        deviceID,
+	}
+	err := cp.repo.CreateApplication(application)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.CreateApplicationResponse{
+		Code:    200,
+		Message: "success",
+	}, nil
+}
+
 func (cp *controlPlane) ListApplications(_ context.Context, req *v1.ListApplicationsRequest) (*v1.ListApplicationsResponse, error) {
 	applications, err := cp.repo.ListApplications(&dao.ListApplicationsQuery{
 		Page:     int(req.Page),
@@ -18,10 +43,17 @@ func (cp *controlPlane) ListApplications(_ context.Context, req *v1.ListApplicat
 	if err != nil {
 		return nil, err
 	}
+	count, err := cp.repo.CountApplications(&dao.ListApplicationsQuery{
+		DeviceID: uint(req.DeviceId),
+	})
+	if err != nil {
+		return nil, err
+	}
 	return &v1.ListApplicationsResponse{
 		Code:    200,
 		Message: "success",
 		Data: &v1.Applications{
+			Total:        int32(count),
 			Applications: transformApplications(applications),
 		},
 	}, nil
@@ -69,10 +101,20 @@ func transformApplications(applications []*model.Application) []*v1.Application 
 }
 
 func transformApplication(application *model.Application) *v1.Application {
+	// 获取第一个 edge_id，因为目前一个应用只关联一个 edge
+	var edgeId uint64
+	if len(application.EdgeIDs) > 0 {
+		edgeId = uint64(application.EdgeIDs[0])
+	}
+
 	return &v1.Application{
-		Id:        uint64(application.ID),
-		Name:      application.Name,
-		CreatedAt: application.CreatedAt.Format(time.DateTime),
-		UpdatedAt: application.UpdatedAt.Format(time.DateTime),
+		Id:              uint64(application.ID),
+		EdgeId:          edgeId,
+		Name:            application.Name,
+		Ip:              application.IP,
+		Port:            int32(application.Port),
+		ApplicationType: string(application.ApplicationType),
+		CreatedAt:       application.CreatedAt.Format(time.DateTime),
+		UpdatedAt:       application.UpdatedAt.Format(time.DateTime),
 	}
 }

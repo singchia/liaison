@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"context"
+	"encoding/binary"
 	"encoding/json"
 	"io"
 	"net"
@@ -32,8 +33,19 @@ func NewProxy(frontierBound frontierbound.FrontierBound) (Proxy, error) {
 
 func (p *proxy) proxy(ctx context.Context, stream geminio.Stream) {
 	// 读取前4个字节获取meta长度
-	buf := make([]byte, 4)
-	stream.Read(buf)
+	lengthBuf := make([]byte, 4)
+	_, err := io.ReadFull(stream, lengthBuf)
+	if err != nil {
+		logrus.Errorf("proxy stream read meta length err: %s", err)
+		return
+	}
+	length := binary.BigEndian.Uint32(lengthBuf)
+	dataBuf := make([]byte, length)
+	_, err = io.ReadFull(stream, dataBuf)
+	if err != nil {
+		logrus.Errorf("proxy stream read meta data err: %s", err)
+		return
+	}
 
 	meta := stream.Meta()
 	var dst proto.Dst

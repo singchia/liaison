@@ -1,6 +1,7 @@
 include ./Makefile.defs
 
-all: liaison-edge
+all: liaison liaison-edge
+linux: liaison-linux liaison-edge-linux
 
 .PHONY: image-gen-swagger
 image-gen-swagger:
@@ -10,10 +11,23 @@ image-gen-swagger:
 image-gen-api:
 	docker buildx build -t image-gen-api:${VERSION} -f images/Dockerfile.liaison-api .
 
-# binary
+# local development builds (for macOS)
+.PHONY: liaison
+liaison-local:
+	GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 go build -trimpath -ldflags "-s -w" -o ./bin/liaison cmd/manager/main.go
+
 .PHONY: liaison-edge
-liaison-edge:
-	go build -trimpath -ldflags "-s -w" -o ./bin/liaison-edge cmd/edge/main.go
+liaison-edge-local:
+	GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o ./bin/liaison-edge cmd/edge/main.go
+
+# Linux builds without CGO (for cross-compilation)
+.PHONY: liaison-linux
+liaison-linux:
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build -trimpath -ldflags "-s -w" -o ./bin/liaison cmd/manager/main.go
+
+.PHONY: liaison-edge-linux
+liaison-edge-linux:
+	GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o ./bin/liaison-edge cmd/edge/main.go
 
 # api
 .PHONY: gen-api

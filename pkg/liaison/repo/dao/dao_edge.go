@@ -38,9 +38,21 @@ func (d *dao) GetEdgeByDeviceID(deviceID uint) (*model.Edge, error) {
 	return &edge, nil
 }
 
+func (d *dao) CountEdges() (int64, error) {
+	var count int64
+	if err := d.getDB().Model(&model.Edge{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 func (d *dao) ListEdges(page, pageSize int) ([]*model.Edge, error) {
+	db := d.getDB()
+	if page > 0 && pageSize > 0 {
+		db = db.Offset((page - 1) * pageSize)
+	}
 	var edges []*model.Edge
-	if err := d.getDB().Offset((page - 1) * pageSize).Limit(pageSize).Find(&edges).Error; err != nil {
+	if err := db.Find(&edges).Error; err != nil {
 		return nil, err
 	}
 	return edges, nil

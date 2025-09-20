@@ -6,6 +6,43 @@ definitions:
       secret_key:
         type: string
     type: object
+  v1.Application:
+    properties:
+      application_type:
+        type: string
+      created_at:
+        type: string
+      device:
+        $ref: '#/definitions/v1.Device'
+      edge_id:
+        type: integer
+      id:
+        type: integer
+      ip:
+        type: string
+      name:
+        type: string
+      port:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  v1.Applications:
+    properties:
+      applications:
+        items:
+          $ref: '#/definitions/v1.Application'
+        type: array
+      total:
+        type: integer
+    type: object
+  v1.CreateApplicationResponse:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    type: object
   v1.CreateEdgeResponse:
     properties:
       code:
@@ -15,12 +52,74 @@ definitions:
       message:
         type: string
     type: object
+  v1.CreateEdgeScanApplicationTaskResponse:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    type: object
+  v1.CreateProxyResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/v1.Proxy'
+      message:
+        type: string
+    type: object
+  v1.DeleteApplicationResponse:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    type: object
   v1.DeleteEdgeResponse:
     properties:
       code:
         type: integer
       message:
         type: string
+    type: object
+  v1.DeleteProxyResponse:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    type: object
+  v1.Device:
+    properties:
+      cpu:
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      disk:
+        type: integer
+      id:
+        type: integer
+      memory:
+        type: integer
+      name:
+        type: string
+      os:
+        type: string
+      updated_at:
+        type: string
+      version:
+        type: string
+    type: object
+  v1.Devices:
+    properties:
+      devices:
+        items:
+          $ref: '#/definitions/v1.Device'
+        type: array
+      total:
+        type: integer
     type: object
   v1.Edge:
     properties:
@@ -32,8 +131,29 @@ definitions:
         type: integer
       name:
         type: string
+      online:
+        type: integer
       status:
         type: integer
+      updated_at:
+        type: string
+    type: object
+  v1.EdgeScanApplicationTask:
+    properties:
+      applications:
+        items:
+          type: string
+        type: array
+      created_at:
+        type: string
+      edge_id:
+        type: integer
+      error:
+        type: string
+      id:
+        type: integer
+      task_status:
+        type: string
       updated_at:
         type: string
     type: object
@@ -46,12 +166,48 @@ definitions:
       total:
         type: integer
     type: object
+  v1.GetDeviceResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/v1.Device'
+      message:
+        type: string
+    type: object
   v1.GetEdgeResponse:
     properties:
       code:
         type: integer
       data:
         $ref: '#/definitions/v1.Edge'
+      message:
+        type: string
+    type: object
+  v1.GetEdgeScanApplicationTaskResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/v1.EdgeScanApplicationTask'
+      message:
+        type: string
+    type: object
+  v1.ListApplicationsResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/v1.Applications'
+      message:
+        type: string
+    type: object
+  v1.ListDevicesResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/v1.Devices'
       message:
         type: string
     type: object
@@ -64,6 +220,61 @@ definitions:
       message:
         type: string
     type: object
+  v1.ListProxiesResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/v1.Proxies'
+      message:
+        type: string
+    type: object
+  v1.Proxies:
+    properties:
+      proxies:
+        items:
+          $ref: '#/definitions/v1.Proxy'
+        type: array
+      total:
+        type: integer
+    type: object
+  v1.Proxy:
+    properties:
+      application:
+        $ref: '#/definitions/v1.Application'
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      port:
+        type: integer
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  v1.UpdateApplicationResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/v1.Application'
+      message:
+        type: string
+    type: object
+  v1.UpdateDeviceResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/v1.Device'
+      message:
+        type: string
+    type: object
   v1.UpdateEdgeResponse:
     properties:
       code:
@@ -73,18 +284,180 @@ definitions:
       message:
         type: string
     type: object
+  v1.UpdateProxyResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/v1.Proxy'
+      message:
+        type: string
+    type: object
 info:
-  contact:
-    email: singchia@163.com
-    name: Austin Zhai
-  description: Liaison Swagger API
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  title: Liaison Swagger API
-  version: "1.0"
+  contact: {}
 paths:
-  /api/v1/edge:
+  /v1/applications:
+    get:
+      parameters:
+      - in: query
+        name: device_id
+        type: integer
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.ListApplicationsResponse'
+      summary: ListApplications
+      tags:
+      - "1.0"
+    post:
+      parameters:
+      - in: query
+        name: application_type
+        type: string
+      - in: query
+        name: device_id
+        type: integer
+      - in: query
+        name: edge_id
+        type: integer
+      - in: query
+        name: ip
+        type: string
+      - in: query
+        name: name
+        type: string
+      - in: query
+        name: port
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.CreateApplicationResponse'
+      summary: CreateApplication
+      tags:
+      - "1.0"
+  /v1/applications/{id}:
+    delete:
+      parameters:
+      - description: application id
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.DeleteApplicationResponse'
+      summary: DeleteApplication
+      tags:
+      - "1.0"
+    put:
+      parameters:
+      - description: application id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - in: query
+        name: id
+        type: integer
+      - in: query
+        name: name
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.UpdateApplicationResponse'
+      summary: UpdateApplication
+      tags:
+      - "1.0"
+  /v1/devices:
+    get:
+      parameters:
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.ListDevicesResponse'
+      summary: ListDevices
+      tags:
+      - "1.0"
+  /v1/devices/{id}:
+    get:
+      parameters:
+      - description: device id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - in: query
+        name: id
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.GetDeviceResponse'
+      summary: GetDevice
+      tags:
+      - "1.0"
+    put:
+      parameters:
+      - description: device id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - in: query
+        name: description
+        type: string
+      - in: query
+        name: id
+        type: integer
+      - in: query
+        name: name
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.UpdateDeviceResponse'
+      summary: UpdateDevice
+      tags:
+      - "1.0"
+  /v1/edges:
+    get:
+      parameters:
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.ListEdgesResponse'
+      summary: ListEdges
+      tags:
+      - "1.0"
     post:
       parameters:
       - in: query
@@ -101,7 +474,40 @@ paths:
       summary: CreateEdge
       tags:
       - "1.0"
-  /api/v1/edge/{id}:
+  /v1/edges/{edge_id}/scan_application_tasks:
+    get:
+      parameters:
+      - in: query
+        name: edge_id
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.GetEdgeScanApplicationTaskResponse'
+      summary: GetEdgeScanApplicationTask
+      tags:
+      - "1.0"
+    post:
+      parameters:
+      - in: query
+        name: edge_id
+        type: integer
+      - in: query
+        name: port
+        type: integer
+      - in: query
+        name: protocol
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.CreateEdgeScanApplicationTaskResponse'
+      summary: CreateEdgeScanApplicationTask
+      tags:
+      - "1.0"
+  /v1/edges/{id}:
     delete:
       parameters:
       - description: edge id
@@ -163,7 +569,7 @@ paths:
       summary: UpdateEdge
       tags:
       - "1.0"
-  /api/v1/edges:
+  /v1/proxies:
     get:
       parameters:
       - in: query
@@ -176,8 +582,76 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/v1.ListEdgesResponse'
-      summary: ListEdges
+            $ref: '#/definitions/v1.ListProxiesResponse'
+      summary: ListProxies
+      tags:
+      - "1.0"
+    post:
+      parameters:
+      - in: query
+        name: application_id
+        type: integer
+      - in: query
+        name: description
+        type: string
+      - in: query
+        name: name
+        type: string
+      - in: query
+        name: port
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.CreateProxyResponse'
+      summary: CreateProxy
+      tags:
+      - "1.0"
+  /v1/proxies/{id}:
+    delete:
+      parameters:
+      - description: proxy id
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.DeleteProxyResponse'
+      summary: DeleteProxy
+      tags:
+      - "1.0"
+    put:
+      parameters:
+      - description: proxy id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - in: query
+        name: description
+        type: string
+      - in: query
+        name: id
+        type: integer
+      - in: query
+        name: name
+        type: string
+      - in: query
+        name: port
+        type: integer
+      - in: query
+        name: status
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.UpdateProxyResponse'
+      summary: UpdateProxy
       tags:
       - "1.0"
 swagger: "2.0"

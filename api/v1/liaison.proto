@@ -141,17 +141,34 @@ message UpdateDeviceResponse {
 // 应用
 message Application {
     uint64 id = 1;
-    Device device = 2;  
-    string name = 3;
-    int32 port = 4;
-    string application_type = 5;
-    string created_at = 6;
-    string updated_at = 7;
+    uint64 edge_id = 2;
+    Device device = 3;  
+    string name = 4;
+    string ip = 5;
+    int32 port = 6;
+    string application_type = 7;
+    string created_at = 8;
+    string updated_at = 9;
 }
 
 message Applications {
     int32 total = 1;
     repeated Application applications = 2;
+}
+
+// 添加应用请求
+message CreateApplicationRequest {
+    string name = 1;
+    string ip = 2;
+    int32 port = 3;
+    string application_type = 4;
+    uint64 edge_id = 5;
+    optional uint64 device_id = 6;
+}
+
+message CreateApplicationResponse {
+    int32 code = 1;
+    string message = 2;
 }
 
 // 列举应用请求
@@ -339,6 +356,12 @@ service LiaisonService {
     };
 
     // 应用
+    rpc CreateApplication(CreateApplicationRequest) returns (CreateApplicationResponse) {
+        option (google.api.http) = {
+            post: "/v1/applications",
+            body: "*"
+        };
+    };
     rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {
         option (google.api.http) = {
             get: "/v1/applications"

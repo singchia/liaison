@@ -27,6 +27,7 @@ const (
 	LiaisonService_ListDevices_FullMethodName                   = "/LiaisonService/ListDevices"
 	LiaisonService_UpdateDevice_FullMethodName                  = "/LiaisonService/UpdateDevice"
 	LiaisonService_GetDevice_FullMethodName                     = "/LiaisonService/GetDevice"
+	LiaisonService_CreateApplication_FullMethodName             = "/LiaisonService/CreateApplication"
 	LiaisonService_ListApplications_FullMethodName              = "/LiaisonService/ListApplications"
 	LiaisonService_UpdateApplication_FullMethodName             = "/LiaisonService/UpdateApplication"
 	LiaisonService_DeleteApplication_FullMethodName             = "/LiaisonService/DeleteApplication"
@@ -53,6 +54,7 @@ type LiaisonServiceClient interface {
 	UpdateDevice(ctx context.Context, in *UpdateDeviceRequest, opts ...grpc.CallOption) (*UpdateDeviceResponse, error)
 	GetDevice(ctx context.Context, in *GetDeviceRequest, opts ...grpc.CallOption) (*GetDeviceResponse, error)
 	// 应用
+	CreateApplication(ctx context.Context, in *CreateApplicationRequest, opts ...grpc.CallOption) (*CreateApplicationResponse, error)
 	ListApplications(ctx context.Context, in *ListApplicationsRequest, opts ...grpc.CallOption) (*ListApplicationsResponse, error)
 	UpdateApplication(ctx context.Context, in *UpdateApplicationRequest, opts ...grpc.CallOption) (*UpdateApplicationResponse, error)
 	DeleteApplication(ctx context.Context, in *DeleteApplicationRequest, opts ...grpc.CallOption) (*DeleteApplicationResponse, error)
@@ -140,6 +142,15 @@ func (c *liaisonServiceClient) UpdateDevice(ctx context.Context, in *UpdateDevic
 func (c *liaisonServiceClient) GetDevice(ctx context.Context, in *GetDeviceRequest, opts ...grpc.CallOption) (*GetDeviceResponse, error) {
 	out := new(GetDeviceResponse)
 	err := c.cc.Invoke(ctx, LiaisonService_GetDevice_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *liaisonServiceClient) CreateApplication(ctx context.Context, in *CreateApplicationRequest, opts ...grpc.CallOption) (*CreateApplicationResponse, error) {
+	out := new(CreateApplicationResponse)
+	err := c.cc.Invoke(ctx, LiaisonService_CreateApplication_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -242,6 +253,7 @@ type LiaisonServiceServer interface {
 	UpdateDevice(context.Context, *UpdateDeviceRequest) (*UpdateDeviceResponse, error)
 	GetDevice(context.Context, *GetDeviceRequest) (*GetDeviceResponse, error)
 	// 应用
+	CreateApplication(context.Context, *CreateApplicationRequest) (*CreateApplicationResponse, error)
 	ListApplications(context.Context, *ListApplicationsRequest) (*ListApplicationsResponse, error)
 	UpdateApplication(context.Context, *UpdateApplicationRequest) (*UpdateApplicationResponse, error)
 	DeleteApplication(context.Context, *DeleteApplicationRequest) (*DeleteApplicationResponse, error)
@@ -283,6 +295,9 @@ func (UnimplementedLiaisonServiceServer) UpdateDevice(context.Context, *UpdateDe
 }
 func (UnimplementedLiaisonServiceServer) GetDevice(context.Context, *GetDeviceRequest) (*GetDeviceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDevice not implemented")
+}
+func (UnimplementedLiaisonServiceServer) CreateApplication(context.Context, *CreateApplicationRequest) (*CreateApplicationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateApplication not implemented")
 }
 func (UnimplementedLiaisonServiceServer) ListApplications(context.Context, *ListApplicationsRequest) (*ListApplicationsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListApplications not implemented")
@@ -464,6 +479,24 @@ func _LiaisonService_GetDevice_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(LiaisonServiceServer).GetDevice(ctx, req.(*GetDeviceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LiaisonService_CreateApplication_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateApplicationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LiaisonServiceServer).CreateApplication(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LiaisonService_CreateApplication_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LiaisonServiceServer).CreateApplication(ctx, req.(*CreateApplicationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -668,6 +701,10 @@ var LiaisonService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDevice",
 			Handler:    _LiaisonService_GetDevice_Handler,
+		},
+		{
+			MethodName: "CreateApplication",
+			Handler:    _LiaisonService_CreateApplication_Handler,
 		},
 		{
 			MethodName: "ListApplications",

@@ -3,4 +3,4 @@ FROM golang:1.22-alpine
 RUN go install github.com/swaggo/swag/cmd/swag@latest
 
 WORKDIR /liaison
-CMD swag init -g pkg/liaison/internal/manager/controlplane/controlplane.go --output docs/swagger/
+CMD swag init -g pkg/liaison/manager/controlplane/controlplane.go --output docs/swagger/

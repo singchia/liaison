@@ -13,10 +13,15 @@ func (cp *controlPlane) ListDevices(_ context.Context, req *v1.ListDevicesReques
 	if err != nil {
 		return nil, err
 	}
+	count, err := cp.repo.CountDevices()
+	if err != nil {
+		return nil, err
+	}
 	return &v1.ListDevicesResponse{
 		Code:    200,
 		Message: "success",
 		Data: &v1.Devices{
+			Total:   int32(count),
 			Devices: transformDevices(devices),
 		},
 	}, nil
@@ -64,6 +69,11 @@ func transformDevice(device *model.Device) *v1.Device {
 		Id:          uint64(device.ID),
 		Name:        device.Name,
 		Description: device.Description,
+		Cpu:         int32(device.CPU),
+		Memory:      int32(device.Memory),
+		Disk:        0, // 数据库中没有 disk 字段，设置为 0
+		Os:          device.OS,
+		Version:     device.OSVersion,
 		CreatedAt:   device.CreatedAt.Format(time.DateTime),
 		UpdatedAt:   device.UpdatedAt.Format(time.DateTime),
 	}

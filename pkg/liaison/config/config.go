@@ -1,6 +1,25 @@
 package config
 
-import "github.com/singchia/liaison/pkg/config"
+import (
+	"flag"
+	"os"
+	"time"
+
+	"github.com/jumboframes/armorigo/log"
+	"github.com/singchia/liaison/pkg/config"
+	"github.com/singchia/liaison/pkg/lerrors"
+	"gopkg.in/natefinch/lumberjack.v2"
+	"gopkg.in/yaml.v2"
+)
+
+var (
+	Conf      *Configuration
+	RotateLog *lumberjack.Logger
+
+	h           bool
+	file        string
+	defaultFile string = "./liaison.yaml"
+)
 
 // daemon related
 type RLimit struct {
@@ -28,8 +47,73 @@ type Frontier struct {
 	Dial config.Dial `yaml:"dial,omitempty" json:"dial"`
 }
 
+type Log struct {
+	Level    string `yaml:"level"`
+	File     string `yaml:"file"`
+	MaxSize  int    `yaml:"maxsize"`
+	MaxRolls int    `yaml:"maxrolls"`
+}
+
 type Configuration struct {
 	Daemon   Daemon   `yaml:"daemon,omitempty" json:"daemon"`
 	Manager  Manager  `yaml:"manager,omitempty" json:"manager"`
 	Frontier Frontier `yaml:"frontier,omitempty" json:"frontier"`
+
+	Log Log `yaml:"log"`
+}
+
+func Init() error {
+	time.LoadLocation("Asia/Shanghai")
+
+	err := initCmd()
+	if err != nil {
+		return err
+	}
+
+	err = initConf()
+	if err != nil {
+		return err
+	}
+
+	err = initLog()
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+func initCmd() error {
+	flag.StringVar(&file, "c", defaultFile, "configuration file")
+	flag.BoolVar(&h, "h", false, "help")
+	flag.Parse()
+	if h {
+		flag.Usage()
+		return lerrors.ErrInvalidUsage
+	}
+	return nil
+}
+
+func initConf() error {
+	data, err := os.ReadFile(file)
+	if err != nil {
+		return err
+	}
+	Conf = &Configuration{}
+	err = yaml.Unmarshal([]byte(data), Conf)
+	return err
+}
+
+func initLog() error {
+	level, err := log.ParseLevel(Conf.Log.Level)
+	if err != nil {
+		return err
+	}
+	log.SetLevel(level)
+	RotateLog = &lumberjack.Logger{
+		Filename:   Conf.Log.File,
+		MaxSize:    Conf.Log.MaxSize,
+		MaxBackups: Conf.Log.MaxRolls,
+	}
+	log.SetOutput(RotateLog)
+	return nil
 }

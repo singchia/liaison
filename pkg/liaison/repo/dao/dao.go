@@ -23,6 +23,7 @@ type Dao interface {
 	CreateEdge(edge *model.Edge) error
 	GetEdgeByDeviceID(deviceID uint) (*model.Edge, error)
 	ListEdges(page, pageSize int) ([]*model.Edge, error)
+	CountEdges() (int64, error)
 	UpdateEdge(edge *model.Edge) error
 	UpdateEdgeOnlineStatus(edgeID uint64, onlineStatus model.EdgeOnlineStatus) error
 	UpdateEdgeHeartbeatAt(edgeID uint64, heartbeatAt time.Time) error
@@ -38,6 +39,7 @@ type Dao interface {
 	CreateEthernetInterface(iface *model.EthernetInterface) error
 	GetDeviceByID(id uint) (*model.Device, error)
 	ListDevices(page, pageSize int) ([]*model.Device, error)
+	CountDevices() (int64, error)
 	UpdateDevice(device *model.Device) error
 	UpdateDeviceUsage(deviceID uint, cpuUsage, memoryUsage, diskUsage float32) error
 
@@ -45,6 +47,7 @@ type Dao interface {
 	CreateApplication(application *model.Application) error
 	GetApplicationByID(id uint) (*model.Application, error)
 	ListApplications(query *ListApplicationsQuery) ([]*model.Application, error)
+	CountApplications(query *ListApplicationsQuery) (int64, error)
 	UpdateApplication(application *model.Application) error
 	DeleteApplication(id uint) error
 
@@ -52,6 +55,7 @@ type Dao interface {
 	CreateProxy(proxy *model.Proxy) error
 	GetProxyByID(id uint) (*model.Proxy, error)
 	ListProxies(page, pageSize int) ([]*model.Proxy, error)
+	CountProxies() (int64, error)
 	UpdateProxy(proxy *model.Proxy) error
 	DeleteProxy(id uint) error
 
@@ -75,26 +79,45 @@ type dao struct {
 }
 
 func NewDao(config *config.Configuration) (Dao, error) {
+	d := &dao{
+		config: config,
+	}
 	db, err := gorm.Open(sqlite.Open(config.Manager.DB), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
+	d.db = db
 	sqlDB, err := db.DB()
 	if err != nil {
 		return nil, err
 	}
-	sqlDB.Exec("PRAGMA synchronous = OFF;")
-	sqlDB.Exec("PRAGMA journal_mode = DELETE;")
+	sqlDB.Exec("PRAGMA synchronous = NORMAL;")
+	sqlDB.Exec("PRAGMA journal_mode = WAL;")
 	sqlDB.Exec("PRAGMA cache_size = -2000;") // 2MB cache
 	sqlDB.Exec("PRAGMA temp_store = MEMORY;")
-	sqlDB.Exec("PRAGMA locking_mode = EXCLUSIVE;")
+	sqlDB.Exec("PRAGMA locking_mode = NORMAL;")
 	sqlDB.Exec("PRAGMA mmap_size = 268435456;") // 256MB memory map size
-	sqlDB.SetMaxOpenConns(0)
+	sqlDB.SetMaxOpenConns(1)
+	sqlDB.SetMaxIdleConns(1)
+	sqlDB.SetConnMaxLifetime(time.Hour)
 
-	return &dao{
-		db:     db,
-		config: config,
-	}, nil
+	if err := d.initDB(); err != nil {
+		return nil, err
+	}
+
+	return d, nil
+}
+
+func (d *dao) initDB() error {
+	return d.db.AutoMigrate(
+		&model.Edge{},
+		&model.AccessKey{},
+		&model.Device{},
+		&model.EthernetInterface{},
+		&model.Application{},
+		&model.Proxy{},
+		&model.Task{},
+	)
 }
 
 // Begin 开始事务 - 返回新的事务 DAO 实例

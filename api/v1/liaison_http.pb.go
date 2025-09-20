@@ -19,6 +19,7 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationLiaisonServiceCreateApplication = "/LiaisonService/CreateApplication"
 const OperationLiaisonServiceCreateEdge = "/LiaisonService/CreateEdge"
 const OperationLiaisonServiceCreateEdgeScanApplicationTask = "/LiaisonService/CreateEdgeScanApplicationTask"
 const OperationLiaisonServiceCreateProxy = "/LiaisonService/CreateProxy"
@@ -38,6 +39,8 @@ const OperationLiaisonServiceUpdateEdge = "/LiaisonService/UpdateEdge"
 const OperationLiaisonServiceUpdateProxy = "/LiaisonService/UpdateProxy"
 
 type LiaisonServiceHTTPServer interface {
+	// CreateApplication 应用
+	CreateApplication(context.Context, *CreateApplicationRequest) (*CreateApplicationResponse, error)
 	// CreateEdge 边缘
 	CreateEdge(context.Context, *CreateEdgeRequest) (*CreateEdgeResponse, error)
 	// CreateEdgeScanApplicationTask 任务
@@ -49,7 +52,6 @@ type LiaisonServiceHTTPServer interface {
 	GetDevice(context.Context, *GetDeviceRequest) (*GetDeviceResponse, error)
 	GetEdge(context.Context, *GetEdgeRequest) (*GetEdgeResponse, error)
 	GetEdgeScanApplicationTask(context.Context, *GetEdgeScanApplicationTaskRequest) (*GetEdgeScanApplicationTaskResponse, error)
-	// ListApplications 应用
 	ListApplications(context.Context, *ListApplicationsRequest) (*ListApplicationsResponse, error)
 	// ListDevices 设备
 	ListDevices(context.Context, *ListDevicesRequest) (*ListDevicesResponse, error)
@@ -72,6 +74,7 @@ func RegisterLiaisonServiceHTTPServer(s *http.Server, srv LiaisonServiceHTTPServ
 	r.GET("/v1/devices", _LiaisonService_ListDevices0_HTTP_Handler(srv))
 	r.PUT("/v1/devices/{id}", _LiaisonService_UpdateDevice0_HTTP_Handler(srv))
 	r.GET("/v1/devices/{id}", _LiaisonService_GetDevice0_HTTP_Handler(srv))
+	r.POST("/v1/applications", _LiaisonService_CreateApplication0_HTTP_Handler(srv))
 	r.GET("/v1/applications", _LiaisonService_ListApplications0_HTTP_Handler(srv))
 	r.PUT("/v1/applications/{id}", _LiaisonService_UpdateApplication0_HTTP_Handler(srv))
 	r.DELETE("/v1/applications/{id}", _LiaisonService_DeleteApplication0_HTTP_Handler(srv))
@@ -255,6 +258,28 @@ func _LiaisonService_GetDevice0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(
 			return err
 		}
 		reply := out.(*GetDeviceResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _LiaisonService_CreateApplication0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in CreateApplicationRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationLiaisonServiceCreateApplication)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.CreateApplication(ctx, req.(*CreateApplicationRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*CreateApplicationResponse)
 		return ctx.Result(200, reply)
 	}
 }
@@ -461,6 +486,7 @@ func _LiaisonService_GetEdgeScanApplicationTask0_HTTP_Handler(srv LiaisonService
 }
 
 type LiaisonServiceHTTPClient interface {
+	CreateApplication(ctx context.Context, req *CreateApplicationRequest, opts ...http.CallOption) (rsp *CreateApplicationResponse, err error)
 	CreateEdge(ctx context.Context, req *CreateEdgeRequest, opts ...http.CallOption) (rsp *CreateEdgeResponse, err error)
 	CreateEdgeScanApplicationTask(ctx context.Context, req *CreateEdgeScanApplicationTaskRequest, opts ...http.CallOption) (rsp *CreateEdgeScanApplicationTaskResponse, err error)
 	CreateProxy(ctx context.Context, req *CreateProxyRequest, opts ...http.CallOption) (rsp *CreateProxyResponse, err error)
@@ -486,6 +512,19 @@ type LiaisonServiceHTTPClientImpl struct {
 
 func NewLiaisonServiceHTTPClient(client *http.Client) LiaisonServiceHTTPClient {
 	return &LiaisonServiceHTTPClientImpl{client}
+}
+
+func (c *LiaisonServiceHTTPClientImpl) CreateApplication(ctx context.Context, in *CreateApplicationRequest, opts ...http.CallOption) (*CreateApplicationResponse, error) {
+	var out CreateApplicationResponse
+	pattern := "/v1/applications"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationLiaisonServiceCreateApplication))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 func (c *LiaisonServiceHTTPClientImpl) CreateEdge(ctx context.Context, in *CreateEdgeRequest, opts ...http.CallOption) (*CreateEdgeResponse, error) {

@@ -85,10 +85,15 @@ func (cp *controlPlane) ListEdges(_ context.Context, req *v1.ListEdgesRequest) (
 	if err != nil {
 		return nil, err
 	}
+	count, err := cp.repo.CountEdges()
+	if err != nil {
+		return nil, err
+	}
 	return &v1.ListEdgesResponse{
 		Code:    200,
 		Message: "success",
 		Data: &v1.Edges{
+			Total: int32(count),
 			Edges: transformEdges(edges),
 		},
 	}, nil
@@ -189,6 +194,7 @@ func transformEdge(edge *model.Edge) *v1.Edge {
 		Id:          uint64(edge.ID),
 		Name:        edge.Name,
 		Description: edge.Description,
+		Status:      1, // 默认状态为运行中，因为数据库中没有 status 字段
 		Online:      int32(edge.Online),
 		CreatedAt:   edge.CreatedAt.Format(time.DateTime),
 		UpdatedAt:   edge.UpdatedAt.Format(time.DateTime),
