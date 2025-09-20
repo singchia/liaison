@@ -21,7 +21,7 @@ func (cp *controlPlane) CreateApplication(_ context.Context, req *v1.CreateAppli
 		IP:              req.Ip,
 		Port:            int(req.Port),
 		ApplicationType: model.ApplicationType(req.ApplicationType),
-		EdgeIDs:         []uint{uint(req.EdgeId)},
+		EdgeIDs:         model.UintSlice{uint(req.EdgeId)},
 		DeviceID:        deviceID,
 	}
 	err := cp.repo.CreateApplication(application)

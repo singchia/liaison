@@ -6,8 +6,8 @@ manager:
     tls:
       enable: false
   auth:
-    access_key: "default_access_key"
-    secret_key: "default_secret_key"
+    access_key: "MTc1ODMzMDM5NTM4Njgx"
+    secret_key: "r7Fx5VP6h3zkuKryObW8KA6sv57cOyB8h-zqIQ44sfw"
 log:
   level: debug
   file: ./logs/liaison-edge.log
