@@ -14,6 +14,14 @@ func (d *dao) GetProxyByID(id uint) (*model.Proxy, error) {
 	return &proxy, nil
 }
 
+func (d *dao) CountProxies() (int64, error) {
+	var count int64
+	if err := d.getDB().Model(&model.Proxy{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 func (d *dao) ListProxies(page, pageSize int) ([]*model.Proxy, error) {
 	db := d.getDB()
 	// page & page_size

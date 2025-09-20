@@ -1,0 +1,15 @@
+manager:
+  dial:
+    addrs:
+      - 1.15.14.43:30012
+    network: tcp
+    tls:
+      enable: false
+  auth:
+    access_key: "default_access_key"
+    secret_key: "default_secret_key"
+log:
+  level: debug
+  file: ./logs/liaison-edge.log
+  maxsize: 100
+  maxrolls: 10

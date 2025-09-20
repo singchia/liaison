@@ -13,10 +13,15 @@ func (cp *controlPlane) ListDevices(_ context.Context, req *v1.ListDevicesReques
 	if err != nil {
 		return nil, err
 	}
+	count, err := cp.repo.CountDevices()
+	if err != nil {
+		return nil, err
+	}
 	return &v1.ListDevicesResponse{
 		Code:    200,
 		Message: "success",
 		Data: &v1.Devices{
+			Total:   int32(count),
 			Devices: transformDevices(devices),
 		},
 	}, nil

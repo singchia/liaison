@@ -29,6 +29,7 @@ go.work.sum
 
 # binary
 bin/
+logs/
 
 # Editor/IDE
 # .idea/

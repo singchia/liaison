@@ -34,6 +34,10 @@ func (cp *controlPlane) ListProxies(_ context.Context, req *v1.ListProxiesReques
 	if err != nil {
 		return nil, err
 	}
+	count, err := cp.repo.CountProxies()
+	if err != nil {
+		return nil, err
+	}
 	ids := make([]uint, len(proxies))
 	for i, proxy := range proxies {
 		ids[i] = proxy.ApplicationID
@@ -56,6 +60,7 @@ func (cp *controlPlane) ListProxies(_ context.Context, req *v1.ListProxiesReques
 		Code:    200,
 		Message: "success",
 		Data: &v1.Proxies{
+			Total:   int32(count),
 			Proxies: transformProxies(proxies),
 		},
 	}, nil

@@ -43,10 +43,17 @@ func (cp *controlPlane) ListApplications(_ context.Context, req *v1.ListApplicat
 	if err != nil {
 		return nil, err
 	}
+	count, err := cp.repo.CountApplications(&dao.ListApplicationsQuery{
+		DeviceID: uint(req.DeviceId),
+	})
+	if err != nil {
+		return nil, err
+	}
 	return &v1.ListApplicationsResponse{
 		Code:    200,
 		Message: "success",
 		Data: &v1.Applications{
+			Total:        int32(count),
 			Applications: transformApplications(applications),
 		},
 	}, nil

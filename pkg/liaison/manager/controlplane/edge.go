@@ -85,10 +85,15 @@ func (cp *controlPlane) ListEdges(_ context.Context, req *v1.ListEdgesRequest) (
 	if err != nil {
 		return nil, err
 	}
+	count, err := cp.repo.CountEdges()
+	if err != nil {
+		return nil, err
+	}
 	return &v1.ListEdgesResponse{
 		Code:    200,
 		Message: "success",
 		Data: &v1.Edges{
+			Total: int32(count),
 			Edges: transformEdges(edges),
 		},
 	}, nil

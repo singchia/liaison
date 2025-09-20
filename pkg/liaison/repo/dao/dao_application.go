@@ -22,6 +22,21 @@ func (d *dao) UpdateApplication(application *model.Application) error {
 	return d.getDB().Save(application).Error
 }
 
+func (d *dao) CountApplications(query *ListApplicationsQuery) (int64, error) {
+	db := d.getDB()
+	if query.DeviceID != 0 {
+		db = db.Where("device_id = ?", query.DeviceID)
+	}
+	if len(query.IDs) > 0 {
+		db = db.Where("id IN ?", query.IDs)
+	}
+	var count int64
+	if err := db.Model(&model.Application{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 func (d *dao) ListApplications(query *ListApplicationsQuery) ([]*model.Application, error) {
 	var applications []*model.Application
 	db := d.getDB()

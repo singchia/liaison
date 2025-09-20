@@ -23,6 +23,7 @@ type Dao interface {
 	CreateEdge(edge *model.Edge) error
 	GetEdgeByDeviceID(deviceID uint) (*model.Edge, error)
 	ListEdges(page, pageSize int) ([]*model.Edge, error)
+	CountEdges() (int64, error)
 	UpdateEdge(edge *model.Edge) error
 	UpdateEdgeOnlineStatus(edgeID uint64, onlineStatus model.EdgeOnlineStatus) error
 	UpdateEdgeHeartbeatAt(edgeID uint64, heartbeatAt time.Time) error
@@ -38,6 +39,7 @@ type Dao interface {
 	CreateEthernetInterface(iface *model.EthernetInterface) error
 	GetDeviceByID(id uint) (*model.Device, error)
 	ListDevices(page, pageSize int) ([]*model.Device, error)
+	CountDevices() (int64, error)
 	UpdateDevice(device *model.Device) error
 	UpdateDeviceUsage(deviceID uint, cpuUsage, memoryUsage, diskUsage float32) error
 
@@ -45,6 +47,7 @@ type Dao interface {
 	CreateApplication(application *model.Application) error
 	GetApplicationByID(id uint) (*model.Application, error)
 	ListApplications(query *ListApplicationsQuery) ([]*model.Application, error)
+	CountApplications(query *ListApplicationsQuery) (int64, error)
 	UpdateApplication(application *model.Application) error
 	DeleteApplication(id uint) error
 
@@ -52,6 +55,7 @@ type Dao interface {
 	CreateProxy(proxy *model.Proxy) error
 	GetProxyByID(id uint) (*model.Proxy, error)
 	ListProxies(page, pageSize int) ([]*model.Proxy, error)
+	CountProxies() (int64, error)
 	UpdateProxy(proxy *model.Proxy) error
 	DeleteProxy(id uint) error
 

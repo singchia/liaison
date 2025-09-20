@@ -25,9 +25,21 @@ func (d *dao) GetDeviceByID(id uint) (*model.Device, error) {
 	return &device, nil
 }
 
+func (d *dao) CountDevices() (int64, error) {
+	var count int64
+	if err := d.getDB().Model(&model.Device{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 func (d *dao) ListDevices(page, pageSize int) ([]*model.Device, error) {
+	db := d.getDB()
+	if page > 0 && pageSize > 0 {
+		db = db.Offset((page - 1) * pageSize).Limit(pageSize)
+	}
 	var devices []*model.Device
-	if err := d.getDB().Offset((page - 1) * pageSize).Limit(pageSize).Find(&devices).Error; err != nil {
+	if err := db.Find(&devices).Error; err != nil {
 		return nil, err
 	}
 	return devices, nil
