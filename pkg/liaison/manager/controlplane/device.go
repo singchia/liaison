@@ -69,6 +69,11 @@ func transformDevice(device *model.Device) *v1.Device {
 		Id:          uint64(device.ID),
 		Name:        device.Name,
 		Description: device.Description,
+		Cpu:         int32(device.CPU),
+		Memory:      int32(device.Memory),
+		Disk:        0, // 数据库中没有 disk 字段，设置为 0
+		Os:          device.OS,
+		Version:     device.OSVersion,
 		CreatedAt:   device.CreatedAt.Format(time.DateTime),
 		UpdatedAt:   device.UpdatedAt.Format(time.DateTime),
 	}

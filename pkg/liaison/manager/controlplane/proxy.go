@@ -109,10 +109,23 @@ func transformProxies(proxies []*model.Proxy) []*v1.Proxy {
 
 func transformProxy(proxy *model.Proxy) *v1.Proxy {
 	application := transformApplication(proxy.Application)
+
+	// 将 ProxyStatus 转换为字符串
+	var status string
+	switch proxy.Status {
+	case model.ProxyStatusRunning:
+		status = "running"
+	case model.ProxyStatusStopped:
+		status = "stopped"
+	default:
+		status = "unknown"
+	}
+
 	return &v1.Proxy{
 		Id:          uint64(proxy.ID),
 		Name:        proxy.Name,
 		Port:        int32(proxy.Port),
+		Status:      status,
 		Application: application,
 		Description: proxy.Description,
 		CreatedAt:   proxy.CreatedAt.Format(time.DateTime),

@@ -194,6 +194,7 @@ func transformEdge(edge *model.Edge) *v1.Edge {
 		Id:          uint64(edge.ID),
 		Name:        edge.Name,
 		Description: edge.Description,
+		Status:      1, // 默认状态为运行中，因为数据库中没有 status 字段
 		Online:      int32(edge.Online),
 		CreatedAt:   edge.CreatedAt.Format(time.DateTime),
 		UpdatedAt:   edge.UpdatedAt.Format(time.DateTime),

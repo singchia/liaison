@@ -101,10 +101,20 @@ func transformApplications(applications []*model.Application) []*v1.Application 
 }
 
 func transformApplication(application *model.Application) *v1.Application {
+	// 获取第一个 edge_id，因为目前一个应用只关联一个 edge
+	var edgeId uint64
+	if len(application.EdgeIDs) > 0 {
+		edgeId = uint64(application.EdgeIDs[0])
+	}
+
 	return &v1.Application{
-		Id:        uint64(application.ID),
-		Name:      application.Name,
-		CreatedAt: application.CreatedAt.Format(time.DateTime),
-		UpdatedAt: application.UpdatedAt.Format(time.DateTime),
+		Id:              uint64(application.ID),
+		EdgeId:          edgeId,
+		Name:            application.Name,
+		Ip:              application.IP,
+		Port:            int32(application.Port),
+		ApplicationType: string(application.ApplicationType),
+		CreatedAt:       application.CreatedAt.Format(time.DateTime),
+		UpdatedAt:       application.UpdatedAt.Format(time.DateTime),
 	}
 }
