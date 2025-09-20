@@ -1,6 +1,7 @@
 include ./Makefile.defs
 
 all: liaison liaison-edge
+linux: liaison-linux liaison-edge-linux
 
 .PHONY: image-gen-swagger
 image-gen-swagger:
@@ -22,11 +23,11 @@ liaison-edge-local:
 # Linux builds without CGO (for cross-compilation)
 .PHONY: liaison-linux
 liaison-linux:
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o ./bin/liaison cmd/manager/main.go
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build -trimpath -ldflags "-s -w" -o ./bin/liaison cmd/manager/main.go
 
 .PHONY: liaison-edge-linux
 liaison-edge-linux:
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o ./bin/liaison-edge cmd/edge/main.go
+	GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o ./bin/liaison-edge cmd/edge/main.go
 
 # api
 .PHONY: gen-api
