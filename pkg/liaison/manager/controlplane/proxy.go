@@ -2,6 +2,7 @@ package controlplane
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	v1 "github.com/singchia/liaison/api/v1"
@@ -15,13 +16,33 @@ func (cp *controlPlane) RegisterProxyManager(proxyManager proto.ProxyManager) {
 }
 
 func (cp *controlPlane) CreateProxy(_ context.Context, req *v1.CreateProxyRequest) (*v1.CreateProxyResponse, error) {
-	proxy := &model.Proxy{
-		Name: req.Name,
-	}
-	err := cp.repo.CreateProxy(proxy)
+	// 获取application
+	application, err := cp.repo.GetApplicationByID(uint(req.ApplicationId))
 	if err != nil {
 		return nil, err
 	}
+
+	// 创建Proxy持久化
+	proxy := &model.Proxy{
+		Name:          req.Name,
+		Status:        model.ProxyStatusRunning,
+		Description:   req.Description,
+		Port:          int(req.Port),
+		ApplicationID: uint(req.ApplicationId),
+	}
+	err = cp.repo.CreateProxy(proxy)
+	if err != nil {
+		return nil, err
+	}
+
+	// 创建Proxy
+	cp.proxyManager.CreateProxy(context.Background(), &proto.Proxy{
+		ID:        int(proxy.ID),
+		Name:      proxy.Name,
+		ProxyPort: int(proxy.Port),
+		EdgeID:    uint64(application.EdgeIDs[0]),
+		Dst:       fmt.Sprintf("%s:%d", application.IP, application.Port),
+	})
 	return &v1.CreateProxyResponse{
 		Code:    200,
 		Message: "success",
@@ -75,6 +96,7 @@ func (cp *controlPlane) ListProxies(_ context.Context, req *v1.ListProxiesReques
 	}, nil
 }
 
+// 更新代理，不允许更新代理端口
 func (cp *controlPlane) UpdateProxy(_ context.Context, req *v1.UpdateProxyRequest) (*v1.UpdateProxyResponse, error) {
 	proxy, err := cp.repo.GetProxyByID(uint(req.Id))
 	if err != nil {
@@ -99,6 +121,11 @@ func (cp *controlPlane) UpdateProxy(_ context.Context, req *v1.UpdateProxyReques
 
 func (cp *controlPlane) DeleteProxy(_ context.Context, req *v1.DeleteProxyRequest) (*v1.DeleteProxyResponse, error) {
 	err := cp.repo.DeleteProxy(uint(req.Id))
+	if err != nil {
+		return nil, err
+	}
+	// 删除正在工作的代理
+	err = cp.proxyManager.DeleteProxy(context.Background(), int(req.Id))
 	if err != nil {
 		return nil, err
 	}

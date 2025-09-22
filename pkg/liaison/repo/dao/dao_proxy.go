@@ -36,7 +36,17 @@ func (d *dao) ListProxies(page, pageSize int) ([]*model.Proxy, error) {
 }
 
 func (d *dao) UpdateProxy(proxy *model.Proxy) error {
-	return d.getDB().Save(proxy).Error
+	updates := map[string]interface{}{}
+	if proxy.Name != "" {
+		updates["name"] = proxy.Name
+	}
+	if proxy.Status != 0 {
+		updates["status"] = proxy.Status
+	}
+	if proxy.Description != "" {
+		updates["description"] = proxy.Description
+	}
+	return d.getDB().Model(&model.Proxy{}).Where("id = ?", proxy.ID).Updates(updates).Error
 }
 
 func (d *dao) DeleteProxy(id uint) error {
