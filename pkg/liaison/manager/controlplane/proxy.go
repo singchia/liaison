@@ -2,8 +2,10 @@ package controlplane
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"github.com/go-kratos/kratos/v2/log"
 	v1 "github.com/singchia/liaison/api/v1"
 	"github.com/singchia/liaison/pkg/liaison/repo/dao"
 	"github.com/singchia/liaison/pkg/liaison/repo/model"
@@ -15,13 +17,36 @@ func (cp *controlPlane) RegisterProxyManager(proxyManager proto.ProxyManager) {
 }
 
 func (cp *controlPlane) CreateProxy(_ context.Context, req *v1.CreateProxyRequest) (*v1.CreateProxyResponse, error) {
-	proxy := &model.Proxy{
-		Name: req.Name,
-	}
-	err := cp.repo.CreateProxy(proxy)
+	// 查看是否有冲突
+	// 获取application
+	application, err := cp.repo.GetApplicationByID(uint(req.ApplicationId))
 	if err != nil {
+		log.Warnf("application %d not found", req.ApplicationId)
 		return nil, err
 	}
+
+	// 创建Proxy持久化
+	proxy := &model.Proxy{
+		Name:          req.Name,
+		Status:        model.ProxyStatusRunning,
+		Description:   req.Description,
+		Port:          int(req.Port),
+		ApplicationID: uint(req.ApplicationId),
+	}
+	err = cp.repo.CreateProxy(proxy)
+	if err != nil {
+		log.Warnf("failed to create proxy: %s", err)
+		return nil, err
+	}
+
+	// 创建Proxy
+	cp.proxyManager.CreateProxy(context.Background(), &proto.Proxy{
+		ID:        int(proxy.ID),
+		Name:      proxy.Name,
+		ProxyPort: int(proxy.Port),
+		EdgeID:    uint64(application.EdgeIDs[0]),
+		Dst:       fmt.Sprintf("%s:%d", application.IP, application.Port),
+	})
 	return &v1.CreateProxyResponse{
 		Code:    200,
 		Message: "success",
@@ -52,8 +77,18 @@ func (cp *controlPlane) ListProxies(_ context.Context, req *v1.ListProxiesReques
 		return nil, err
 	}
 	// add applications to proxies
+	// 创建一个 map 来快速查找 application
+	appMap := make(map[uint]*model.Application)
+	for _, app := range applications {
+		appMap[app.ID] = app
+	}
+
 	for i := range proxies {
-		proxies[i].Application = applications[i]
+		if app, exists := appMap[proxies[i].ApplicationID]; exists {
+			proxies[i].Application = app
+		} else {
+			log.Warnf("application %d not found", proxies[i].ApplicationID)
+		}
 	}
 
 	return &v1.ListProxiesResponse{
@@ -66,6 +101,7 @@ func (cp *controlPlane) ListProxies(_ context.Context, req *v1.ListProxiesReques
 	}, nil
 }
 
+// 更新代理，不允许更新代理端口
 func (cp *controlPlane) UpdateProxy(_ context.Context, req *v1.UpdateProxyRequest) (*v1.UpdateProxyResponse, error) {
 	proxy, err := cp.repo.GetProxyByID(uint(req.Id))
 	if err != nil {
@@ -93,6 +129,11 @@ func (cp *controlPlane) DeleteProxy(_ context.Context, req *v1.DeleteProxyReques
 	if err != nil {
 		return nil, err
 	}
+	// 删除正在工作的代理
+	err = cp.proxyManager.DeleteProxy(context.Background(), int(req.Id))
+	if err != nil {
+		return nil, err
+	}
 	return &v1.DeleteProxyResponse{
 		Code:    200,
 		Message: "success",
@@ -108,7 +149,10 @@ func transformProxies(proxies []*model.Proxy) []*v1.Proxy {
 }
 
 func transformProxy(proxy *model.Proxy) *v1.Proxy {
-	application := transformApplication(proxy.Application)
+	var application *v1.Application
+	if proxy.Application != nil {
+		application = transformApplication(proxy.Application)
+	}
 
 	// 将 ProxyStatus 转换为字符串
 	var status string

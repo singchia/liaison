@@ -13,7 +13,7 @@ frontier:
     tls:
       enable: false
 log:
-  level: info
+  level: debug
   file: /opt/liaison/logs/liaison.log
   maxsize: 100
   maxrolls: 10
