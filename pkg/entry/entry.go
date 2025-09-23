@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jumboframes/armorigo/log"
 	v1 "github.com/singchia/liaison/api/v1"
 	"github.com/singchia/liaison/pkg/entry/transport"
 	"github.com/singchia/liaison/pkg/liaison/manager/controlplane"
@@ -43,11 +44,14 @@ func (e *Entry) pullProxyConfigs() error {
 		PageSize: -1,
 	})
 	if err != nil {
+		log.Errorf("failed to list proxies: %s", err)
 		return err
 	}
 	if rsp.Code != 200 {
+		log.Errorf("failed to list proxies: %s", rsp.Message)
 		return errors.New(rsp.Message)
 	}
+	log.Infof("list proxies: %s", rsp.Data.GetProxies())
 
 	for _, proxy := range rsp.Data.GetProxies() {
 		application := proxy.Application

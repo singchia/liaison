@@ -70,6 +70,7 @@ func NewLiaison() (*Liaison, error) {
 		web:           web,
 		frontierBound: frontierBound,
 		entry:         entry,
+		repo:          repo,
 	}, nil
 }
 

@@ -28,7 +28,8 @@ type Gatekeeper struct {
 
 func NewGatekeeper() *Gatekeeper {
 	return &Gatekeeper{
-		proxies: make(map[int]*proxy),
+		proxies:        make(map[int]*proxy),
+		proxiesIdxPort: make(map[int]int),
 	}
 }
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-kratos/kratos/v2/log"
 	v1 "github.com/singchia/liaison/api/v1"
 	"github.com/singchia/liaison/pkg/liaison/repo/dao"
 	"github.com/singchia/liaison/pkg/liaison/repo/model"
@@ -16,9 +17,11 @@ func (cp *controlPlane) RegisterProxyManager(proxyManager proto.ProxyManager) {
 }
 
 func (cp *controlPlane) CreateProxy(_ context.Context, req *v1.CreateProxyRequest) (*v1.CreateProxyResponse, error) {
+	// 查看是否有冲突
 	// 获取application
 	application, err := cp.repo.GetApplicationByID(uint(req.ApplicationId))
 	if err != nil {
+		log.Warnf("application %d not found", req.ApplicationId)
 		return nil, err
 	}
 
@@ -32,6 +35,7 @@ func (cp *controlPlane) CreateProxy(_ context.Context, req *v1.CreateProxyReques
 	}
 	err = cp.repo.CreateProxy(proxy)
 	if err != nil {
+		log.Warnf("failed to create proxy: %s", err)
 		return nil, err
 	}
 
@@ -82,8 +86,9 @@ func (cp *controlPlane) ListProxies(_ context.Context, req *v1.ListProxiesReques
 	for i := range proxies {
 		if app, exists := appMap[proxies[i].ApplicationID]; exists {
 			proxies[i].Application = app
+		} else {
+			log.Warnf("application %d not found", proxies[i].ApplicationID)
 		}
-		// 如果 application 不存在，Application 字段会保持为 nil
 	}
 
 	return &v1.ListProxiesResponse{
