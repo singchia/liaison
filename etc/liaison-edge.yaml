@@ -1,13 +1,13 @@
 manager:
   dial:
     addrs:
-      - 127.0.0.1:30012
+      - 82.156.45.8:30012
     network: tcp
     tls:
       enable: false
   auth:
-    access_key: "MTc1ODU4NjIwNTI1OTk5"
-    secret_key: "oo-lOQ3Q8edvH9kwEGwWuNEdHqP0XQxULvRWJrG9fu0"
+    access_key: "MTc1ODY3NjI3NzIyMTcy"
+    secret_key: "kSwZqzxupTtKB4SmcZ3-oCVWGvbpbfehTVtckTG78q0"
 log:
   level: debug
   file: ./logs/liaison-edge.log

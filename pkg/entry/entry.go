@@ -7,7 +7,9 @@ import (
 
 	"github.com/jumboframes/armorigo/log"
 	v1 "github.com/singchia/liaison/api/v1"
+	"github.com/singchia/liaison/pkg/entry/frontierbound"
 	"github.com/singchia/liaison/pkg/entry/transport"
+	"github.com/singchia/liaison/pkg/liaison/config"
 	"github.com/singchia/liaison/pkg/liaison/manager/controlplane"
 	"github.com/singchia/liaison/pkg/proto"
 )
@@ -18,10 +20,15 @@ type Entry struct {
 	manager controlplane.ControlPlane
 }
 
-func NewEntry(manager controlplane.ControlPlane) (*Entry, error) {
+func NewEntry(conf *config.Configuration, manager controlplane.ControlPlane) (*Entry, error) {
+
+	frontierBound, err := frontierbound.NewFrontierBound(conf)
+	if err != nil {
+		return nil, err
+	}
 
 	// 创建端口管理器
-	gatekeeper := transport.NewGatekeeper()
+	gatekeeper := transport.NewGatekeeper(frontierBound)
 	manager.RegisterProxyManager(gatekeeper)
 
 	entry := &Entry{
@@ -29,7 +36,7 @@ func NewEntry(manager controlplane.ControlPlane) (*Entry, error) {
 		manager:    manager,
 	}
 
-	err := entry.pullProxyConfigs()
+	err = entry.pullProxyConfigs()
 	if err != nil {
 		return nil, err
 	}
