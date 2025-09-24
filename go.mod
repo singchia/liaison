@@ -1,14 +1,15 @@
 module github.com/singchia/liaison
 
-go 1.22
+go 1.23.0
+
+toolchain go1.24.1
 
 require (
 	github.com/go-kratos/kratos/v2 v2.7.2
 	github.com/jumboframes/armorigo v0.4.1
 	github.com/pion/transport/v2 v2.2.10
-	github.com/singchia/frontier v1.1.0
-	github.com/singchia/geminio v1.1.7-rc.1
-	github.com/singchia/go-hammer v0.0.2-0.20220516141917-9d83fc02d653
+	github.com/singchia/frontier v1.2.0-rc.1
+	github.com/singchia/geminio v1.1.8-rc.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/swaggo/swag v1.16.5
 	google.golang.org/genproto/googleapis/api v0.0.0-20240304212257-790db918fca8
@@ -49,10 +50,10 @@ require (
 	github.com/vishvananda/netlink v1.1.0 // indirect
 	github.com/vishvananda/netns v0.0.0-20191106174202-0a2b9b5464df // indirect
 	golang.org/x/mod v0.17.0 // indirect
-	golang.org/x/net v0.34.0 // indirect
-	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.29.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/net v0.38.0 // indirect
+	golang.org/x/sync v0.12.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240228224816-df926f6c8641 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
