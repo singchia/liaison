@@ -5,15 +5,22 @@ import (
 	"time"
 
 	v1 "github.com/singchia/liaison/api/v1"
+	"github.com/singchia/liaison/pkg/liaison/repo/dao"
 	"github.com/singchia/liaison/pkg/liaison/repo/model"
 )
 
 func (cp *controlPlane) ListDevices(_ context.Context, req *v1.ListDevicesRequest) (*v1.ListDevicesResponse, error) {
-	devices, err := cp.repo.ListDevices(int(req.Page), int(req.PageSize))
+	query := dao.ListDevicesQuery{
+		Query: dao.Query{
+			Page:     int(req.Page),
+			PageSize: int(req.PageSize),
+		},
+	}
+	devices, err := cp.repo.ListDevices(&query)
 	if err != nil {
 		return nil, err
 	}
-	count, err := cp.repo.CountDevices()
+	count, err := cp.repo.CountDevices(&query)
 	if err != nil {
 		return nil, err
 	}

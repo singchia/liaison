@@ -58,25 +58,33 @@ func (fb *frontierBound) reportTaskScanApplication(ctx context.Context, req gemi
 		return
 	}
 
+	// 转换为model
+	applications := []model.ScannedApplication{}
+	for _, application := range task.ScannedApplications {
+		applications = append(applications, model.ScannedApplication{
+			IP:       application.IP,
+			Port:     application.Port,
+			Protocol: application.Protocol,
+		})
+	}
+	result := model.TaskScanApplicationResult{
+		ScannedApplications: applications,
+	}
+	data, err := json.Marshal(result)
+	if err != nil {
+		rsp.SetError(err)
+		return
+	}
+
 	// 确认状态
 	switch task.Status {
 	case "running":
-		data, err := json.Marshal(task.ScannedApplications)
-		if err != nil {
-			rsp.SetError(err)
-			return
-		}
 		err = fb.repo.UpdateTaskResult(task.TaskID, model.TaskStatusRunning, data)
 		if err != nil {
 			rsp.SetError(err)
 			return
 		}
 	case "completed":
-		data, err := json.Marshal(task.ScannedApplications)
-		if err != nil {
-			rsp.SetError(err)
-			return
-		}
 		err = fb.repo.UpdateTaskResult(task.TaskID, model.TaskStatusCompleted, data)
 		if err != nil {
 			rsp.SetError(err)

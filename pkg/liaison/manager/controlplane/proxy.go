@@ -55,7 +55,13 @@ func (cp *controlPlane) CreateProxy(_ context.Context, req *v1.CreateProxyReques
 
 func (cp *controlPlane) ListProxies(_ context.Context, req *v1.ListProxiesRequest) (*v1.ListProxiesResponse, error) {
 	// list proxies
-	proxies, err := cp.repo.ListProxies(int(req.Page), int(req.PageSize))
+	query := dao.ListProxiesQuery{
+		Query: dao.Query{
+			Page:     int(req.Page),
+			PageSize: int(req.PageSize),
+		},
+	}
+	proxies, err := cp.repo.ListProxies(&query)
 	if err != nil {
 		return nil, err
 	}
@@ -69,9 +75,11 @@ func (cp *controlPlane) ListProxies(_ context.Context, req *v1.ListProxiesReques
 	}
 	// list applications
 	applications, err := cp.repo.ListApplications(&dao.ListApplicationsQuery{
-		Page:     int(req.Page),
-		PageSize: int(req.PageSize),
-		IDs:      ids,
+		Query: dao.Query{
+			Page:     int(req.Page),
+			PageSize: int(req.PageSize),
+		},
+		IDs: ids,
 	})
 	if err != nil {
 		return nil, err

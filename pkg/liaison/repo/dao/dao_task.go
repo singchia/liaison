@@ -1,6 +1,10 @@
 package dao
 
-import "github.com/singchia/liaison/pkg/liaison/repo/model"
+import (
+	"time"
+
+	"github.com/singchia/liaison/pkg/liaison/repo/model"
+)
 
 func (d *dao) CreateTask(task *model.Task) error {
 	return d.getDB().Create(task).Error
@@ -30,4 +34,47 @@ func (d *dao) GetTask(taskID uint) (*model.Task, error) {
 		return nil, err
 	}
 	return &task, nil
+}
+
+func (d *dao) ListTasks(query *ListTasksQuery) ([]*model.Task, error) {
+	db := d.getDB()
+	// 状态
+	if len(query.Status) > 0 {
+		db = db.Where("task_status IN ?", query.Status)
+	}
+	// 分页
+	if query.Page > 0 && query.PageSize > 0 {
+		db = db.Offset((query.Page - 1) * query.PageSize).Limit(query.PageSize)
+	}
+	// 排序
+	if query.Order != "" {
+		db = db.Order(query.Order)
+	}
+	if query.Desc {
+		db = db.Order(query.Order + " DESC")
+	}
+	// 时间范围
+	if query.StartTime > 0 {
+		db = db.Where("created_at >= ?", time.Unix(query.StartTime, 0))
+	}
+	if query.EndTime > 0 {
+		db = db.Where("created_at <= ?", time.Unix(query.EndTime, 0))
+	}
+	// 边缘ID
+	if query.EdgeID > 0 {
+		db = db.Where("edge_id = ?", query.EdgeID)
+	}
+	// 任务类型
+	if query.TaskType != 0 {
+		db = db.Where("task_type = ?", query.TaskType)
+	}
+	// 任务子类型
+	if query.TaskSubType != 0 {
+		db = db.Where("task_sub_type = ?", query.TaskSubType)
+	}
+	var tasks []*model.Task
+	if err := db.Find(&tasks).Error; err != nil {
+		return nil, err
+	}
+	return tasks, nil
 }

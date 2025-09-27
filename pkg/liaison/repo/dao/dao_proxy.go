@@ -22,11 +22,14 @@ func (d *dao) CountProxies() (int64, error) {
 	return count, nil
 }
 
-func (d *dao) ListProxies(page, pageSize int) ([]*model.Proxy, error) {
+func (d *dao) ListProxies(query *ListProxiesQuery) ([]*model.Proxy, error) {
 	db := d.getDB()
 	// page & page_size
-	if page > 0 && pageSize > 0 {
-		db = db.Offset((page - 1) * pageSize).Limit(pageSize)
+	if query.Page > 0 && query.PageSize > 0 {
+		db = db.Offset((query.Page - 1) * query.PageSize).Limit(query.PageSize)
+	}
+	if len(query.IDs) > 0 {
+		db = db.Where("id IN ?", query.IDs)
 	}
 	var proxies []*model.Proxy
 	if err := db.Find(&proxies).Error; err != nil {

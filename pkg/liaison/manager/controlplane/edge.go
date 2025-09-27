@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
@@ -12,6 +13,7 @@ import (
 
 	v1 "github.com/singchia/liaison/api/v1"
 	"github.com/singchia/liaison/pkg/liaison/manager/frontierbound"
+	"github.com/singchia/liaison/pkg/liaison/repo/dao"
 	"github.com/singchia/liaison/pkg/liaison/repo/model"
 )
 
@@ -197,7 +199,52 @@ func (cp *controlPlane) CreateEdgeScanApplicationTask(_ context.Context, req *v1
 }
 
 func (cp *controlPlane) GetEdgeScanApplicationTask(_ context.Context, req *v1.GetEdgeScanApplicationTaskRequest) (*v1.GetEdgeScanApplicationTaskResponse, error) {
-	return nil, nil
+	tasks, err := cp.repo.ListTasks(&dao.ListTasksQuery{
+		EdgeID:      uint(req.EdgeId),
+		TaskType:    model.TaskTypeScan,
+		TaskSubType: model.TaskSubTypeScanApplication,
+		Status:      []model.TaskStatus{model.TaskStatusPending, model.TaskStatusRunning},
+		Query: dao.Query{
+			Page:     1,
+			PageSize: 1,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(tasks) == 0 {
+		return &v1.GetEdgeScanApplicationTaskResponse{
+			Code:    200,
+			Message: "success",
+			Data:    nil,
+		}, nil
+	}
+
+	// result
+	result := model.TaskScanApplicationResult{}
+	err = json.Unmarshal(tasks[0].TaskResult, &result)
+	if err != nil {
+		return nil, err
+	}
+	applications := []string{}
+	for _, application := range result.ScannedApplications {
+		applications = append(applications, fmt.Sprintf("%s:%d:%s", application.IP, application.Port, application.Protocol))
+	}
+
+	// 返回
+	return &v1.GetEdgeScanApplicationTaskResponse{
+		Code:    200,
+		Message: "success",
+		Data: &v1.EdgeScanApplicationTask{
+			Id:           uint64(tasks[0].ID),
+			EdgeId:       uint64(tasks[0].EdgeID),
+			TaskStatus:   tasks[0].TaskStatus.String(),
+			CreatedAt:    tasks[0].CreatedAt.Format(time.DateTime),
+			UpdatedAt:    tasks[0].UpdatedAt.Format(time.DateTime),
+			Applications: applications,
+			Error:        tasks[0].Error,
+		},
+	}, nil
 }
 
 func transformEdges(edges []*model.Edge) []*v1.Edge {
