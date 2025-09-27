@@ -61,6 +61,7 @@ type Dao interface {
 
 	// Task 相关方法
 	CreateTask(task *model.Task) error
+	GetTask(taskID uint) (*model.Task, error)
 	UpdateTaskStatus(taskID uint, status model.TaskStatus) error
 	UpdateTaskResult(taskID uint, status model.TaskStatus, result []byte) error
 	UpdateTaskError(taskID uint, error string) error

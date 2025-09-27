@@ -153,24 +153,43 @@ func (cp *controlPlane) CreateEdgeScanApplicationTask(_ context.Context, req *v1
 	}
 
 	// 创建任务
+	expiration := 10 * time.Minute
 	task := &model.Task{
 		EdgeID:      req.EdgeId,
 		TaskType:    model.TaskTypeScan,
 		TaskSubType: model.TaskSubTypeScanApplication,
 		TaskStatus:  model.TaskStatusPending,
+		ExpiredAt:   time.Now().Add(expiration), // 10分钟过期
+		TaskParams:  []byte(fmt.Sprintf(`{"protocol":"%s","port":%d}`, req.Protocol, req.Port)),
 	}
 	err = cp.repo.CreateTask(task)
 	if err != nil {
 		return nil, err
 	}
+	go func() {
+		time.Sleep(expiration)
+		task, err := cp.repo.GetTask(task.ID)
+		if err != nil {
+			return
+		}
+		switch task.TaskStatus {
+		case model.TaskStatusPending:
+			cp.repo.UpdateTaskError(task.ID, "task expired")
+		case model.TaskStatusRunning:
+			cp.repo.UpdateTaskError(task.ID, "task expired")
+		}
+	}()
 
 	// 下发扫描任务
-	cp.frontierBound.EmitScanApplications(context.Background(), task.ID, req.EdgeId, &frontierbound.Net{
+	err = cp.frontierBound.EmitScanApplications(context.Background(), task.ID, req.EdgeId, &frontierbound.Net{
 		Nets:     nets,
 		Protocol: req.Protocol,
 		Port:     int(req.Port),
 	})
-
+	if err != nil {
+		cp.repo.UpdateTaskError(task.ID, err.Error())
+		return nil, err
+	}
 	return &v1.CreateEdgeScanApplicationTaskResponse{
 		Code:    200,
 		Message: "success",

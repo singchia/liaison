@@ -28,23 +28,26 @@ type Meta struct {
 
 // device
 type Device struct {
-	Fingerprint string                    `json:"fingerprint"`
-	HostName    string                    `json:"host_name"`
-	CPU         int                       `json:"cpu"`
-	Memory      int                       `json:"memory"`
-	OS          string                    `json:"os"`
-	OSVersion   string                    `json:"os_version"`
-	DeviceUsage DeviceUsage               `json:"device_usage"`
-	Interfaces  []DeviceEthernetInterface `json:"interfaces"`
-	EdgeID      uint64                    `json:"edge_id"` // 如果包含edge id，则表示是edge所在的机器
+	Fingerprint string                     `json:"fingerprint"`
+	HostName    string                     `json:"host_name"`
+	CPU         int                        `json:"cpu"`
+	Memory      int                        `json:"memory"`
+	OS          string                     `json:"os"`
+	OSVersion   string                     `json:"os_version"`
+	DeviceUsage DeviceUsage                `json:"device_usage"`
+	Interfaces  []*DeviceEthernetInterface `json:"interfaces"`
+	EdgeID      uint64                     `json:"edge_id"` // 如果包含edge id，则表示是edge所在的机器
 }
 
 type DeviceEthernetInterface struct {
-	Name    string `json:"name"`
-	MAC     string `json:"mac"`
+	Name    string    `json:"name"`
+	MAC     string    `json:"mac"`
+	IPMasks []*IPMask `json:"ip_masks"`
+}
+
+type IPMask struct {
 	IP      string `json:"ip"`
 	Netmask string `json:"netmask"`
-	Gateway string `json:"gateway"`
 }
 
 type DeviceUsage struct {

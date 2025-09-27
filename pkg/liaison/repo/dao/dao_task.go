@@ -23,3 +23,11 @@ func (d *dao) UpdateTaskError(taskID uint, error string) error {
 		"task_status": model.TaskStatusFailed,
 	}).Error
 }
+
+func (d *dao) GetTask(taskID uint) (*model.Task, error) {
+	var task model.Task
+	if err := d.getDB().Where("id = ?", taskID).First(&task).Error; err != nil {
+		return nil, err
+	}
+	return &task, nil
+}

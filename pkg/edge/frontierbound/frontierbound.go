@@ -19,6 +19,7 @@ import (
 
 // FrontierBound 处于依赖链的最低端，负责与frontier通信
 type FrontierBound interface {
+	NewRequest(data []byte) geminio.Request
 	// RPC
 	RegisterRPCHandler(name string, f func(ctx context.Context, req geminio.Request, rsp geminio.Response)) error
 	Call(ctx context.Context, name string, req geminio.Request) (geminio.Response, error)
@@ -74,6 +75,10 @@ func NewFrontierBound(conf *config.Configuration) (FrontierBound, error) {
 	go fb.loopAccept(context.Background())
 
 	return fb, nil
+}
+
+func (fb *frontierBound) NewRequest(data []byte) geminio.Request {
+	return fb.end.NewRequest(data)
 }
 
 // register function to frontier

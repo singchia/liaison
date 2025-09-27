@@ -1,6 +1,10 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type TaskType int
 
@@ -32,6 +36,7 @@ type Task struct {
 	TaskParams  []byte      `gorm:"column:task_params;type:blob;not null"`
 	TaskResult  []byte      `gorm:"column:task_result;type:blob;not null"`
 	Error       string      `gorm:"column:error;type:text;not null"`
+	ExpiredAt   time.Time   `gorm:"column:expired_at;type:datetime;not null"`
 }
 
 func (Task) TableName() string {

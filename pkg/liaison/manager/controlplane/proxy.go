@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-kratos/kratos/v2/log"
+	"github.com/jumboframes/armorigo/log"
 	v1 "github.com/singchia/liaison/api/v1"
 	"github.com/singchia/liaison/pkg/liaison/repo/dao"
 	"github.com/singchia/liaison/pkg/liaison/repo/model"
