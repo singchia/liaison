@@ -58,10 +58,3 @@ func (d *dao) ListApplications(query *ListApplicationsQuery) ([]*model.Applicati
 	}
 	return applications, nil
 }
-
-type ListApplicationsQuery struct {
-	Page     int
-	PageSize int
-	DeviceID uint
-	IDs      []uint
-}
