@@ -37,10 +37,6 @@ func (r *reporter) loopReportDeviceUsage(ctx context.Context) {
 			log.Errorf("get device usage error: %v", err)
 			continue
 		}
-		if err != nil {
-			log.Errorf("get device usage error: %v", err)
-			continue
-		}
 		r.reportDeviceUsage(ctx, deviceUsage)
 		time.Sleep(time.Minute)
 	}
