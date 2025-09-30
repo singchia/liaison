@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Test</title>
+    <script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <h1>调试页面</h1>
+        <p>Vue实例状态: {{ vueStatus }}</p>
+        <p>数据状态: {{ dataStatus }}</p>
+        <button @click="testMethod">测试方法</button>
+    </div>
+
+    <script>
+        console.log('开始初始化Vue...');
+        
+        try {
+            new Vue({
+                el: '#app',
+                data() {
+                    console.log('初始化data...');
+                    return {
+                        vueStatus: 'Vue实例已创建',
+                        dataStatus: '数据已初始化'
+                    }
+                },
+                methods: {
+                    testMethod() {
+                        console.log('方法调用成功');
+                        this.dataStatus = '方法调用成功 - ' + new Date().toLocaleTimeString();
+                    }
+                },
+                mounted() {
+                    console.log('Vue实例已挂载');
+                    this.vueStatus = 'Vue实例已挂载 - ' + new Date().toLocaleTimeString();
+                }
+            });
+            console.log('Vue实例创建成功');
+        } catch (error) {
+            console.error('Vue实例创建失败:', error);
+        }
+    </script>
+</body>
+</html>
