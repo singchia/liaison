@@ -139,13 +139,10 @@
         
         /* 顶部搜索区域 */
         .search-section {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 28px;
-            margin: 20px 20px 0 20px;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: #FFFFFF;
+            padding: 24px 32px;
+            margin: 0 24px;
+            border-bottom: 1px solid #E9E9E9;
         }
         
         .search-form {
@@ -226,7 +223,7 @@
         
         /* 面包屑导航 */
         .breadcrumb-section {
-            background-color: #FFFFFF;
+            background: #FFFFFF;
             padding: 16px 32px;
             margin: 0 24px;
             border-bottom: 1px solid #E9E9E9;
@@ -237,6 +234,8 @@
             align-items: center;
             gap: 8px;
             font-size: 14px;
+            color: rgba(0, 0, 0, 0.45);
+            margin-bottom: 8px;
         }
         
         .breadcrumb-item {
@@ -244,7 +243,8 @@
         }
         
         .breadcrumb-item.active {
-            color: #1890FF;
+            color: rgba(0, 0, 0, 0.85);
+            font-weight: 500;
         }
         
         .breadcrumb-separator {
@@ -255,33 +255,32 @@
             font-size: 20px;
             font-weight: 500;
             color: rgba(0, 0, 0, 0.85);
-            margin-top: 8px;
+            margin: 0;
         }
         
         /* 表格区域 */
         .table-section {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            margin: 0 20px 20px 20px;
-            border-radius: 16px;
+            background: #FFFFFF;
+            margin: 0 24px 24px 24px;
+            border-radius: 4px;
             overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #E9E9E9;
         }
         
         .table-header {
-            padding: 20px 28px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            padding: 16px 24px;
+            border-bottom: 1px solid #E9E9E9;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(248, 250, 252, 0.8));
+            background: #FAFAFA;
         }
         
         .table-title {
             font-size: 16px;
             color: rgba(0, 0, 0, 0.85);
-            opacity: 0.85;
+            font-weight: 500;
         }
         
         .table-actions {
@@ -290,25 +289,23 @@
         }
         
         .btn-new {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #1890FF;
             color: #FFFFFF;
             border: none;
-            height: 40px;
-            padding: 0 20px;
-            border-radius: 12px;
+            height: 32px;
+            padding: 0 16px;
+            border-radius: 2px;
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 400;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 8px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
         }
         
         .btn-new:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+            background: #40A9FF;
         }
         
         /* 表格样式 */
@@ -573,6 +570,18 @@
             
             <!-- 主内容区域 -->
             <div class="main-content">
+                <!-- 面包屑导航 -->
+                <div class="breadcrumb-section">
+                    <div class="breadcrumb">
+                        <span class="breadcrumb-item">首页</span>
+                        <span class="breadcrumb-separator">/</span>
+                        <span class="breadcrumb-item">列表页</span>
+                        <span class="breadcrumb-separator">/</span>
+                        <span class="breadcrumb-item active">{{ getPageTitle() }}</span>
+                    </div>
+                    <div class="page-title">{{ getPageTitle() }}</div>
+                </div>
+                
                 <!-- 搜索区域 -->
                 <div class="search-section">
                     <div class="search-form">
@@ -655,18 +664,6 @@
                             <button class="btn btn-default" @click="handleReset">重置</button>
                         </div>
                     </div>
-                </div>
-                
-                <!-- 面包屑导航 -->
-                <div class="breadcrumb-section">
-                    <div class="breadcrumb">
-                        <span class="breadcrumb-item">首页</span>
-                        <span class="breadcrumb-separator">/</span>
-                        <span class="breadcrumb-item">列表页</span>
-                        <span class="breadcrumb-separator">/</span>
-                        <span class="breadcrumb-item active">{{ getPageTitle() }}</span>
-                    </div>
-                    <div class="page-title">{{ getPageTitle() }}</div>
                 </div>
                 
                 <!-- 批量操作栏 -->
