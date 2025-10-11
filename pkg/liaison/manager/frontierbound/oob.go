@@ -39,5 +39,10 @@ func (fb *frontierBound) offline(edgeID uint64, meta []byte, addr net.Addr) erro
 	if err != nil {
 		return err
 	}
+	// 查询所有edge任务，如果是pending和running状态，则更新为failed
+	err = fb.repo.UpdateTaskError(uint(edgeID), "edge offline")
+	if err != nil {
+		return err
+	}
 	return nil
 }

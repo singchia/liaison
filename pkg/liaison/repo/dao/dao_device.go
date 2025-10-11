@@ -25,18 +25,25 @@ func (d *dao) GetDeviceByID(id uint) (*model.Device, error) {
 	return &device, nil
 }
 
-func (d *dao) CountDevices() (int64, error) {
+func (d *dao) CountDevices(query *ListDevicesQuery) (int64, error) {
 	var count int64
-	if err := d.getDB().Model(&model.Device{}).Count(&count).Error; err != nil {
+	db := d.getDB()
+	if len(query.IDs) > 0 {
+		db = db.Where("id IN ?", query.IDs)
+	}
+	if err := db.Model(&model.Device{}).Count(&count).Error; err != nil {
 		return 0, err
 	}
 	return count, nil
 }
 
-func (d *dao) ListDevices(page, pageSize int) ([]*model.Device, error) {
+func (d *dao) ListDevices(query *ListDevicesQuery) ([]*model.Device, error) {
 	db := d.getDB()
-	if page > 0 && pageSize > 0 {
-		db = db.Offset((page - 1) * pageSize).Limit(pageSize)
+	if query.Page > 0 && query.PageSize > 0 {
+		db = db.Offset((query.Page - 1) * query.PageSize).Limit(query.PageSize)
+	}
+	if len(query.IDs) > 0 {
+		db = db.Where("id IN ?", query.IDs)
 	}
 	var devices []*model.Device
 	if err := db.Find(&devices).Error; err != nil {

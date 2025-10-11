@@ -1,6 +1,10 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type TaskType int
 
@@ -15,6 +19,21 @@ const (
 )
 
 type TaskStatus int
+
+func (t TaskStatus) String() string {
+	switch t {
+	case TaskStatusPending:
+		return "pending"
+	case TaskStatusRunning:
+		return "running"
+	case TaskStatusCompleted:
+		return "completed"
+	case TaskStatusFailed:
+		return "failed"
+	default:
+		return "unknown"
+	}
+}
 
 const (
 	TaskStatusPending TaskStatus = iota + 1
@@ -32,6 +51,7 @@ type Task struct {
 	TaskParams  []byte      `gorm:"column:task_params;type:blob;not null"`
 	TaskResult  []byte      `gorm:"column:task_result;type:blob;not null"`
 	Error       string      `gorm:"column:error;type:text;not null"`
+	ExpiredAt   time.Time   `gorm:"column:expired_at;type:datetime;not null"`
 }
 
 func (Task) TableName() string {

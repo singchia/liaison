@@ -38,8 +38,8 @@ type Dao interface {
 	CreateDevice(device *model.Device) error
 	CreateEthernetInterface(iface *model.EthernetInterface) error
 	GetDeviceByID(id uint) (*model.Device, error)
-	ListDevices(page, pageSize int) ([]*model.Device, error)
-	CountDevices() (int64, error)
+	ListDevices(query *ListDevicesQuery) ([]*model.Device, error)
+	CountDevices(query *ListDevicesQuery) (int64, error)
 	UpdateDevice(device *model.Device) error
 	UpdateDeviceUsage(deviceID uint, cpuUsage, memoryUsage, diskUsage float32) error
 
@@ -54,13 +54,15 @@ type Dao interface {
 	// Proxy 相关方法
 	CreateProxy(proxy *model.Proxy) error
 	GetProxyByID(id uint) (*model.Proxy, error)
-	ListProxies(page, pageSize int) ([]*model.Proxy, error)
+	ListProxies(query *ListProxiesQuery) ([]*model.Proxy, error)
 	CountProxies() (int64, error)
 	UpdateProxy(proxy *model.Proxy) error
 	DeleteProxy(id uint) error
 
 	// Task 相关方法
 	CreateTask(task *model.Task) error
+	GetTask(taskID uint) (*model.Task, error)
+	ListTasks(query *ListTasksQuery) ([]*model.Task, error)
 	UpdateTaskStatus(taskID uint, status model.TaskStatus) error
 	UpdateTaskResult(taskID uint, status model.TaskStatus, result []byte) error
 	UpdateTaskError(taskID uint, error string) error

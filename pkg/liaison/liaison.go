@@ -62,7 +62,7 @@ func NewLiaison() (*Liaison, error) {
 		return nil, err
 	}
 	// entry layer
-	entry, err := entry.NewEntry(controlPlane)
+	entry, err := entry.NewEntry(config.Conf, controlPlane)
 	if err != nil {
 		return nil, err
 	}

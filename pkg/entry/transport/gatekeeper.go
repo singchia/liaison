@@ -23,13 +23,14 @@ type Gatekeeper struct {
 	proxiesIdxPort map[int]int    // port -> id
 
 	// frontier
-	frontier frontierbound.FrontierBound
+	frontierBound frontierbound.FrontierBound
 }
 
-func NewGatekeeper() *Gatekeeper {
+func NewGatekeeper(frontierBound frontierbound.FrontierBound) *Gatekeeper {
 	return &Gatekeeper{
 		proxies:        make(map[int]*proxy),
 		proxiesIdxPort: make(map[int]int),
+		frontierBound:  frontierBound,
 	}
 }
 
@@ -66,7 +67,7 @@ func (m *Gatekeeper) CreateProxy(ctx context.Context, protoproxy *proto.Proxy) e
 	}
 	proxyDial := func(dst net.Addr, custom interface{}) (target net.Conn, err error) {
 		pc := custom.(*proxyContext)
-		return m.frontier.OpenStream(context.TODO(), pc.edgeID)
+		return m.frontierBound.OpenStream(context.TODO(), pc.edgeID)
 	}
 	preWrite := func(writer io.Writer, custom interface{}) error {
 		pc := custom.(*proxyContext)

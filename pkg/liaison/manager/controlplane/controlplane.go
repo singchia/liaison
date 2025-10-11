@@ -37,10 +37,15 @@ type ControlPlane interface {
 }
 
 func NewControlPlane(repo repo.Repo, frontierBound frontierbound.FrontierBound) (ControlPlane, error) {
-	return &controlPlane{
+	cp := &controlPlane{
 		repo:          repo,
 		frontierBound: frontierBound,
-	}, nil
+	}
+
+	// 初始化任务检查
+	go cp.checkTask()
+
+	return cp, nil
 }
 
 type controlPlane struct {

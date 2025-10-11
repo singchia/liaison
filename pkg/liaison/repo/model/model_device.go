@@ -46,5 +46,4 @@ type EthernetInterface struct {
 	MAC      string `gorm:"column:mac;type:varchar(255);not null"`
 	IP       string `gorm:"column:ip;type:varchar(255);not null"`
 	Netmask  string `gorm:"column:netmask;type:varchar(255);not null"`
-	Gateway  string `gorm:"column:gateway;type:varchar(255);not null"`
 }

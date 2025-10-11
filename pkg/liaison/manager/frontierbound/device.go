@@ -53,17 +53,18 @@ func (fb *frontierBound) reportDevice(ctx context.Context, req geminio.Request, 
 	}
 
 	for _, iface := range device.Interfaces {
-		interfaceModel := &model.EthernetInterface{
-			DeviceID: deviceModel.ID,
-			Name:     iface.Name,
-			MAC:      iface.MAC,
-			IP:       iface.IP,
-			Netmask:  iface.Netmask,
-			Gateway:  iface.Gateway,
-		}
-		if err := tx.CreateEthernetInterface(interfaceModel); err != nil {
-			rsp.SetError(err)
-			return
+		for _, ipMask := range iface.IPMasks {
+			interfaceModel := &model.EthernetInterface{
+				DeviceID: deviceModel.ID,
+				Name:     iface.Name,
+				MAC:      iface.MAC,
+				IP:       ipMask.IP,
+				Netmask:  ipMask.Netmask,
+			}
+			if err := tx.CreateEthernetInterface(interfaceModel); err != nil {
+				rsp.SetError(err)
+				return
+			}
 		}
 	}
 

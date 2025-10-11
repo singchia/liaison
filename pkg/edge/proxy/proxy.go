@@ -47,9 +47,8 @@ func (p *proxy) proxy(ctx context.Context, stream geminio.Stream) {
 		return
 	}
 
-	meta := stream.Meta()
 	var dst proto.Dst
-	if err := json.Unmarshal(meta, &dst); err != nil {
+	if err := json.Unmarshal(dataBuf, &dst); err != nil {
 		logrus.Errorf("proxy stream meta unmarshal err: %s", err)
 		return
 	}

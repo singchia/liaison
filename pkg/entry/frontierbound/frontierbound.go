@@ -2,6 +2,7 @@ package frontierbound
 
 import (
 	"context"
+	"errors"
 	"math/rand"
 	"net"
 
@@ -21,21 +22,22 @@ type frontierBound struct {
 	svc service.Service
 }
 
-func NewFrontierBound(conf *config.Configuration) *frontierBound {
+func NewFrontierBound(conf *config.Configuration) (*frontierBound, error) {
 	dial := conf.Frontier.Dial
 	if len(dial.Addrs) == 0 {
-		return nil
+		return nil, errors.New("dial addr is empty")
 	}
 	dialer := func() (net.Conn, error) {
 		return utils.Dial(&dial, rand.Intn(len(dial.Addrs)))
 	}
-	svc, err := service.NewService(dialer)
+
+	svc, err := service.NewService(dialer, service.OptionServiceBufferSize(8192, 8192))
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	return &frontierBound{
 		svc: svc,
-	}
+	}, nil
 }
 
 func (fb *frontierBound) Close() error {

@@ -36,8 +36,10 @@ func (cp *controlPlane) CreateApplication(_ context.Context, req *v1.CreateAppli
 
 func (cp *controlPlane) ListApplications(_ context.Context, req *v1.ListApplicationsRequest) (*v1.ListApplicationsResponse, error) {
 	applications, err := cp.repo.ListApplications(&dao.ListApplicationsQuery{
-		Page:     int(req.Page),
-		PageSize: int(req.PageSize),
+		Query: dao.Query{
+			Page:     int(req.Page),
+			PageSize: int(req.PageSize),
+		},
 		DeviceID: uint(req.DeviceId),
 	})
 	if err != nil {
