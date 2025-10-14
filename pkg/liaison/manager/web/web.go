@@ -7,6 +7,7 @@ import (
 	v1 "github.com/singchia/liaison/api/v1"
 	"github.com/singchia/liaison/pkg/liaison/config"
 	"github.com/singchia/liaison/pkg/liaison/manager/controlplane"
+	"github.com/singchia/liaison/pkg/liaison/manager/iam"
 	"github.com/singchia/liaison/pkg/utils"
 )
 
@@ -27,11 +28,13 @@ type web struct {
 
 	// deps
 	controlPlane controlplane.ControlPlane
+	iamService   *iam.IAMService
 }
 
-func NewWebServer(conf *config.Configuration, controlPlane controlplane.ControlPlane) (Web, error) {
+func NewWebServer(conf *config.Configuration, controlPlane controlplane.ControlPlane, iamService *iam.IAMService) (Web, error) {
 	web := &web{
 		controlPlane: controlPlane,
+		iamService:   iamService,
 	}
 
 	listen := &conf.Manager.Listen
@@ -39,8 +42,12 @@ func NewWebServer(conf *config.Configuration, controlPlane controlplane.ControlP
 	if err != nil {
 		return nil, err
 	}
+	// 创建认证中间件
+	authMiddleware := iam.AuthMiddleware(web.iamService)
+
 	opts := []http.ServerOption{
 		http.Middleware(recovery.Recovery()),
+		http.Middleware(authMiddleware),
 		http.Listener(ln),
 	}
 	srv := http.NewServer(opts...)

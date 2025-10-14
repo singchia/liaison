@@ -2,8 +2,10 @@ package web
 
 import (
 	"context"
+	"errors"
 
 	v1 "github.com/singchia/liaison/api/v1"
+	"github.com/singchia/liaison/pkg/liaison/manager/iam"
 )
 
 //-- Edge --//
@@ -182,4 +184,71 @@ func (web *web) CreateEdgeScanApplicationTask(ctx context.Context, req *v1.Creat
 // @Router /v1/edges/{edge_id}/scan_application_tasks [get]
 func (web *web) GetEdgeScanApplicationTask(ctx context.Context, req *v1.GetEdgeScanApplicationTaskRequest) (*v1.GetEdgeScanApplicationTaskResponse, error) {
 	return web.controlPlane.GetEdgeScanApplicationTask(ctx, req)
+}
+
+//-- Auth --//
+
+// Login 用户登录
+func (web *web) Login(ctx context.Context, req *v1.LoginRequest) (*v1.LoginResponse, error) {
+	// 转换请求类型
+	iamReq := &iam.LoginRequest{
+		Email:    req.Email,
+		Password: req.Password,
+	}
+
+	resp, err := web.iamService.Login(iamReq)
+	if err != nil {
+		return nil, err
+	}
+
+	// 转换响应类型
+	return &v1.LoginResponse{
+		Code:    200,
+		Message: "success",
+		Data: &v1.LoginData{
+			Token: resp.Token,
+			User: &v1.User{
+				Id:    uint64(resp.User.ID),
+				Email: resp.User.Email,
+			},
+		},
+	}, nil
+}
+
+// GetProfile 获取用户信息
+func (web *web) GetProfile(ctx context.Context, req *v1.GetProfileRequest) (*v1.GetProfileResponse, error) {
+	// 从context中获取用户信息（需要中间件设置）
+	userID := ctx.Value("user_id")
+	userEmail := ctx.Value("user_email")
+
+	if userID == nil || userEmail == nil {
+		return nil, errors.New("未认证")
+	}
+
+	user := &v1.User{
+		Id:    uint64(userID.(uint)),
+		Email: userEmail.(string),
+	}
+
+	return &v1.GetProfileResponse{
+		Code:    200,
+		Message: "success",
+		Data:    user,
+	}, nil
+}
+
+// Logout 用户登出
+func (web *web) Logout(ctx context.Context, req *v1.LogoutRequest) (*v1.LogoutResponse, error) {
+	// JWT是无状态的，登出只需要客户端删除token
+	return &v1.LogoutResponse{
+		Code:    200,
+		Message: "登出成功",
+	}, nil
+}
+
+// Health 健康检查
+func (web *web) Health(ctx context.Context, req *v1.HealthRequest) (*v1.HealthResponse, error) {
+	return &v1.HealthResponse{
+		Status: "ok",
+	}, nil
 }

@@ -7,9 +7,9 @@ import (
 	"net"
 	"os"
 
+	"github.com/jumboframes/armorigo/log"
 	"github.com/pion/transport/v2/udp"
 	"github.com/singchia/liaison/pkg/config"
-	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -45,7 +45,7 @@ func listenTCP(listen *config.Listen) (net.Listener, error) {
 
 	if !listen.TLS.Enable {
 		if ln, err = net.Listen(network, addr); err != nil {
-			logrus.Errorf("listen err: %s, network: %s, addr: %s", err, network, addr)
+			log.Errorf("listen err: %s, network: %s, addr: %s", err, network, addr)
 			return nil, err
 		}
 
@@ -55,7 +55,7 @@ func listenTCP(listen *config.Listen) (net.Listener, error) {
 		for _, certFile := range listen.TLS.Certs {
 			cert, err := tls.LoadX509KeyPair(certFile.Cert, certFile.Key)
 			if err != nil {
-				logrus.Errorf("listen tls load x509 cert err: %s, cert: %s, key: %s", err, certFile.Cert, certFile.Key)
+				log.Errorf("listen tls load x509 cert err: %s, cert: %s, key: %s", err, certFile.Cert, certFile.Key)
 				continue
 			}
 			certs = append(certs, cert)
@@ -68,7 +68,7 @@ func listenTCP(listen *config.Listen) (net.Listener, error) {
 				CipherSuites: CiperSuites,
 				Certificates: certs,
 			}); err != nil {
-				logrus.Errorf("listen tls listen err: %s, network: %s, addr: %s", err, network, addr)
+				log.Errorf("listen tls listen err: %s, network: %s, addr: %s", err, network, addr)
 				return nil, err
 			}
 
@@ -79,11 +79,11 @@ func listenTCP(listen *config.Listen) (net.Listener, error) {
 			for _, caFile := range listen.TLS.CACerts {
 				ca, err := os.ReadFile(caFile)
 				if err != nil {
-					logrus.Errorf("listen read ca cert err: %s, file: %s", err, caFile)
+					log.Errorf("listen read ca cert err: %s, file: %s", err, caFile)
 					return nil, err
 				}
 				if !caPool.AppendCertsFromPEM(ca) {
-					logrus.Warningf("listen append ca cert to ca pool err: %s, file: %s", err, caFile)
+					log.Warnf("listen append ca cert to ca pool err: %s, file: %s", err, caFile)
 					continue
 				}
 			}
@@ -94,7 +94,7 @@ func listenTCP(listen *config.Listen) (net.Listener, error) {
 				ClientAuth:   tls.RequireAndVerifyClientCert,
 				Certificates: certs,
 			}); err != nil {
-				logrus.Errorf("listen tls listen err: %s, network: %s, addr: %s", err, network, addr)
+				log.Errorf("listen tls listen err: %s, network: %s, addr: %s", err, network, addr)
 				return nil, err
 			}
 		}
@@ -105,7 +105,7 @@ func listenTCP(listen *config.Listen) (net.Listener, error) {
 func listenUDP(listen *config.Listen) (net.Listener, error) {
 	addr, err := net.ResolveUDPAddr(listen.Network, listen.Addr)
 	if err != nil {
-		logrus.Errorf("listen resolve udp addr err: %s, network: %s, addr: %s", err, listen.Network, listen.Addr)
+		log.Errorf("listen resolve udp addr err: %s, network: %s, addr: %s", err, listen.Network, listen.Addr)
 		return nil, err
 	}
 	return udp.Listen("udp", addr)

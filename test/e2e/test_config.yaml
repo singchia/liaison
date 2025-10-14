@@ -1,0 +1,12 @@
+manager:
+  listen:
+    addr: "0.0.0.0:8080"
+    network: "tcp"
+  database:
+    driver: "sqlite"
+    source: "test_liaison.db"
+  daemon:
+    pprof:
+      enable: false
+    rlimit:
+      enable: false

@@ -2853,6 +2853,495 @@ func (x *GetEdgeScanApplicationTaskResponse) GetData() *EdgeScanApplicationTask 
 	return nil
 }
 
+// 用户信息
+type User struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *User) Reset() {
+	*x = User{}
+	mi := &file_liaison_proto_msgTypes[46]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *User) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*User) ProtoMessage() {}
+
+func (x *User) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[46]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use User.ProtoReflect.Descriptor instead.
+func (*User) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{46}
+}
+
+func (x *User) GetId() uint64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *User) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+// 登录请求
+type LoginRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
+	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LoginRequest) Reset() {
+	*x = LoginRequest{}
+	mi := &file_liaison_proto_msgTypes[47]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LoginRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LoginRequest) ProtoMessage() {}
+
+func (x *LoginRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[47]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LoginRequest.ProtoReflect.Descriptor instead.
+func (*LoginRequest) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{47}
+}
+
+func (x *LoginRequest) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *LoginRequest) GetPassword() string {
+	if x != nil {
+		return x.Password
+	}
+	return ""
+}
+
+// 登录响应
+type LoginResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Data          *LoginData             `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LoginResponse) Reset() {
+	*x = LoginResponse{}
+	mi := &file_liaison_proto_msgTypes[48]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LoginResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LoginResponse) ProtoMessage() {}
+
+func (x *LoginResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[48]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LoginResponse.ProtoReflect.Descriptor instead.
+func (*LoginResponse) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{48}
+}
+
+func (x *LoginResponse) GetCode() int32 {
+	if x != nil {
+		return x.Code
+	}
+	return 0
+}
+
+func (x *LoginResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *LoginResponse) GetData() *LoginData {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+type LoginData struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	User          *User                  `protobuf:"bytes,2,opt,name=user,proto3" json:"user,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LoginData) Reset() {
+	*x = LoginData{}
+	mi := &file_liaison_proto_msgTypes[49]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LoginData) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LoginData) ProtoMessage() {}
+
+func (x *LoginData) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[49]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LoginData.ProtoReflect.Descriptor instead.
+func (*LoginData) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{49}
+}
+
+func (x *LoginData) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+func (x *LoginData) GetUser() *User {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
+// 获取用户信息请求
+type GetProfileRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetProfileRequest) Reset() {
+	*x = GetProfileRequest{}
+	mi := &file_liaison_proto_msgTypes[50]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetProfileRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetProfileRequest) ProtoMessage() {}
+
+func (x *GetProfileRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[50]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetProfileRequest.ProtoReflect.Descriptor instead.
+func (*GetProfileRequest) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{50}
+}
+
+// 获取用户信息响应
+type GetProfileResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Data          *User                  `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetProfileResponse) Reset() {
+	*x = GetProfileResponse{}
+	mi := &file_liaison_proto_msgTypes[51]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetProfileResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetProfileResponse) ProtoMessage() {}
+
+func (x *GetProfileResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[51]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetProfileResponse.ProtoReflect.Descriptor instead.
+func (*GetProfileResponse) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{51}
+}
+
+func (x *GetProfileResponse) GetCode() int32 {
+	if x != nil {
+		return x.Code
+	}
+	return 0
+}
+
+func (x *GetProfileResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *GetProfileResponse) GetData() *User {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+// 登出请求
+type LogoutRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LogoutRequest) Reset() {
+	*x = LogoutRequest{}
+	mi := &file_liaison_proto_msgTypes[52]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LogoutRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LogoutRequest) ProtoMessage() {}
+
+func (x *LogoutRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[52]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LogoutRequest.ProtoReflect.Descriptor instead.
+func (*LogoutRequest) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{52}
+}
+
+// 登出响应
+type LogoutResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LogoutResponse) Reset() {
+	*x = LogoutResponse{}
+	mi := &file_liaison_proto_msgTypes[53]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LogoutResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LogoutResponse) ProtoMessage() {}
+
+func (x *LogoutResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[53]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LogoutResponse.ProtoReflect.Descriptor instead.
+func (*LogoutResponse) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{53}
+}
+
+func (x *LogoutResponse) GetCode() int32 {
+	if x != nil {
+		return x.Code
+	}
+	return 0
+}
+
+func (x *LogoutResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+// 健康检查请求
+type HealthRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HealthRequest) Reset() {
+	*x = HealthRequest{}
+	mi := &file_liaison_proto_msgTypes[54]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HealthRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HealthRequest) ProtoMessage() {}
+
+func (x *HealthRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[54]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HealthRequest.ProtoReflect.Descriptor instead.
+func (*HealthRequest) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{54}
+}
+
+// 健康检查响应
+type HealthResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Status        string                 `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HealthResponse) Reset() {
+	*x = HealthResponse{}
+	mi := &file_liaison_proto_msgTypes[55]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HealthResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HealthResponse) ProtoMessage() {}
+
+func (x *HealthResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[55]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HealthResponse.ProtoReflect.Descriptor instead.
+func (*HealthResponse) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{55}
+}
+
+func (x *HealthResponse) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
 var File_liaison_proto protoreflect.FileDescriptor
 
 const file_liaison_proto_rawDesc = "" +
@@ -3064,7 +3553,33 @@ const file_liaison_proto_rawDesc = "" +
 	"\"GetEdgeScanApplicationTaskResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12,\n" +
-	"\x04data\x18\x03 \x01(\v2\x18.EdgeScanApplicationTaskR\x04data2\xb7\r\n" +
+	"\x04data\x18\x03 \x01(\v2\x18.EdgeScanApplicationTaskR\x04data\",\n" +
+	"\x04User\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x14\n" +
+	"\x05email\x18\x02 \x01(\tR\x05email\"@\n" +
+	"\fLoginRequest\x12\x14\n" +
+	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"]\n" +
+	"\rLoginResponse\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1e\n" +
+	"\x04data\x18\x03 \x01(\v2\n" +
+	".LoginDataR\x04data\"<\n" +
+	"\tLoginData\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\x12\x19\n" +
+	"\x04user\x18\x02 \x01(\v2\x05.UserR\x04user\"\x13\n" +
+	"\x11GetProfileRequest\"]\n" +
+	"\x12GetProfileResponse\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12\x19\n" +
+	"\x04data\x18\x03 \x01(\v2\x05.UserR\x04data\"\x0f\n" +
+	"\rLogoutRequest\">\n" +
+	"\x0eLogoutResponse\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"\x0f\n" +
+	"\rHealthRequest\"(\n" +
+	"\x0eHealthResponse\x12\x16\n" +
+	"\x06status\x18\x01 \x01(\tR\x06status2\xcb\x0f\n" +
 	"\x0eLiaisonService\x12K\n" +
 	"\n" +
 	"CreateEdge\x12\x12.CreateEdgeRequest\x1a\x13.CreateEdgeResponse\"\x14\x82\xd3\xe4\x93\x02\x0e:\x01*\"\t/v1/edges\x12D\n" +
@@ -3086,7 +3601,12 @@ const file_liaison_proto_rawDesc = "" +
 	"\vUpdateProxy\x12\x13.UpdateProxyRequest\x1a\x14.UpdateProxyResponse\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\x1a\x10/v1/proxies/{id}\x12R\n" +
 	"\vDeleteProxy\x12\x13.DeleteProxyRequest\x1a\x14.DeleteProxyResponse\"\x18\x82\xd3\xe4\x93\x02\x12*\x10/v1/proxies/{id}\x12\xa5\x01\n" +
 	"\x1dCreateEdgeScanApplicationTask\x12%.CreateEdgeScanApplicationTaskRequest\x1a&.CreateEdgeScanApplicationTaskResponse\"5\x82\xd3\xe4\x93\x02/:\x01*\"*/v1/edges/{edge_id}/scan_application_tasks\x12\x99\x01\n" +
-	"\x1aGetEdgeScanApplicationTask\x12\".GetEdgeScanApplicationTaskRequest\x1a#.GetEdgeScanApplicationTaskResponse\"2\x82\xd3\xe4\x93\x02,\x12*/v1/edges/{edge_id}/scan_application_tasksB'Z%github.com/singchia/liaison/api/v1;v1b\x06proto3"
+	"\x1aGetEdgeScanApplicationTask\x12\".GetEdgeScanApplicationTaskRequest\x1a#.GetEdgeScanApplicationTaskResponse\"2\x82\xd3\xe4\x93\x02,\x12*/v1/edges/{edge_id}/scan_application_tasks\x12@\n" +
+	"\x05Login\x12\r.LoginRequest\x1a\x0e.LoginResponse\"\x18\x82\xd3\xe4\x93\x02\x12:\x01*\"\r/v1/iam/login\x12D\n" +
+	"\x06Logout\x12\x0e.LogoutRequest\x1a\x0f.LogoutResponse\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/v1/iam/logout\x12N\n" +
+	"\n" +
+	"GetProfile\x12\x12.GetProfileRequest\x1a\x13.GetProfileResponse\"\x17\x82\xd3\xe4\x93\x02\x11\x12\x0f/v1/iam/profile\x12:\n" +
+	"\x06Health\x12\x0e.HealthRequest\x1a\x0f.HealthResponse\"\x0f\x82\xd3\xe4\x93\x02\t\x12\a/healthB'Z%github.com/singchia/liaison/api/v1;v1b\x06proto3"
 
 var (
 	file_liaison_proto_rawDescOnce sync.Once
@@ -3100,7 +3620,7 @@ func file_liaison_proto_rawDescGZIP() []byte {
 	return file_liaison_proto_rawDescData
 }
 
-var file_liaison_proto_msgTypes = make([]protoimpl.MessageInfo, 46)
+var file_liaison_proto_msgTypes = make([]protoimpl.MessageInfo, 56)
 var file_liaison_proto_goTypes = []any{
 	(*Edge)(nil),                                  // 0: Edge
 	(*Edges)(nil),                                 // 1: Edges
@@ -3148,6 +3668,16 @@ var file_liaison_proto_goTypes = []any{
 	(*CreateEdgeScanApplicationTaskResponse)(nil), // 43: CreateEdgeScanApplicationTaskResponse
 	(*GetEdgeScanApplicationTaskRequest)(nil),     // 44: GetEdgeScanApplicationTaskRequest
 	(*GetEdgeScanApplicationTaskResponse)(nil),    // 45: GetEdgeScanApplicationTaskResponse
+	(*User)(nil),                                  // 46: User
+	(*LoginRequest)(nil),                          // 47: LoginRequest
+	(*LoginResponse)(nil),                         // 48: LoginResponse
+	(*LoginData)(nil),                             // 49: LoginData
+	(*GetProfileRequest)(nil),                     // 50: GetProfileRequest
+	(*GetProfileResponse)(nil),                    // 51: GetProfileResponse
+	(*LogoutRequest)(nil),                         // 52: LogoutRequest
+	(*LogoutResponse)(nil),                        // 53: LogoutResponse
+	(*HealthRequest)(nil),                         // 54: HealthRequest
+	(*HealthResponse)(nil),                        // 55: HealthResponse
 }
 var file_liaison_proto_depIdxs = []int32{
 	0,  // 0: Edges.edges:type_name -> Edge
@@ -3169,47 +3699,58 @@ var file_liaison_proto_depIdxs = []int32{
 	31, // 16: CreateProxyResponse.data:type_name -> Proxy
 	31, // 17: UpdateProxyResponse.data:type_name -> Proxy
 	41, // 18: GetEdgeScanApplicationTaskResponse.data:type_name -> EdgeScanApplicationTask
-	3,  // 19: LiaisonService.CreateEdge:input_type -> CreateEdgeRequest
-	5,  // 20: LiaisonService.GetEdge:input_type -> GetEdgeRequest
-	7,  // 21: LiaisonService.ListEdges:input_type -> ListEdgesRequest
-	9,  // 22: LiaisonService.UpdateEdge:input_type -> UpdateEdgeRequest
-	11, // 23: LiaisonService.DeleteEdge:input_type -> DeleteEdgeRequest
-	17, // 24: LiaisonService.ListDevices:input_type -> ListDevicesRequest
-	19, // 25: LiaisonService.UpdateDevice:input_type -> UpdateDeviceRequest
-	15, // 26: LiaisonService.GetDevice:input_type -> GetDeviceRequest
-	23, // 27: LiaisonService.CreateApplication:input_type -> CreateApplicationRequest
-	25, // 28: LiaisonService.ListApplications:input_type -> ListApplicationsRequest
-	27, // 29: LiaisonService.UpdateApplication:input_type -> UpdateApplicationRequest
-	29, // 30: LiaisonService.DeleteApplication:input_type -> DeleteApplicationRequest
-	33, // 31: LiaisonService.ListProxies:input_type -> ListProxiesRequest
-	35, // 32: LiaisonService.CreateProxy:input_type -> CreateProxyRequest
-	37, // 33: LiaisonService.UpdateProxy:input_type -> UpdateProxyRequest
-	39, // 34: LiaisonService.DeleteProxy:input_type -> DeleteProxyRequest
-	42, // 35: LiaisonService.CreateEdgeScanApplicationTask:input_type -> CreateEdgeScanApplicationTaskRequest
-	44, // 36: LiaisonService.GetEdgeScanApplicationTask:input_type -> GetEdgeScanApplicationTaskRequest
-	4,  // 37: LiaisonService.CreateEdge:output_type -> CreateEdgeResponse
-	6,  // 38: LiaisonService.GetEdge:output_type -> GetEdgeResponse
-	8,  // 39: LiaisonService.ListEdges:output_type -> ListEdgesResponse
-	10, // 40: LiaisonService.UpdateEdge:output_type -> UpdateEdgeResponse
-	12, // 41: LiaisonService.DeleteEdge:output_type -> DeleteEdgeResponse
-	18, // 42: LiaisonService.ListDevices:output_type -> ListDevicesResponse
-	20, // 43: LiaisonService.UpdateDevice:output_type -> UpdateDeviceResponse
-	16, // 44: LiaisonService.GetDevice:output_type -> GetDeviceResponse
-	24, // 45: LiaisonService.CreateApplication:output_type -> CreateApplicationResponse
-	26, // 46: LiaisonService.ListApplications:output_type -> ListApplicationsResponse
-	28, // 47: LiaisonService.UpdateApplication:output_type -> UpdateApplicationResponse
-	30, // 48: LiaisonService.DeleteApplication:output_type -> DeleteApplicationResponse
-	34, // 49: LiaisonService.ListProxies:output_type -> ListProxiesResponse
-	36, // 50: LiaisonService.CreateProxy:output_type -> CreateProxyResponse
-	38, // 51: LiaisonService.UpdateProxy:output_type -> UpdateProxyResponse
-	40, // 52: LiaisonService.DeleteProxy:output_type -> DeleteProxyResponse
-	43, // 53: LiaisonService.CreateEdgeScanApplicationTask:output_type -> CreateEdgeScanApplicationTaskResponse
-	45, // 54: LiaisonService.GetEdgeScanApplicationTask:output_type -> GetEdgeScanApplicationTaskResponse
-	37, // [37:55] is the sub-list for method output_type
-	19, // [19:37] is the sub-list for method input_type
-	19, // [19:19] is the sub-list for extension type_name
-	19, // [19:19] is the sub-list for extension extendee
-	0,  // [0:19] is the sub-list for field type_name
+	49, // 19: LoginResponse.data:type_name -> LoginData
+	46, // 20: LoginData.user:type_name -> User
+	46, // 21: GetProfileResponse.data:type_name -> User
+	3,  // 22: LiaisonService.CreateEdge:input_type -> CreateEdgeRequest
+	5,  // 23: LiaisonService.GetEdge:input_type -> GetEdgeRequest
+	7,  // 24: LiaisonService.ListEdges:input_type -> ListEdgesRequest
+	9,  // 25: LiaisonService.UpdateEdge:input_type -> UpdateEdgeRequest
+	11, // 26: LiaisonService.DeleteEdge:input_type -> DeleteEdgeRequest
+	17, // 27: LiaisonService.ListDevices:input_type -> ListDevicesRequest
+	19, // 28: LiaisonService.UpdateDevice:input_type -> UpdateDeviceRequest
+	15, // 29: LiaisonService.GetDevice:input_type -> GetDeviceRequest
+	23, // 30: LiaisonService.CreateApplication:input_type -> CreateApplicationRequest
+	25, // 31: LiaisonService.ListApplications:input_type -> ListApplicationsRequest
+	27, // 32: LiaisonService.UpdateApplication:input_type -> UpdateApplicationRequest
+	29, // 33: LiaisonService.DeleteApplication:input_type -> DeleteApplicationRequest
+	33, // 34: LiaisonService.ListProxies:input_type -> ListProxiesRequest
+	35, // 35: LiaisonService.CreateProxy:input_type -> CreateProxyRequest
+	37, // 36: LiaisonService.UpdateProxy:input_type -> UpdateProxyRequest
+	39, // 37: LiaisonService.DeleteProxy:input_type -> DeleteProxyRequest
+	42, // 38: LiaisonService.CreateEdgeScanApplicationTask:input_type -> CreateEdgeScanApplicationTaskRequest
+	44, // 39: LiaisonService.GetEdgeScanApplicationTask:input_type -> GetEdgeScanApplicationTaskRequest
+	47, // 40: LiaisonService.Login:input_type -> LoginRequest
+	52, // 41: LiaisonService.Logout:input_type -> LogoutRequest
+	50, // 42: LiaisonService.GetProfile:input_type -> GetProfileRequest
+	54, // 43: LiaisonService.Health:input_type -> HealthRequest
+	4,  // 44: LiaisonService.CreateEdge:output_type -> CreateEdgeResponse
+	6,  // 45: LiaisonService.GetEdge:output_type -> GetEdgeResponse
+	8,  // 46: LiaisonService.ListEdges:output_type -> ListEdgesResponse
+	10, // 47: LiaisonService.UpdateEdge:output_type -> UpdateEdgeResponse
+	12, // 48: LiaisonService.DeleteEdge:output_type -> DeleteEdgeResponse
+	18, // 49: LiaisonService.ListDevices:output_type -> ListDevicesResponse
+	20, // 50: LiaisonService.UpdateDevice:output_type -> UpdateDeviceResponse
+	16, // 51: LiaisonService.GetDevice:output_type -> GetDeviceResponse
+	24, // 52: LiaisonService.CreateApplication:output_type -> CreateApplicationResponse
+	26, // 53: LiaisonService.ListApplications:output_type -> ListApplicationsResponse
+	28, // 54: LiaisonService.UpdateApplication:output_type -> UpdateApplicationResponse
+	30, // 55: LiaisonService.DeleteApplication:output_type -> DeleteApplicationResponse
+	34, // 56: LiaisonService.ListProxies:output_type -> ListProxiesResponse
+	36, // 57: LiaisonService.CreateProxy:output_type -> CreateProxyResponse
+	38, // 58: LiaisonService.UpdateProxy:output_type -> UpdateProxyResponse
+	40, // 59: LiaisonService.DeleteProxy:output_type -> DeleteProxyResponse
+	43, // 60: LiaisonService.CreateEdgeScanApplicationTask:output_type -> CreateEdgeScanApplicationTaskResponse
+	45, // 61: LiaisonService.GetEdgeScanApplicationTask:output_type -> GetEdgeScanApplicationTaskResponse
+	48, // 62: LiaisonService.Login:output_type -> LoginResponse
+	53, // 63: LiaisonService.Logout:output_type -> LogoutResponse
+	51, // 64: LiaisonService.GetProfile:output_type -> GetProfileResponse
+	55, // 65: LiaisonService.Health:output_type -> HealthResponse
+	44, // [44:66] is the sub-list for method output_type
+	22, // [22:44] is the sub-list for method input_type
+	22, // [22:22] is the sub-list for extension type_name
+	22, // [22:22] is the sub-list for extension extendee
+	0,  // [0:22] is the sub-list for field type_name
 }
 
 func init() { file_liaison_proto_init() }
@@ -3224,7 +3765,7 @@ func file_liaison_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_liaison_proto_rawDesc), len(file_liaison_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   46,
+			NumMessages:   56,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

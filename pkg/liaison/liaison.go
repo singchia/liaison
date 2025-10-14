@@ -9,6 +9,7 @@ import (
 	"github.com/singchia/liaison/pkg/liaison/config"
 	"github.com/singchia/liaison/pkg/liaison/manager/controlplane"
 	"github.com/singchia/liaison/pkg/liaison/manager/frontierbound"
+	"github.com/singchia/liaison/pkg/liaison/manager/iam"
 	"github.com/singchia/liaison/pkg/liaison/manager/web"
 	"github.com/singchia/liaison/pkg/liaison/repo"
 	"k8s.io/klog/v2"
@@ -19,6 +20,7 @@ type Liaison struct {
 	frontierBound frontierbound.FrontierBound
 	entry         *entry.Entry
 	repo          repo.Repo
+	iamService    *iam.IAMService
 }
 
 func NewLiaison() (*Liaison, error) {
@@ -56,8 +58,10 @@ func NewLiaison() (*Liaison, error) {
 	if err != nil {
 		return nil, err
 	}
+	// IAM service
+	iamService := iam.NewIAMService(repo)
 	// web layer
-	web, err := web.NewWebServer(config.Conf, controlPlane)
+	web, err := web.NewWebServer(config.Conf, controlPlane, iamService)
 	if err != nil {
 		return nil, err
 	}
@@ -71,6 +75,7 @@ func NewLiaison() (*Liaison, error) {
 		frontierBound: frontierBound,
 		entry:         entry,
 		repo:          repo,
+		iamService:    iamService,
 	}, nil
 }
 

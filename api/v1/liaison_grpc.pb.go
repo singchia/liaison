@@ -37,6 +37,10 @@ const (
 	LiaisonService_DeleteProxy_FullMethodName                   = "/LiaisonService/DeleteProxy"
 	LiaisonService_CreateEdgeScanApplicationTask_FullMethodName = "/LiaisonService/CreateEdgeScanApplicationTask"
 	LiaisonService_GetEdgeScanApplicationTask_FullMethodName    = "/LiaisonService/GetEdgeScanApplicationTask"
+	LiaisonService_Login_FullMethodName                         = "/LiaisonService/Login"
+	LiaisonService_Logout_FullMethodName                        = "/LiaisonService/Logout"
+	LiaisonService_GetProfile_FullMethodName                    = "/LiaisonService/GetProfile"
+	LiaisonService_Health_FullMethodName                        = "/LiaisonService/Health"
 )
 
 // LiaisonServiceClient is the client API for LiaisonService service.
@@ -66,6 +70,12 @@ type LiaisonServiceClient interface {
 	// 任务
 	CreateEdgeScanApplicationTask(ctx context.Context, in *CreateEdgeScanApplicationTaskRequest, opts ...grpc.CallOption) (*CreateEdgeScanApplicationTaskResponse, error)
 	GetEdgeScanApplicationTask(ctx context.Context, in *GetEdgeScanApplicationTaskRequest, opts ...grpc.CallOption) (*GetEdgeScanApplicationTaskResponse, error)
+	// IAM (Identity and Access Management)
+	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
+	GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*GetProfileResponse, error)
+	// 健康检查
+	Health(ctx context.Context, in *HealthRequest, opts ...grpc.CallOption) (*HealthResponse, error)
 }
 
 type liaisonServiceClient struct {
@@ -238,6 +248,42 @@ func (c *liaisonServiceClient) GetEdgeScanApplicationTask(ctx context.Context, i
 	return out, nil
 }
 
+func (c *liaisonServiceClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
+	out := new(LoginResponse)
+	err := c.cc.Invoke(ctx, LiaisonService_Login_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *liaisonServiceClient) Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error) {
+	out := new(LogoutResponse)
+	err := c.cc.Invoke(ctx, LiaisonService_Logout_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *liaisonServiceClient) GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*GetProfileResponse, error) {
+	out := new(GetProfileResponse)
+	err := c.cc.Invoke(ctx, LiaisonService_GetProfile_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *liaisonServiceClient) Health(ctx context.Context, in *HealthRequest, opts ...grpc.CallOption) (*HealthResponse, error) {
+	out := new(HealthResponse)
+	err := c.cc.Invoke(ctx, LiaisonService_Health_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // LiaisonServiceServer is the server API for LiaisonService service.
 // All implementations must embed UnimplementedLiaisonServiceServer
 // for forward compatibility
@@ -265,6 +311,12 @@ type LiaisonServiceServer interface {
 	// 任务
 	CreateEdgeScanApplicationTask(context.Context, *CreateEdgeScanApplicationTaskRequest) (*CreateEdgeScanApplicationTaskResponse, error)
 	GetEdgeScanApplicationTask(context.Context, *GetEdgeScanApplicationTaskRequest) (*GetEdgeScanApplicationTaskResponse, error)
+	// IAM (Identity and Access Management)
+	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
+	GetProfile(context.Context, *GetProfileRequest) (*GetProfileResponse, error)
+	// 健康检查
+	Health(context.Context, *HealthRequest) (*HealthResponse, error)
 	mustEmbedUnimplementedLiaisonServiceServer()
 }
 
@@ -325,6 +377,18 @@ func (UnimplementedLiaisonServiceServer) CreateEdgeScanApplicationTask(context.C
 }
 func (UnimplementedLiaisonServiceServer) GetEdgeScanApplicationTask(context.Context, *GetEdgeScanApplicationTaskRequest) (*GetEdgeScanApplicationTaskResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetEdgeScanApplicationTask not implemented")
+}
+func (UnimplementedLiaisonServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedLiaisonServiceServer) Logout(context.Context, *LogoutRequest) (*LogoutResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Logout not implemented")
+}
+func (UnimplementedLiaisonServiceServer) GetProfile(context.Context, *GetProfileRequest) (*GetProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProfile not implemented")
+}
+func (UnimplementedLiaisonServiceServer) Health(context.Context, *HealthRequest) (*HealthResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Health not implemented")
 }
 func (UnimplementedLiaisonServiceServer) mustEmbedUnimplementedLiaisonServiceServer() {}
 
@@ -663,6 +727,78 @@ func _LiaisonService_GetEdgeScanApplicationTask_Handler(srv interface{}, ctx con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _LiaisonService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LiaisonServiceServer).Login(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LiaisonService_Login_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LiaisonServiceServer).Login(ctx, req.(*LoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LiaisonService_Logout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LogoutRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LiaisonServiceServer).Logout(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LiaisonService_Logout_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LiaisonServiceServer).Logout(ctx, req.(*LogoutRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LiaisonService_GetProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetProfileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LiaisonServiceServer).GetProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LiaisonService_GetProfile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LiaisonServiceServer).GetProfile(ctx, req.(*GetProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LiaisonService_Health_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HealthRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LiaisonServiceServer).Health(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LiaisonService_Health_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LiaisonServiceServer).Health(ctx, req.(*HealthRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // LiaisonService_ServiceDesc is the grpc.ServiceDesc for LiaisonService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -741,6 +877,22 @@ var LiaisonService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetEdgeScanApplicationTask",
 			Handler:    _LiaisonService_GetEdgeScanApplicationTask_Handler,
+		},
+		{
+			MethodName: "Login",
+			Handler:    _LiaisonService_Login_Handler,
+		},
+		{
+			MethodName: "Logout",
+			Handler:    _LiaisonService_Logout_Handler,
+		},
+		{
+			MethodName: "GetProfile",
+			Handler:    _LiaisonService_GetProfile_Handler,
+		},
+		{
+			MethodName: "Health",
+			Handler:    _LiaisonService_Health_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

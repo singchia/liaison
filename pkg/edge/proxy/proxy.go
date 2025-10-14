@@ -9,10 +9,10 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/jumboframes/armorigo/log"
 	"github.com/singchia/geminio"
 	"github.com/singchia/liaison/pkg/edge/frontierbound"
 	"github.com/singchia/liaison/pkg/proto"
-	"github.com/sirupsen/logrus"
 )
 
 type Proxy interface{}
@@ -36,26 +36,26 @@ func (p *proxy) proxy(ctx context.Context, stream geminio.Stream) {
 	lengthBuf := make([]byte, 4)
 	_, err := io.ReadFull(stream, lengthBuf)
 	if err != nil {
-		logrus.Errorf("proxy stream read meta length err: %s", err)
+		log.Errorf("proxy stream read meta length err: %s", err)
 		return
 	}
 	length := binary.BigEndian.Uint32(lengthBuf)
 	dataBuf := make([]byte, length)
 	_, err = io.ReadFull(stream, dataBuf)
 	if err != nil {
-		logrus.Errorf("proxy stream read meta data err: %s", err)
+		log.Errorf("proxy stream read meta data err: %s", err)
 		return
 	}
 
 	var dst proto.Dst
 	if err := json.Unmarshal(dataBuf, &dst); err != nil {
-		logrus.Errorf("proxy stream meta unmarshal err: %s", err)
+		log.Errorf("proxy stream meta unmarshal err: %s", err)
 		return
 	}
 
 	conn, err := net.Dial("tcp", dst.Addr)
 	if err != nil {
-		logrus.Errorf("proxy stream dial err: %s", err)
+		log.Errorf("proxy stream dial err: %s", err)
 		return
 	}
 
@@ -67,7 +67,7 @@ func (p *proxy) proxy(ctx context.Context, stream geminio.Stream) {
 
 		_, err := io.Copy(conn, stream)
 		if err != nil && !IsErrClosed(err) {
-			logrus.Errorf("read stream, src: %s, dst: %s; to conn, src: %s, dst: %s; err: %s",
+			log.Errorf("read stream, src: %s, dst: %s; to conn, src: %s, dst: %s; err: %s",
 				stream.RemoteAddr(), stream.LocalAddr(), conn.LocalAddr(), conn.RemoteAddr(), err)
 		}
 		_ = stream.Close()
@@ -79,7 +79,7 @@ func (p *proxy) proxy(ctx context.Context, stream geminio.Stream) {
 
 		_, err := io.Copy(stream, conn)
 		if err != nil && !IsErrClosed(err) {
-			logrus.Errorf("read conn, src: %s, dst: %s; to stream, src: %s, dst: %s; err: %s",
+			log.Errorf("read conn, src: %s, dst: %s; to stream, src: %s, dst: %s; err: %s",
 				conn.LocalAddr(), conn.RemoteAddr(), stream.RemoteAddr(), stream.LocalAddr(), err)
 		}
 		_ = stream.Close()

@@ -11,10 +11,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/jumboframes/armorigo/log"
 	"github.com/singchia/geminio"
 	"github.com/singchia/liaison/pkg/edge/frontierbound"
 	"github.com/singchia/liaison/pkg/proto"
-	"github.com/sirupsen/logrus"
 )
 
 type Scanner interface{}
@@ -36,7 +36,7 @@ func NewScanner(frontierBound frontierbound.FrontierBound) (Scanner, error) {
 	// 注册函数
 	err := frontierBound.RegisterRPCHandler("scan_application", s.scanApplication)
 	if err != nil {
-		logrus.Errorf("scanner register func err: %s", err)
+		log.Errorf("scanner register func err: %s", err)
 		return nil, err
 	}
 
