@@ -157,12 +157,12 @@ func (s *IAMService) saveDefaultPassword(password string) error {
 	}
 
 	// 写入密码文件
-	content := fmt.Sprintf("Liaison 默认用户账户信息\n")
-	content += fmt.Sprintf("================================\n")
-	content += fmt.Sprintf("邮箱: default@liaison.local\n")
+	content := "Liaison 默认用户账户信息\n"
+	content += "================================\n"
+	content += "邮箱: default@liaison.local\n"
 	content += fmt.Sprintf("密码: %s\n", password)
-	content += fmt.Sprintf("================================\n")
-	content += fmt.Sprintf("请妥善保管此信息，首次登录后建议修改密码\n")
+	content += "================================\n"
+	content += "请妥善保管此信息，首次登录后建议修改密码\n"
 
 	return os.WriteFile(filePath, []byte(content), 0600)
 }
