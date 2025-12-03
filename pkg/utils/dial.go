@@ -7,8 +7,8 @@ import (
 	"net"
 	"os"
 
+	"github.com/jumboframes/armorigo/log"
 	"github.com/singchia/liaison/pkg/config"
-	"github.com/sirupsen/logrus"
 )
 
 func Dial(dial *config.Dial, index int) (net.Conn, error) {
@@ -37,7 +37,7 @@ func Dial(dial *config.Dial, index int) (net.Conn, error) {
 		for _, certFile := range dial.TLS.Certs {
 			cert, err := tls.LoadX509KeyPair(certFile.Cert, certFile.Key)
 			if err != nil {
-				logrus.Errorf("dial, tls load x509 cert err: %s, cert: %s, key: %s", err, certFile.Cert, certFile.Key)
+				log.Errorf("dial, tls load x509 cert err: %s, cert: %s, key: %s", err, certFile.Cert, certFile.Key)
 				continue
 			}
 			certs = append(certs, cert)
@@ -51,7 +51,7 @@ func Dial(dial *config.Dial, index int) (net.Conn, error) {
 				InsecureSkipVerify: dial.TLS.InsecureSkipVerify,
 			})
 			if err != nil {
-				logrus.Errorf("tls dial err: %s, network: %s, addr: %s", err, network, addr)
+				log.Errorf("tls dial err: %s, network: %s, addr: %s", err, network, addr)
 				return nil, err
 			}
 			return conn, nil
@@ -62,11 +62,11 @@ func Dial(dial *config.Dial, index int) (net.Conn, error) {
 			for _, caFile := range dial.TLS.CACerts {
 				ca, err := os.ReadFile(caFile)
 				if err != nil {
-					logrus.Errorf("dial read ca cert err: %s, file: %s", err, caFile)
+					log.Errorf("dial read ca cert err: %s, file: %s", err, caFile)
 					return nil, err
 				}
 				if !caPool.AppendCertsFromPEM(ca) {
-					logrus.Warningf("dial append ca cert to ca pool err: %s, file: %s", err, caFile)
+					log.Warnf("dial append ca cert to ca pool err: %s, file: %s", err, caFile)
 					continue
 				}
 			}
@@ -77,7 +77,7 @@ func Dial(dial *config.Dial, index int) (net.Conn, error) {
 				RootCAs:            caPool,
 			})
 			if err != nil {
-				logrus.Errorf("dial tls dial err: %s, network: %s, addr: %s", err, network, addr)
+				log.Errorf("dial tls dial err: %s, network: %s, addr: %s", err, network, addr)
 				return nil, err
 			}
 			return conn, nil

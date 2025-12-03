@@ -1,6 +1,6 @@
 include ./Makefile.defs
 
-all: liaison liaison-edge
+all: liaison liaison-edge test-deps
 linux: liaison-linux liaison-edge-linux
 
 .PHONY: image-gen-swagger
@@ -37,3 +37,34 @@ gen-api:
 .PHONY: gen-swagger
 gen-swagger:
 	docker run --rm -v ${PWD}:/liaison liaison-gen-swagger:${VERSION}
+
+# testing
+.PHONY: test
+test:
+	go test -v ./...
+
+.PHONY: test-e2e
+test-e2e:
+	@echo "Running E2E tests..."
+	@./test/e2e/run_simple_test.sh
+
+.PHONY: test-e2e-full
+test-e2e-full:
+	@echo "Running full E2E tests..."
+	@./test/e2e/run_e2e_test.sh
+
+.PHONY: test-deps
+test-deps:
+	go get github.com/stretchr/testify/assert
+	go get github.com/stretchr/testify/require
+
+.PHONY: test-all
+test-all: test test-e2e
+
+# tools
+.PHONY: password-verifier
+password-verifier:
+	CGO_ENABLED=1 go build -trimpath -ldflags "-s -w" -o ./bin/password-verifier tools/password_verifier.go
+
+.PHONY: tools
+tools: password-verifier

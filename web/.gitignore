@@ -1,5 +1,21 @@
-# Logs
-logs
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+.nyc_output
+
+# Production
+dist/
+build/
+.umi/
+.umi-production/
+
+# Misc
+.DS_Store
+*.pem
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,25 +23,47 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# Environment variables
+# Local env files
 .env
 .env.local
 .env.development.local
 .env.test.local
-.env.production.local 
+.env.production.local
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Package manager lock files (optional - uncomment if you want to ignore)
+# package-lock.json
+# pnpm-lock.yaml
+# yarn.lock
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# UmiJS
+.umi/
+.umi-production/
+.umi-test/
+
+# TypeScript
+*.tsbuildinfo
+
+# Optional: Keep these if you want to track them
+# package-lock.json
+# pnpm-lock.yaml

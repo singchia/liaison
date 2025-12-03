@@ -29,10 +29,14 @@ const OperationLiaisonServiceDeleteProxy = "/LiaisonService/DeleteProxy"
 const OperationLiaisonServiceGetDevice = "/LiaisonService/GetDevice"
 const OperationLiaisonServiceGetEdge = "/LiaisonService/GetEdge"
 const OperationLiaisonServiceGetEdgeScanApplicationTask = "/LiaisonService/GetEdgeScanApplicationTask"
+const OperationLiaisonServiceGetProfile = "/LiaisonService/GetProfile"
+const OperationLiaisonServiceHealth = "/LiaisonService/Health"
 const OperationLiaisonServiceListApplications = "/LiaisonService/ListApplications"
 const OperationLiaisonServiceListDevices = "/LiaisonService/ListDevices"
 const OperationLiaisonServiceListEdges = "/LiaisonService/ListEdges"
 const OperationLiaisonServiceListProxies = "/LiaisonService/ListProxies"
+const OperationLiaisonServiceLogin = "/LiaisonService/Login"
+const OperationLiaisonServiceLogout = "/LiaisonService/Logout"
 const OperationLiaisonServiceUpdateApplication = "/LiaisonService/UpdateApplication"
 const OperationLiaisonServiceUpdateDevice = "/LiaisonService/UpdateDevice"
 const OperationLiaisonServiceUpdateEdge = "/LiaisonService/UpdateEdge"
@@ -52,12 +56,18 @@ type LiaisonServiceHTTPServer interface {
 	GetDevice(context.Context, *GetDeviceRequest) (*GetDeviceResponse, error)
 	GetEdge(context.Context, *GetEdgeRequest) (*GetEdgeResponse, error)
 	GetEdgeScanApplicationTask(context.Context, *GetEdgeScanApplicationTaskRequest) (*GetEdgeScanApplicationTaskResponse, error)
+	GetProfile(context.Context, *GetProfileRequest) (*GetProfileResponse, error)
+	// Health 健康检查
+	Health(context.Context, *HealthRequest) (*HealthResponse, error)
 	ListApplications(context.Context, *ListApplicationsRequest) (*ListApplicationsResponse, error)
 	// ListDevices 设备
 	ListDevices(context.Context, *ListDevicesRequest) (*ListDevicesResponse, error)
 	ListEdges(context.Context, *ListEdgesRequest) (*ListEdgesResponse, error)
 	// ListProxies 代理
 	ListProxies(context.Context, *ListProxiesRequest) (*ListProxiesResponse, error)
+	// Login IAM (Identity and Access Management)
+	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
 	UpdateApplication(context.Context, *UpdateApplicationRequest) (*UpdateApplicationResponse, error)
 	UpdateDevice(context.Context, *UpdateDeviceRequest) (*UpdateDeviceResponse, error)
 	UpdateEdge(context.Context, *UpdateEdgeRequest) (*UpdateEdgeResponse, error)
@@ -84,6 +94,10 @@ func RegisterLiaisonServiceHTTPServer(s *http.Server, srv LiaisonServiceHTTPServ
 	r.DELETE("/v1/proxies/{id}", _LiaisonService_DeleteProxy0_HTTP_Handler(srv))
 	r.POST("/v1/edges/{edge_id}/scan_application_tasks", _LiaisonService_CreateEdgeScanApplicationTask0_HTTP_Handler(srv))
 	r.GET("/v1/edges/{edge_id}/scan_application_tasks", _LiaisonService_GetEdgeScanApplicationTask0_HTTP_Handler(srv))
+	r.POST("/v1/iam/login", _LiaisonService_Login0_HTTP_Handler(srv))
+	r.POST("/v1/iam/logout", _LiaisonService_Logout0_HTTP_Handler(srv))
+	r.GET("/v1/iam/profile", _LiaisonService_GetProfile0_HTTP_Handler(srv))
+	r.GET("/health", _LiaisonService_Health0_HTTP_Handler(srv))
 }
 
 func _LiaisonService_CreateEdge0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
@@ -485,6 +499,88 @@ func _LiaisonService_GetEdgeScanApplicationTask0_HTTP_Handler(srv LiaisonService
 	}
 }
 
+func _LiaisonService_Login0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in LoginRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationLiaisonServiceLogin)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.Login(ctx, req.(*LoginRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*LoginResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _LiaisonService_Logout0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in LogoutRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationLiaisonServiceLogout)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.Logout(ctx, req.(*LogoutRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*LogoutResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _LiaisonService_GetProfile0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetProfileRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationLiaisonServiceGetProfile)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetProfile(ctx, req.(*GetProfileRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetProfileResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _LiaisonService_Health0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in HealthRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationLiaisonServiceHealth)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.Health(ctx, req.(*HealthRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*HealthResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
 type LiaisonServiceHTTPClient interface {
 	CreateApplication(ctx context.Context, req *CreateApplicationRequest, opts ...http.CallOption) (rsp *CreateApplicationResponse, err error)
 	CreateEdge(ctx context.Context, req *CreateEdgeRequest, opts ...http.CallOption) (rsp *CreateEdgeResponse, err error)
@@ -496,10 +592,14 @@ type LiaisonServiceHTTPClient interface {
 	GetDevice(ctx context.Context, req *GetDeviceRequest, opts ...http.CallOption) (rsp *GetDeviceResponse, err error)
 	GetEdge(ctx context.Context, req *GetEdgeRequest, opts ...http.CallOption) (rsp *GetEdgeResponse, err error)
 	GetEdgeScanApplicationTask(ctx context.Context, req *GetEdgeScanApplicationTaskRequest, opts ...http.CallOption) (rsp *GetEdgeScanApplicationTaskResponse, err error)
+	GetProfile(ctx context.Context, req *GetProfileRequest, opts ...http.CallOption) (rsp *GetProfileResponse, err error)
+	Health(ctx context.Context, req *HealthRequest, opts ...http.CallOption) (rsp *HealthResponse, err error)
 	ListApplications(ctx context.Context, req *ListApplicationsRequest, opts ...http.CallOption) (rsp *ListApplicationsResponse, err error)
 	ListDevices(ctx context.Context, req *ListDevicesRequest, opts ...http.CallOption) (rsp *ListDevicesResponse, err error)
 	ListEdges(ctx context.Context, req *ListEdgesRequest, opts ...http.CallOption) (rsp *ListEdgesResponse, err error)
 	ListProxies(ctx context.Context, req *ListProxiesRequest, opts ...http.CallOption) (rsp *ListProxiesResponse, err error)
+	Login(ctx context.Context, req *LoginRequest, opts ...http.CallOption) (rsp *LoginResponse, err error)
+	Logout(ctx context.Context, req *LogoutRequest, opts ...http.CallOption) (rsp *LogoutResponse, err error)
 	UpdateApplication(ctx context.Context, req *UpdateApplicationRequest, opts ...http.CallOption) (rsp *UpdateApplicationResponse, err error)
 	UpdateDevice(ctx context.Context, req *UpdateDeviceRequest, opts ...http.CallOption) (rsp *UpdateDeviceResponse, err error)
 	UpdateEdge(ctx context.Context, req *UpdateEdgeRequest, opts ...http.CallOption) (rsp *UpdateEdgeResponse, err error)
@@ -644,6 +744,32 @@ func (c *LiaisonServiceHTTPClientImpl) GetEdgeScanApplicationTask(ctx context.Co
 	return &out, nil
 }
 
+func (c *LiaisonServiceHTTPClientImpl) GetProfile(ctx context.Context, in *GetProfileRequest, opts ...http.CallOption) (*GetProfileResponse, error) {
+	var out GetProfileResponse
+	pattern := "/v1/iam/profile"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationLiaisonServiceGetProfile))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *LiaisonServiceHTTPClientImpl) Health(ctx context.Context, in *HealthRequest, opts ...http.CallOption) (*HealthResponse, error) {
+	var out HealthResponse
+	pattern := "/health"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationLiaisonServiceHealth))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 func (c *LiaisonServiceHTTPClientImpl) ListApplications(ctx context.Context, in *ListApplicationsRequest, opts ...http.CallOption) (*ListApplicationsResponse, error) {
 	var out ListApplicationsResponse
 	pattern := "/v1/applications"
@@ -690,6 +816,32 @@ func (c *LiaisonServiceHTTPClientImpl) ListProxies(ctx context.Context, in *List
 	opts = append(opts, http.Operation(OperationLiaisonServiceListProxies))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *LiaisonServiceHTTPClientImpl) Login(ctx context.Context, in *LoginRequest, opts ...http.CallOption) (*LoginResponse, error) {
+	var out LoginResponse
+	pattern := "/v1/iam/login"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationLiaisonServiceLogin))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *LiaisonServiceHTTPClientImpl) Logout(ctx context.Context, in *LogoutRequest, opts ...http.CallOption) (*LogoutResponse, error) {
+	var out LogoutResponse
+	pattern := "/v1/iam/logout"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationLiaisonServiceLogout))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

@@ -9,12 +9,12 @@ import (
 	"net"
 	"sync"
 
+	"github.com/jumboframes/armorigo/log"
 	"github.com/singchia/geminio"
 	"github.com/singchia/geminio/client"
 	"github.com/singchia/liaison/pkg/edge/config"
 	"github.com/singchia/liaison/pkg/proto"
 	"github.com/singchia/liaison/pkg/utils"
-	"github.com/sirupsen/logrus"
 )
 
 // FrontierBound 处于依赖链的最低端，负责与frontier通信
@@ -58,14 +58,14 @@ func NewFrontierBound(conf *config.Configuration) (FrontierBound, error) {
 	dialer := func() (net.Conn, error) {
 		conn, err := utils.Dial(&dial, rand.Intn(len(dial.Addrs)))
 		if err != nil {
-			logrus.Errorf("frontlas new informer, dial err: %s", err)
+			log.Errorf("frontlas new informer, dial err: %s", err)
 			return nil, err
 		}
 		return conn, nil
 	}
 	end, err := client.NewRetryEndWithDialer(dialer, opt)
 	if err != nil {
-		logrus.Errorf("frontlas new retry end err: %s", err)
+		log.Errorf("frontlas new retry end err: %s", err)
 		return nil, err
 	}
 
@@ -86,7 +86,7 @@ func (fb *frontierBound) RegisterRPCHandler(name string, f func(ctx context.Cont
 
 	err := fb.end.Register(context.Background(), name, f)
 	if err != nil {
-		logrus.Errorf("frontierbound register func err: %s, name: %s", err, name)
+		log.Errorf("frontierbound register func err: %s, name: %s", err, name)
 		return err
 	}
 	return nil
@@ -109,10 +109,10 @@ func (fb *frontierBound) loopAccept(ctx context.Context) {
 		stream, err := fb.end.AcceptStream()
 		if err != nil {
 			if err == io.EOF {
-				logrus.Infof("frontierbound accept stream EOF")
+				log.Infof("frontierbound accept stream EOF")
 				return
 			}
-			logrus.Errorf("frontierbound accept stream err: %s", err)
+			log.Errorf("frontierbound accept stream err: %s", err)
 			continue
 		}
 
@@ -120,7 +120,7 @@ func (fb *frontierBound) loopAccept(ctx context.Context) {
 		handler := fb.streamHandler
 		fb.mu.RUnlock()
 		if handler == nil {
-			logrus.Errorf("frontierbound accept stream, handler is nil")
+			log.Errorf("frontierbound accept stream, handler is nil")
 			continue
 		}
 		go handler(ctx, stream)

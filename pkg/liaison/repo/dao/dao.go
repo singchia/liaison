@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"errors"
 	"sync"
 	"time"
 
@@ -67,6 +68,16 @@ type Dao interface {
 	UpdateTaskResult(taskID uint, status model.TaskStatus, result []byte) error
 	UpdateTaskError(taskID uint, error string) error
 
+	// User 相关方法
+	CreateUser(user *model.User) error
+	GetUserByID(id uint) (*model.User, error)
+	GetUserByEmail(email string) (*model.User, error)
+	UpdateUser(user *model.User) error
+	UpdateUserLastLogin(userID uint) error
+	ListUsers(offset, limit int) ([]*model.User, int64, error)
+	DeleteUser(id uint) error
+	CheckUserExists(email string) (bool, error)
+
 	// 资源清理
 	Close() error
 }
@@ -119,6 +130,7 @@ func (d *dao) initDB() error {
 		&model.Application{},
 		&model.Proxy{},
 		&model.Task{},
+		&model.User{},
 	)
 }
 
@@ -179,6 +191,68 @@ func (d *dao) Close() error {
 		return err
 	}
 	return sqlDB.Close()
+}
+
+// User 相关方法实现
+func (d *dao) CreateUser(user *model.User) error {
+	return d.getDB().Create(user).Error
+}
+
+func (d *dao) GetUserByID(id uint) (*model.User, error) {
+	var user model.User
+	err := d.getDB().First(&user, id).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (d *dao) GetUserByEmail(email string) (*model.User, error) {
+	var user model.User
+	err := d.getDB().Where("email = ?", email).First(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (d *dao) UpdateUser(user *model.User) error {
+	return d.getDB().Save(user).Error
+}
+
+func (d *dao) UpdateUserLastLogin(userID uint) error {
+	now := time.Now()
+	return d.getDB().Model(&model.User{}).Where("id = ?", userID).Update("last_login", now).Error
+}
+
+func (d *dao) ListUsers(offset, limit int) ([]*model.User, int64, error) {
+	var users []*model.User
+	var total int64
+
+	// 获取总数
+	if err := d.getDB().Model(&model.User{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// 获取用户列表
+	err := d.getDB().Offset(offset).Limit(limit).Find(&users).Error
+	return users, total, err
+}
+
+func (d *dao) DeleteUser(id uint) error {
+	return d.getDB().Delete(&model.User{}, id).Error
+}
+
+func (d *dao) CheckUserExists(email string) (bool, error) {
+	var count int64
+	err := d.getDB().Model(&model.User{}).Where("email = ?", email).Count(&count).Error
+	return count > 0, err
 }
 
 /*

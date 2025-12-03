@@ -1,20 +1,48 @@
 {
-  "name": "liaison-web",
-  "version": "1.0.0",
-  "description": "Liaison Product Management System",
-  "type": "module",
+  "private": true,
+  "author": "gaoxy <gaoxy@moresec.cn>",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "max build",
+    "dev": "max dev",
+    "format": "prettier --cache --write .",
+    "postinstall": "max setup",
+    "prepare": "husky",
+    "setup": "max setup",
+    "start": "npm run dev"
   },
   "dependencies": {
-    "vue": "^3.3.4",
-    "vue-router": "^4.2.4",
-    "pinia": "^2.1.6"
+    "@ant-design/icons": "^5.0.1",
+    "@ant-design/pro-components": "^2.4.4",
+    "@umijs/max": "^4.5.1",
+    "ahooks": "^3.9.5",
+    "antd": "^5.27.4",
+    "classnames": "^2.5.1",
+    "monaco-editor": "^0.54.0",
+    "pnpm": "^10.24.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^4.2.3",
-    "vite": "^4.4.5"
+    "@types/react": "^18.0.33",
+    "@types/react-dom": "^18.0.11",
+    "eslint": "^8.35.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-formatter-pretty": "^7.0.0",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "husky": "^9",
+    "lint-staged": "^13.2.0",
+    "monaco-editor-webpack-plugin": "^7.1.1",
+    "postcss": "^8.5.6",
+    "postcss-less": "^6.0.0",
+    "prettier-plugin-organize-imports": "^3.2.2",
+    "prettier-plugin-packagejson": "^2.4.3",
+    "stylelint": "^16.25.0",
+    "stylelint-config-recommended": "^17.0.0",
+    "svg-sprite-loader": "^6.0.11",
+    "typescript": "^5.0.3",
+    "webpack": "^5.102.1"
   }
-} 
+}

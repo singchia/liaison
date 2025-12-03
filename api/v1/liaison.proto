@@ -415,4 +415,85 @@ service LiaisonService {
             get: "/v1/edges/{edge_id}/scan_application_tasks"
         };
     };
+
+    // IAM (Identity and Access Management)
+    rpc Login(LoginRequest) returns (LoginResponse) {
+        option (google.api.http) = {
+            post: "/v1/iam/login"
+            body: "*"
+        };
+    };
+    rpc Logout(LogoutRequest) returns (LogoutResponse) {
+        option (google.api.http) = {
+            post: "/v1/iam/logout"
+            body: "*"
+        };
+    };
+    rpc GetProfile(GetProfileRequest) returns (GetProfileResponse) {
+        option (google.api.http) = {
+            get: "/v1/iam/profile"
+        };
+    };
+
+    // 健康检查
+    rpc Health(HealthRequest) returns (HealthResponse) {
+        option (google.api.http) = {
+            get: "/health"
+        };
+    };
+}
+
+// 用户信息
+message User {
+    uint64 id = 1;
+    string email = 2;
+}
+
+// 登录请求
+message LoginRequest {
+    string email = 1;
+    string password = 2;
+}
+
+// 登录响应
+message LoginResponse {
+    int32 code = 1;
+    string message = 2;
+    LoginData data = 3;
+}
+
+message LoginData {
+    string token = 1;
+    User user = 2;
+}
+
+// 获取用户信息请求
+message GetProfileRequest {
+}
+
+// 获取用户信息响应
+message GetProfileResponse {
+    int32 code = 1;
+    string message = 2;
+    User data = 3;
+}
+
+
+// 登出请求
+message LogoutRequest {
+}
+
+// 登出响应
+message LogoutResponse {
+    int32 code = 1;
+    string message = 2;
+}
+
+// 健康检查请求
+message HealthRequest {
+}
+
+// 健康检查响应
+message HealthResponse {
+    string status = 1;
 }

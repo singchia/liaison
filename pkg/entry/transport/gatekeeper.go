@@ -9,11 +9,11 @@ import (
 	"net"
 	"sync"
 
+	"github.com/jumboframes/armorigo/log"
 	"github.com/jumboframes/armorigo/rproxy"
 	"github.com/singchia/liaison/pkg/entry/frontierbound"
 	"github.com/singchia/liaison/pkg/lerrors"
 	"github.com/singchia/liaison/pkg/proto"
-	"github.com/sirupsen/logrus"
 )
 
 // Gatekeeper 端口管理器，负责动态管理TCP端口监听
@@ -41,20 +41,20 @@ func (m *Gatekeeper) CreateProxy(ctx context.Context, protoproxy *proto.Proxy) e
 	// 检查是否已存在该代理
 	_, exists := m.proxies[protoproxy.ID]
 	if exists {
-		logrus.Warnf("port %d is already in use", protoproxy.ProxyPort)
+		log.Warnf("port %d is already in use", protoproxy.ProxyPort)
 		return nil
 	}
 	// 检查端口是否和其他代理冲突
 	id, exists := m.proxiesIdxPort[protoproxy.ProxyPort]
 	if exists && id != protoproxy.ID {
-		logrus.Errorf("port %d conflict with proxy %d", protoproxy.ProxyPort, id)
+		log.Errorf("port %d conflict with proxy %d", protoproxy.ProxyPort, id)
 		return lerrors.ErrPortConflict
 	}
 
 	// 监听
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", protoproxy.ProxyPort))
 	if err != nil {
-		logrus.Errorf("failed to listen on port %d: %s", protoproxy.ProxyPort, err)
+		log.Errorf("failed to listen on port %d: %s", protoproxy.ProxyPort, err)
 		return err
 	}
 	// hook 函数
@@ -76,19 +76,19 @@ func (m *Gatekeeper) CreateProxy(ctx context.Context, protoproxy *proto.Proxy) e
 		}
 		data, err := json.Marshal(dst)
 		if err != nil {
-			logrus.Errorf("failed to marshal dst: %s", err)
+			log.Errorf("failed to marshal dst: %s", err)
 			return err
 		}
 		lengthBuf := make([]byte, 4)
 		binary.BigEndian.PutUint32(lengthBuf, uint32(len(data)))
 		_, err = writer.Write(lengthBuf)
 		if err != nil {
-			logrus.Errorf("failed to write dst length: %s", err)
+			log.Errorf("failed to write dst length: %s", err)
 			return err
 		}
 		_, err = writer.Write(data)
 		if err != nil {
-			logrus.Errorf("failed to write dst: %s", err)
+			log.Errorf("failed to write dst: %s", err)
 			return err
 		}
 		return nil
@@ -99,7 +99,7 @@ func (m *Gatekeeper) CreateProxy(ctx context.Context, protoproxy *proto.Proxy) e
 		rproxy.OptionRProxyDial(proxyDial),
 		rproxy.OptionRProxyPreWrite(preWrite))
 	if err != nil {
-		logrus.Errorf("failed to create rproxy: %s", err)
+		log.Errorf("failed to create rproxy: %s", err)
 		return err
 	}
 
@@ -122,7 +122,7 @@ func (m *Gatekeeper) DeleteProxy(ctx context.Context, id int) error {
 	// 检查端口是否存在
 	p, exists := m.proxies[id]
 	if !exists {
-		logrus.Warnf("proxy %d not found", id)
+		log.Warnf("proxy %d not found", id)
 		return nil
 	}
 
