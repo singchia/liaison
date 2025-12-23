@@ -35,3 +35,10 @@ logs/
 # .idea/
 # .vscode/
 .DS_Store
+
+# Frontend dependencies
+web/node_modules/
+web/.umi/
+web/dist/
+web/build/
+web/.cache/
