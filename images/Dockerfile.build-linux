@@ -1,0 +1,20 @@
+# Dockerfile for building Linux binaries
+FROM golang:1.24-alpine AS builder
+
+# Install build dependencies for CGO
+RUN apk add --no-cache gcc musl-dev sqlite-dev
+
+WORKDIR /build
+
+# Copy go mod files
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Build binaries
+RUN mkdir -p /build/bin && \
+    CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o /build/bin/liaison cmd/manager/main.go && \
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o /build/bin/liaison-edge cmd/edge/main.go
+
