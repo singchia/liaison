@@ -45,6 +45,7 @@ const appList = [
     ip: '192.168.1.100',
     port: 357,
     edge_id: 1,
+    status: 'active',
     device: {
       id: 1,
       name: '设备1',
@@ -61,6 +62,7 @@ const appList = [
     ip: '192.168.1.101',
     port: 944,
     edge_id: 1,
+    status: 'active',
     device: {
       id: 2,
       name: '设备2',
@@ -77,6 +79,7 @@ const appList = [
     ip: '192.168.1.102',
     port: 594,
     edge_id: 2,
+    status: 'inactive',
     device: {
       id: 3,
       name: '设备3',
@@ -93,6 +96,7 @@ const appList = [
     ip: '192.168.1.103',
     port: 239,
     edge_id: 2,
+    status: 'active',
     device: {
       id: 4,
       name: '设备4',
@@ -109,6 +113,7 @@ const appList = [
     ip: '192.168.1.104',
     port: 988,
     edge_id: 3,
+    status: 'active',
     device: {
       id: 5,
       name: '设备5',

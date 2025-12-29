@@ -50,8 +50,38 @@ chmod 755 "$BIN_DIR" "$CONFIG_DIR"
 
 # Copy service file
 echo -e "${YELLOW}Installing systemd service file...${NC}"
-cp "$(dirname "$0")/liaison.service" "/etc/systemd/system/"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+if [[ -f "$SCRIPT_DIR/systemd/liaison.service" ]]; then
+    cp "$SCRIPT_DIR/systemd/liaison.service" "/etc/systemd/system/"
+elif [[ -f "$SCRIPT_DIR/liaison.service" ]]; then
+    cp "$SCRIPT_DIR/liaison.service" "/etc/systemd/system/"
+else
+    echo -e "${RED}Error: liaison.service not found${NC}"
+    exit 1
+fi
 chmod 644 "/etc/systemd/system/liaison.service"
+
+# Copy binaries
+echo -e "${YELLOW}Copying binaries...${NC}"
+if [[ -d "$SCRIPT_DIR/bin" ]]; then
+    cp -f "$SCRIPT_DIR/bin/"* "$BIN_DIR/"
+    chown "$SERVICE_USER:$SERVICE_GROUP" "$BIN_DIR"/*
+    chmod 755 "$BIN_DIR"/*
+    echo -e "${GREEN}Binaries copied${NC}"
+else
+    echo -e "${YELLOW}Warning: bin directory not found, skipping binary copy${NC}"
+fi
+
+# Copy configuration files
+echo -e "${YELLOW}Copying configuration files...${NC}"
+if [[ -d "$SCRIPT_DIR/etc" ]]; then
+    cp -f "$SCRIPT_DIR/etc/"*.yaml "$CONFIG_DIR/" 2>/dev/null || true
+    chown "$SERVICE_USER:$SERVICE_GROUP" "$CONFIG_DIR"/*.yaml 2>/dev/null || true
+    chmod 644 "$CONFIG_DIR"/*.yaml 2>/dev/null || true
+    echo -e "${GREEN}Configuration files copied${NC}"
+else
+    echo -e "${YELLOW}Warning: etc directory not found, skipping config copy${NC}"
+fi
 
 # Reload systemd
 echo -e "${YELLOW}Reloading systemd daemon...${NC}"
@@ -64,11 +94,10 @@ systemctl enable "$SERVICE_NAME"
 echo -e "${GREEN}Installation completed successfully!${NC}"
 echo ""
 echo -e "${YELLOW}Next steps:${NC}"
-echo "1. Copy the liaison binary to $BIN_DIR/"
-echo "2. Copy the configuration file to $CONFIG_DIR/liaison.yaml"
-echo "3. Start the service: systemctl start $SERVICE_NAME"
-echo "4. Check status: systemctl status $SERVICE_NAME"
-echo "5. View logs: journalctl -u $SERVICE_NAME -f"
+echo "1. Review and edit configuration files in $CONFIG_DIR/ if needed"
+echo "2. Start the service: systemctl start $SERVICE_NAME"
+echo "3. Check status: systemctl status $SERVICE_NAME"
+echo "4. View logs: journalctl -u $SERVICE_NAME -f"
 echo ""
 echo -e "${GREEN}Service management commands:${NC}"
 echo "  Start:   systemctl start $SERVICE_NAME"
