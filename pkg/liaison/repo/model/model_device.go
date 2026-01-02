@@ -27,16 +27,20 @@ type Device struct {
 	Online      DeviceOnlineStatus `gorm:"column:online;type:int;not null"`
 	HeartbeatAt time.Time          `gorm:"column:heartbeat_at;type:datetime;not null"`
 	// device info
-	CPU        int                 `gorm:"column:cpu;type:int;not null"`
-	Memory     int                 `gorm:"column:memory;type:int;not null"`
-	Interfaces []EthernetInterface `gorm:"-"`
-	//Disk      int    `gorm:"column:disk;type:int;not null"`
-	OS        string `gorm:"column:os;type:varchar(255);not null"`
-	OSVersion string `gorm:"column:os_version;type:varchar(255);not null"`
+	CPU        int                  `gorm:"column:cpu;type:int;not null"`
+	Memory     int                  `gorm:"column:memory;type:int;not null"`
+	Interfaces []*EthernetInterface `gorm:"-"`
+	Disk       int                  `gorm:"column:disk;type:int;not null;default:0"`
+	OS         string               `gorm:"column:os;type:varchar(255);not null"`
+	OSVersion  string               `gorm:"column:os_version;type:varchar(255);not null"`
 	// usage
 	CPUUsage    float32 `gorm:"column:cpu_usage;type:float;not null"`
 	MemoryUsage float32 `gorm:"column:memory_usage;type:float;not null"`
 	DiskUsage   float32 `gorm:"column:disk_usage;type:float;not null"`
+}
+
+func (Device) TableName() string {
+	return "devices"
 }
 
 type EthernetInterface struct {
@@ -46,4 +50,8 @@ type EthernetInterface struct {
 	MAC      string `gorm:"column:mac;type:varchar(255);not null"`
 	IP       string `gorm:"column:ip;type:varchar(255);not null"`
 	Netmask  string `gorm:"column:netmask;type:varchar(255);not null"`
+}
+
+func (EthernetInterface) TableName() string {
+	return "ethernet_interfaces"
 }

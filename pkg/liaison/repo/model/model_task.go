@@ -55,7 +55,7 @@ type Task struct {
 }
 
 func (Task) TableName() string {
-	return "task"
+	return "tasks"
 }
 
 // task scan application

@@ -27,6 +27,7 @@ type FrontierBound interface {
 	RegisterStreamHandler(handler func(ctx context.Context, stream geminio.Stream))
 	// Close
 	Close() error
+	EdgeID() (uint64, error)
 }
 
 type frontierBound struct {
@@ -125,6 +126,10 @@ func (fb *frontierBound) loopAccept(ctx context.Context) {
 		}
 		go handler(ctx, stream)
 	}
+}
+
+func (fb *frontierBound) EdgeID() (uint64, error) {
+	return fb.end.ClientID(), nil
 }
 
 func (fb *frontierBound) Close() error {

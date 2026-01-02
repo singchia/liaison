@@ -2,12 +2,11 @@ module github.com/singchia/liaison
 
 go 1.24.0
 
-toolchain go1.24.1
-
 require (
 	github.com/go-kratos/kratos/v2 v2.7.2
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/jumboframes/armorigo v0.4.1
+	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/pion/transport/v2 v2.2.10
 	github.com/shirou/gopsutil v2.21.11+incompatible
 	github.com/singchia/frontier v1.2.0-rc.1
@@ -48,7 +47,6 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
-	github.com/mattn/go-sqlite3 v1.14.17 // indirect
 	github.com/pion/logging v0.2.2 // indirect
 	github.com/pion/transport/v3 v3.0.7 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect

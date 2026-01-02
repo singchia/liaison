@@ -58,15 +58,20 @@ func (d *dao) ListEdges(page, pageSize int) ([]*model.Edge, error) {
 	return edges, nil
 }
 
-// 更新Name Description
+// 更新Name Description Status
 func (d *dao) UpdateEdge(edge *model.Edge) error {
+	updates := make(map[string]interface{})
 	if edge.Name != "" {
-		if err := d.getDB().Model(&model.Edge{}).Where("id = ?", edge.ID).Update("name", edge.Name).Error; err != nil {
-			return err
-		}
+		updates["name"] = edge.Name
 	}
 	if edge.Description != "" {
-		if err := d.getDB().Model(&model.Edge{}).Where("id = ?", edge.ID).Update("description", edge.Description).Error; err != nil {
+		updates["description"] = edge.Description
+	}
+	if edge.Status != 0 {
+		updates["status"] = edge.Status
+	}
+	if len(updates) > 0 {
+		if err := d.getDB().Model(&model.Edge{}).Where("id = ?", edge.ID).Updates(updates).Error; err != nil {
 			return err
 		}
 	}

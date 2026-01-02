@@ -32,6 +32,7 @@ type Device struct {
 	HostName    string                     `json:"host_name"`
 	CPU         int                        `json:"cpu"`
 	Memory      int                        `json:"memory"`
+	Disk        int                        `json:"disk"` // 根磁盘大小（MB）
 	OS          string                     `json:"os"`
 	OSVersion   string                     `json:"os_version"`
 	DeviceUsage DeviceUsage                `json:"device_usage"`

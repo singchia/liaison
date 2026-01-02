@@ -4,6 +4,7 @@ import (
 	"context"
 
 	v1 "github.com/singchia/liaison/api/v1"
+	"github.com/singchia/liaison/pkg/liaison/config"
 	"github.com/singchia/liaison/pkg/liaison/manager/frontierbound"
 	"github.com/singchia/liaison/pkg/liaison/repo"
 	"github.com/singchia/liaison/pkg/proto"
@@ -36,8 +37,9 @@ type ControlPlane interface {
 	RegisterProxyManager(proxyManager proto.ProxyManager)
 }
 
-func NewControlPlane(repo repo.Repo, frontierBound frontierbound.FrontierBound) (ControlPlane, error) {
+func NewControlPlane(conf *config.Configuration, repo repo.Repo, frontierBound frontierbound.FrontierBound) (ControlPlane, error) {
 	cp := &controlPlane{
+		conf:          conf,
 		repo:          repo,
 		frontierBound: frontierBound,
 	}
@@ -49,6 +51,7 @@ func NewControlPlane(repo repo.Repo, frontierBound frontierbound.FrontierBound) 
 }
 
 type controlPlane struct {
+	conf          *config.Configuration
 	repo          repo.Repo
 	frontierBound frontierbound.FrontierBound
 

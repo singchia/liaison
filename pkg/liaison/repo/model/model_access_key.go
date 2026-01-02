@@ -8,3 +8,7 @@ type AccessKey struct {
 	AccessKey string `gorm:"column:access_key;type:varchar(255);not null"`
 	SecretKey string `gorm:"column:secret_key;type:varchar(255);not null"`
 }
+
+func (AccessKey) TableName() string {
+	return "access_keys"
+}

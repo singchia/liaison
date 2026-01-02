@@ -31,6 +31,7 @@ func NewScanner(frontierBound frontierbound.FrontierBound) (Scanner, error) {
 
 	s := &scanner{
 		frontierBound: frontierBound,
+		tasks:         make(map[uint]*proto.ScanApplicationTaskRequest),
 	}
 
 	// 注册函数

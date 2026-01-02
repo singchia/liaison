@@ -4,306 +4,316 @@ import "google/api/annotations.proto";
 
 option go_package = "github.com/singchia/liaison/api/v1;v1";
 
-// 边缘
+// 连接器
 message Edge {
-    uint64 id = 1;
-    string name = 2;
-    string description = 3;
-    int32 status = 4;
-    int32 online = 5;
-    string created_at = 6;
-    string updated_at = 7;
+    uint64 id = 1 [json_name = "id"];
+    string name = 2 [json_name = "name"]; // 名称
+    string description = 3 [json_name = "description"]; // 描述
+    int32 status = 4 [json_name = "status"]; // 1. running 运行中, 2. stopped 停止
+    int32 online = 5 [json_name = "online"]; // 1. online 在线, 2. offline 离线
+    string created_at = 6 [json_name = "created_at"]; // 创建时间
+    string updated_at = 7 [json_name = "updated_at"]; // 更新时间
 }
 
 message Edges {
-    int32 total = 1;
-    repeated Edge edges = 2;
+    int32 total = 1 [json_name = "total"]; // 总数
+    repeated Edge edges = 2 [json_name = "edges"]; // 连接器列表
 }
 
 message AccessKey {
-    string access_key = 1;
-    string secret_key = 2;
+    string access_key = 1 [json_name = "access_key"]; // 连接器Access Key
+    string secret_key = 2 [json_name = "secret_key"]; // 连接器Secret Key
+    string command = 3 [json_name = "command"]; // 连接器安装命令: `curl -LsSf https://liaison.cc/install.sh | bash`
 }
 
-// 创建边缘节点请求
+// 创建连接器请求
 message CreateEdgeRequest {
-    string name = 1;
-    string description = 2;
+    string name = 1 [json_name = "name"]; // 名称
+    string description = 2 [json_name = "description"]; // 描述
 }
 
+// 创建连接器响应
 message CreateEdgeResponse {
-    int32 code = 1;
-    string message = 2;
-    AccessKey data = 3;
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
+    AccessKey data = 3 [json_name = "data"];
 }
 
 // 获取边缘节点请求
 message GetEdgeRequest {
-    uint64 id = 1;
+    uint64 id = 1 [json_name = "id"];
 }
 
 message GetEdgeResponse {
-    int32 code = 1;
-    string message = 2;
-    Edge data = 3;
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
+    Edge data = 3 [json_name = "data"];
 }
 
 // 列举边缘节点请求
 message ListEdgesRequest {
-    int32 page = 1;
-    int32 page_size = 2;
+    int32 page = 1 [json_name = "page"];
+    int32 page_size = 2 [json_name = "page_size"];
 }
 
 message ListEdgesResponse {
-    int32 code = 1;
-    string message = 2;
-    Edges data = 3;
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
+    Edges data = 3 [json_name = "data"];
 }
 
 // 更新边缘节点请求
 message UpdateEdgeRequest {
-    uint64 id = 1;
-    string name = 2;
-    string description = 3;
-    int32 status = 4; // 1: running, 2: stopped
+    uint64 id = 1 [json_name = "id"];
+    string name = 2 [json_name = "name"];
+    string description = 3 [json_name = "description"];
+    int32 status = 4 [json_name = "status"]; // 1: running, 2: stopped
 }
 
 message UpdateEdgeResponse {
-    int32 code = 1;
-    string message = 2;
-    Edge data = 3;
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
+    Edge data = 3 [json_name = "data"];
 }
 
 // 删除边缘节点请求
 message DeleteEdgeRequest {
-    uint64 id = 1;
+    uint64 id = 1 [json_name = "id"];
 }
 
 message DeleteEdgeResponse {
-    int32 code = 1;
-    string message = 2;
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
 }
 
 // 设备
 message Device {
-    uint64 id = 1;
-    string name = 2;
-    string description = 3;
-    int32 cpu = 4;
-    int32 memory = 5;
-    int32 disk = 6;
-    string os = 7;
-    string version = 8;
-    string created_at = 9;
-    string updated_at = 10;
+    uint64 id = 1 [json_name = "id"];
+    string name = 2 [json_name = "name"]; // 名称
+    string description = 3 [json_name = "description"];
+    int32 cpu = 4 [json_name = "cpu"]; // 核心数
+    int32 memory = 5 [json_name = "memory"]; // 内存，MB
+    int32 disk = 6 [json_name = "disk"]; // 磁盘，MB
+    string os = 7 [json_name = "os"]; // 操作系统
+    string version = 8 [json_name = "version"]; // 系统版本
+    repeated EthernetInterface interfaces = 9 [json_name = "interfaces"]; // 网卡
+    string created_at = 10 [json_name = "created_at"]; // 创建时间
+    string updated_at = 11 [json_name = "updated_at"]; // 更新时间
+}
+
+message EthernetInterface {
+    string name = 1 [json_name = "name"]; // 网卡名
+    string mac = 2 [json_name = "mac"]; // 网卡MAC地址
+    repeated string ip = 3 [json_name = "ip"]; // 网卡IP地址，带掩码
 }
 
 message Devices {
-    int32 total = 1;
-    repeated Device devices = 2;
+    int32 total = 1 [json_name = "total"]; // 总数
+    repeated Device devices = 2 [json_name = "devices"]; // 分页数
 }
 
 // 获取设备请求
 message GetDeviceRequest {
-    uint64 id = 1;
+    uint64 id = 1 [json_name = "id"]; // 设备ID
 }
+
 message GetDeviceResponse {
-    int32 code = 1;
-    string message = 2;
-    Device data = 3;
+    int32 code = 1 [json_name = "code"]; // 状态码
+    string message = 2 [json_name = "message"]; // 消息
+    Device data = 3 [json_name = "data"]; // 设备
 }
 
 // 列举设备请求
 message ListDevicesRequest {
-    int32 page = 1;
-    int32 page_size = 2;
+    int32 page = 1 [json_name = "page"]; // 页码
+    int32 page_size = 2 [json_name = "page_size"]; // 每页数量
 }
 
 message ListDevicesResponse {
-    int32 code = 1;
-    string message = 2;
-    Devices data = 3;
+    int32 code = 1 [json_name = "code"]; // 状态码
+    string message = 2 [json_name = "message"]; // 消息
+    Devices data = 3 [json_name = "data"]; // 设备列表
 }
 
 // 更新设备请求
 message UpdateDeviceRequest {
-    uint64 id = 1;
-    string name = 2;
-    string description = 3;
+    uint64 id = 1 [json_name = "id"]; // 设备ID
+    string name = 2 [json_name = "name"]; // 名称
+    string description = 3 [json_name = "description"]; // 描述
 }
 
 message UpdateDeviceResponse {
-    int32 code = 1;
-    string message = 2;
-    Device data = 3;
+    int32 code = 1 [json_name = "code"]; // 状态码
+    string message = 2 [json_name = "message"]; // 消息
+    Device data = 3 [json_name = "data"]; // 设备
 }
 
 // 应用
 message Application {
-    uint64 id = 1;
-    uint64 edge_id = 2;
-    Device device = 3;  
-    string name = 4;
-    string ip = 5;
-    int32 port = 6;
-    string application_type = 7;
-    string created_at = 8;
-    string updated_at = 9;
+    uint64 id = 1 [json_name = "id"]; // 应用ID
+    uint64 edge_id = 2 [json_name = "edge_id"]; // 边缘ID
+    Device device = 3 [json_name = "device"]; // 所属设备
+    string name = 4 [json_name = "name"]; // 名称
+    string ip = 5 [json_name = "ip"]; // 内网IP地址
+    int32 port = 6 [json_name = "port"]; // 端口
+    string application_type = 7 [json_name = "application_type"]; // 应用类型
+    string created_at = 8 [json_name = "created_at"]; // 创建时间
+    string updated_at = 9 [json_name = "updated_at"]; // 更新时间
 }
 
 message Applications {
-    int32 total = 1;
-    repeated Application applications = 2;
+    int32 total = 1 [json_name = "total"];
+    repeated Application applications = 2 [json_name = "applications"];
 }
 
 // 添加应用请求
 message CreateApplicationRequest {
-    string name = 1;
-    string ip = 2;
-    int32 port = 3;
-    string application_type = 4;
-    uint64 edge_id = 5;
-    optional uint64 device_id = 6;
+    string name = 1 [json_name = "name"];
+    string ip = 2 [json_name = "ip"];
+    int32 port = 3 [json_name = "port"];
+    string application_type = 4 [json_name = "application_type"];
+    uint64 edge_id = 5 [json_name = "edge_id"];
+    optional uint64 device_id = 6 [json_name = "device_id"];
 }
 
 message CreateApplicationResponse {
-    int32 code = 1;
-    string message = 2;
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
 }
 
 // 列举应用请求
 message ListApplicationsRequest {
-    int32 page = 1;
-    int32 page_size = 2;
-    uint64 device_id = 3;
+    int32 page = 1 [json_name = "page"];
+    int32 page_size = 2 [json_name = "page_size"];
+    uint64 device_id = 3 [json_name = "device_id"];
 }
 
 message ListApplicationsResponse {
-    int32 code = 1;
-    string message = 2;
-    Applications data = 3;
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
+    Applications data = 3 [json_name = "data"];
 }
 
 // 更新应用请求
 message UpdateApplicationRequest {
-    uint64 id = 1;
-    string name = 2;
+    uint64 id = 1 [json_name = "id"];
+    string name = 2 [json_name = "name"];
 }
 
 message UpdateApplicationResponse {
-    int32 code = 1;
-    string message = 2;
-    Application data = 3;
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
+    Application data = 3 [json_name = "data"];
 }
 
 // 删除应用请求
 message DeleteApplicationRequest {
-    uint64 id = 1;
+    uint64 id = 1 [json_name = "id"];
 }
 message DeleteApplicationResponse {
-    int32 code = 1;
-    string message = 2;
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
 }
 
 // 代理
 message Proxy {
-    uint64 id = 1;
-    string name = 2;
-    int32 port = 3;
-    string status = 4;
-    Application application = 5;
-    string description = 6;
-    string created_at = 7;
-    string updated_at = 8;
+    uint64 id = 1 [json_name = "id"];
+    string name = 2 [json_name = "name"];
+    int32 port = 3 [json_name = "port"];
+    string status = 4 [json_name = "status"];
+    Application application = 5 [json_name = "application"];
+    string description = 6 [json_name = "description"];
+    string created_at = 7 [json_name = "created_at"];
+    string updated_at = 8 [json_name = "updated_at"];
 }
 
 message Proxies {
-    int32 total = 1;
-    repeated Proxy proxies = 2;
+    int32 total = 1 [json_name = "total"];
+    repeated Proxy proxies = 2 [json_name = "proxies"];
 }
 
 // 列举代理请求
 message ListProxiesRequest {
-    int32 page = 1;
-    int32 page_size = 2;
+    int32 page = 1 [json_name = "page"];
+    int32 page_size = 2 [json_name = "page_size"];
 }
 
 message ListProxiesResponse {
-    int32 code = 1;
-    string message = 2;
-    Proxies data = 3;
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
+    Proxies data = 3 [json_name = "data"];
 }
 
 // 创建代理请求
 message CreateProxyRequest {
-    uint64 application_id = 1;
-    string name = 2;
-    int32 port = 3;
-    string description = 4;
+    uint64 application_id = 1 [json_name = "application_id"];
+    string name = 2 [json_name = "name"];
+    int32 port = 3 [json_name = "port"];
+    string description = 4 [json_name = "description"];
 }
 
 message CreateProxyResponse {
-    int32 code = 1;
-    string message = 2;
-    Proxy data = 3;
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
+    Proxy data = 3 [json_name = "data"];
 }
 
 // 更新代理请求
 message UpdateProxyRequest {
-    uint64 id = 1;
-    string name = 2;
-    int32 port = 3;
-    string status = 4;
-    string description = 5;
+    uint64 id = 1 [json_name = "id"];
+    string name = 2 [json_name = "name"];
+    int32 port = 3 [json_name = "port"];
+    string status = 4 [json_name = "status"];
+    string description = 5 [json_name = "description"];
 }
 
 message UpdateProxyResponse {
-    int32 code = 1;
-    string message = 2;
-    Proxy data = 3;
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
+    Proxy data = 3 [json_name = "data"];
 }
 
 // 删除代理请求
 message DeleteProxyRequest {
-    uint64 id = 1;
+    uint64 id = 1 [json_name = "id"];
 }
 message DeleteProxyResponse {
-    int32 code = 1;
-    string message = 2;
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
 }
 
 // 任务
 message EdgeScanApplicationTask {
-    uint64 id = 1;
-    uint64 edge_id = 2;
-    string task_status = 3;
-    string created_at = 4;
-    string updated_at = 5;
-    repeated string applications = 6;
-    string error = 7;
+    uint64 id = 1 [json_name = "id"];
+    uint64 edge_id = 2 [json_name = "edge_id"];
+    string task_status = 3 [json_name = "task_status"];
+    string created_at = 4 [json_name = "created_at"];
+    string updated_at = 5 [json_name = "updated_at"];
+    repeated string applications = 6 [json_name = "applications"];
+    string error = 7 [json_name = "error"];
 }
 
 // 创建扫描应用任务
 message CreateEdgeScanApplicationTaskRequest {
-    uint64 edge_id = 1;
-    string protocol = 2;
-    int32 port = 3;
+    uint64 edge_id = 1 [json_name = "edge_id"];
+    string protocol = 2 [json_name = "protocol"];
+    int32 port = 3 [json_name = "port"];
 }
 
 message CreateEdgeScanApplicationTaskResponse {
-    int32 code = 1;
-    string message = 2;
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
 }
 
 // 获取扫描应用任务
 message GetEdgeScanApplicationTaskRequest {
-    uint64 edge_id = 1;
+    uint64 edge_id = 1 [json_name = "edge_id"];
 }
 
 message GetEdgeScanApplicationTaskResponse {
-    int32 code = 1;
-    string message = 2;
-    EdgeScanApplicationTask data = 3;
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
+    EdgeScanApplicationTask data = 3 [json_name = "data"];
 }
 
 // 服务
@@ -311,160 +321,160 @@ service LiaisonService {
     // 边缘
     rpc CreateEdge(CreateEdgeRequest) returns (CreateEdgeResponse) {
         option (google.api.http) = {
-            post: "/v1/edges"
+            post: "/api/v1/edges"
             body: "*"
         };
     };
     rpc GetEdge(GetEdgeRequest) returns (GetEdgeResponse) {
         option (google.api.http) = {
-            get: "/v1/edges/{id}"
+            get: "/api/v1/edges/{id}"
         };
     };
     rpc ListEdges(ListEdgesRequest) returns (ListEdgesResponse) {
         option (google.api.http) = {
-            get: "/v1/edges"
+            get: "/api/v1/edges"
        };
     };
     rpc UpdateEdge(UpdateEdgeRequest) returns (UpdateEdgeResponse) {
         option (google.api.http) = {
-            put: "/v1/edges/{id}",
+            put: "/api/v1/edges/{id}",
             body: "*"
         };
     };
     rpc DeleteEdge(DeleteEdgeRequest) returns (DeleteEdgeResponse) {
         option (google.api.http) = {
-            delete: "/v1/edges/{id}"
+            delete: "/api/v1/edges/{id}"
         };
     };
 
     // 设备
     rpc ListDevices(ListDevicesRequest) returns (ListDevicesResponse) {
         option (google.api.http) = {
-            get: "/v1/devices"
+            get: "/api/v1/devices"
         };
     };
     rpc UpdateDevice(UpdateDeviceRequest) returns (UpdateDeviceResponse) { 
         option (google.api.http) = {
-            put: "/v1/devices/{id}",
+            put: "/api/v1/devices/{id}",
             body: "*"
         };
     };
     rpc GetDevice(GetDeviceRequest) returns (GetDeviceResponse) {
         option (google.api.http) = {
-            get: "/v1/devices/{id}"
+            get: "/api/v1/devices/{id}"
         };
     };
 
     // 应用
     rpc CreateApplication(CreateApplicationRequest) returns (CreateApplicationResponse) {
         option (google.api.http) = {
-            post: "/v1/applications",
+            post: "/api/v1/applications",
             body: "*"
         };
     };
     rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {
         option (google.api.http) = {
-            get: "/v1/applications"
+            get: "/api/v1/applications"
         };
     };
     rpc UpdateApplication(UpdateApplicationRequest) returns (UpdateApplicationResponse) {
         option (google.api.http) = {
-            put: "/v1/applications/{id}",
+            put: "/api/v1/applications/{id}",
             body: "*"
         };
     };
     rpc DeleteApplication(DeleteApplicationRequest) returns (DeleteApplicationResponse) {
         option (google.api.http) = {
-            delete: "/v1/applications/{id}"
+            delete: "/api/v1/applications/{id}"
         };
     };
 
     // 代理
     rpc ListProxies(ListProxiesRequest) returns (ListProxiesResponse) {
         option (google.api.http) = {
-            get: "/v1/proxies"
+            get: "/api/v1/proxies"
         };
     };
     rpc CreateProxy(CreateProxyRequest) returns (CreateProxyResponse) {
         option (google.api.http) = {
-            post: "/v1/proxies"
+            post: "/api/v1/proxies"
             body: "*"
         };
     };
     rpc UpdateProxy(UpdateProxyRequest) returns (UpdateProxyResponse) {
         option (google.api.http) = {
-            put: "/v1/proxies/{id}",
+            put: "/api/v1/proxies/{id}",
             body: "*"
         };
     };
     rpc DeleteProxy(DeleteProxyRequest) returns (DeleteProxyResponse) {
         option (google.api.http) = {
-            delete: "/v1/proxies/{id}"
+            delete: "/api/v1/proxies/{id}"
         };
     };
 
     // 任务
     rpc CreateEdgeScanApplicationTask(CreateEdgeScanApplicationTaskRequest) returns (CreateEdgeScanApplicationTaskResponse) {
         option (google.api.http) = {
-            post: "/v1/edges/{edge_id}/scan_application_tasks"
+            post: "/api/v1/edges/{edge_id}/scan_application_tasks"
              body: "*"
         };
     };
     rpc GetEdgeScanApplicationTask(GetEdgeScanApplicationTaskRequest) returns (GetEdgeScanApplicationTaskResponse) {
         option (google.api.http) = {
-            get: "/v1/edges/{edge_id}/scan_application_tasks"
+            get: "/api/v1/edges/{edge_id}/scan_application_tasks"
         };
     };
 
     // IAM (Identity and Access Management)
     rpc Login(LoginRequest) returns (LoginResponse) {
         option (google.api.http) = {
-            post: "/v1/iam/login"
+            post: "/api/v1/iam/login"
             body: "*"
         };
     };
     rpc Logout(LogoutRequest) returns (LogoutResponse) {
         option (google.api.http) = {
-            post: "/v1/iam/logout"
+            post: "/api/v1/iam/logout"
             body: "*"
         };
     };
     rpc GetProfile(GetProfileRequest) returns (GetProfileResponse) {
         option (google.api.http) = {
-            get: "/v1/iam/profile"
+            get: "/api/v1/iam/profile"
         };
     };
 
     // 健康检查
     rpc Health(HealthRequest) returns (HealthResponse) {
         option (google.api.http) = {
-            get: "/health"
+            get: "/api/health"
         };
     };
 }
 
 // 用户信息
 message User {
-    uint64 id = 1;
-    string email = 2;
+    uint64 id = 1 [json_name = "id"];
+    string email = 2 [json_name = "email"];
 }
 
 // 登录请求
 message LoginRequest {
-    string email = 1;
-    string password = 2;
+    string email = 1 [json_name = "email"];
+    string password = 2 [json_name = "password"];
 }
 
 // 登录响应
 message LoginResponse {
-    int32 code = 1;
-    string message = 2;
-    LoginData data = 3;
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
+    LoginData data = 3 [json_name = "data"];
 }
 
 message LoginData {
-    string token = 1;
-    User user = 2;
+    string token = 1 [json_name = "token"];
+    User user = 2 [json_name = "user"];
 }
 
 // 获取用户信息请求
@@ -473,9 +483,9 @@ message GetProfileRequest {
 
 // 获取用户信息响应
 message GetProfileResponse {
-    int32 code = 1;
-    string message = 2;
-    User data = 3;
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
+    User data = 3 [json_name = "data"];
 }
 
 
@@ -485,8 +495,8 @@ message LogoutRequest {
 
 // 登出响应
 message LogoutResponse {
-    int32 code = 1;
-    string message = 2;
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
 }
 
 // 健康检查请求
@@ -495,5 +505,5 @@ message HealthRequest {
 
 // 健康检查响应
 message HealthResponse {
-    string status = 1;
+    string status = 1 [json_name = "status"];
 }

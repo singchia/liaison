@@ -54,7 +54,7 @@ func NewLiaison() (*Liaison, error) {
 		return nil, err
 	}
 	// service layer
-	controlPlane, err := controlplane.NewControlPlane(repo, frontierBound)
+	controlPlane, err := controlplane.NewControlPlane(config.Conf, repo, frontierBound)
 	if err != nil {
 		return nil, err
 	}
