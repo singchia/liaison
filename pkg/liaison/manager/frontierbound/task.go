@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/go-kratos/kratos/v2/log"
 	"github.com/singchia/geminio"
 	"github.com/singchia/liaison/pkg/liaison/repo/model"
 	"github.com/singchia/liaison/pkg/proto"
@@ -25,14 +26,17 @@ func (fb *frontierBound) EmitScanApplications(ctx context.Context, taskID uint, 
 	}
 	data, err := json.Marshal(request)
 	if err != nil {
+		log.Errorf("marshal scan applications error: %s", err)
 		return err
 	}
 	req := fb.svc.NewRequest(data)
 	rsp, err := fb.svc.Call(ctx, edgeID, "scan_application", req)
 	if err != nil {
+		log.Errorf("emit scan applications call error: %s", err)
 		return err
 	}
 	if rsp.Error() != nil {
+		log.Errorf("emit scan applications return error: %s", rsp.Error())
 		return rsp.Error()
 	}
 	return nil
@@ -97,4 +101,40 @@ func (fb *frontierBound) reportTaskScanApplication(ctx context.Context, req gemi
 			return
 		}
 	}
+}
+
+func (fb *frontierBound) pullTaskScanApplication(ctx context.Context, req geminio.Request, rsp geminio.Response) {
+	var request proto.PullTaskScanApplicationRequest
+	err := json.Unmarshal(req.Data(), &request)
+	if err != nil {
+		rsp.SetError(err)
+		return
+	}
+
+	// 获取任务
+	task, err := fb.repo.GetTaskByEdgeID(request.EdgeID)
+	if err != nil {
+		rsp.SetError(err)
+		return
+	}
+	params := model.TaskScanApplicationParams{}
+	err = json.Unmarshal(task.TaskParams, &params)
+	if err != nil {
+		rsp.SetError(err)
+		return
+	}
+
+	// 返回任务
+	response := proto.PullTaskScanApplicationResponse{
+		TaskID:   task.ID,
+		Nets:     params.Nets,
+		Port:     params.Port,
+		Protocol: params.Protocol,
+	}
+	data, err := json.Marshal(response)
+	if err != nil {
+		rsp.SetError(err)
+		return
+	}
+	rsp.SetData(data)
 }

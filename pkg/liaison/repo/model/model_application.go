@@ -55,3 +55,7 @@ type Application struct {
 	HeartbeatAt     time.Time       `gorm:"column:heartbeat_at;type:datetime;not null"`
 	ApplicationType ApplicationType `gorm:"column:application_type;type:varchar(255);not null"`
 }
+
+func (Application) TableName() string {
+	return "applications"
+}

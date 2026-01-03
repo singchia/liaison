@@ -39,8 +39,11 @@ type Daemon struct {
 }
 
 type Manager struct {
-	Listen config.Listen `yaml:"listen,omitempty" json:"listen"`
-	DB     string        `yaml:"db,omitempty" json:"db"`
+	Listen      config.Listen `yaml:"listen,omitempty" json:"listen"`
+	DB          string        `yaml:"db,omitempty" json:"db"`
+	ServerURL   string        `yaml:"server_url,omitempty" json:"server_url"`     // 服务器地址，用于生成安装命令
+	PackagesDir string        `yaml:"packages_dir,omitempty" json:"packages_dir"` // 安装包目录，默认 /opt/liaison/packages
+	WebDir      string        `yaml:"web_dir,omitempty" json:"web_dir"`           // 前端文件目录，如果为空则不提供前端服务
 }
 
 type Frontier struct {

@@ -38,7 +38,12 @@ type Dao interface {
 	// Device 相关方法
 	CreateDevice(device *model.Device) error
 	CreateEthernetInterface(iface *model.EthernetInterface) error
+	GetEthernetInterface(deviceID uint, ip, netmask, name, mac string) (*model.EthernetInterface, error)
+	GetEthernetInterfacesByDeviceID(deviceID uint) ([]*model.EthernetInterface, error)
+	UpdateEthernetInterface(iface *model.EthernetInterface) error
+	DeleteEthernetInterface(id uint) error
 	GetDeviceByID(id uint) (*model.Device, error)
+	GetDeviceByFingerprint(fingerprint string) (*model.Device, error)
 	ListDevices(query *ListDevicesQuery) ([]*model.Device, error)
 	CountDevices(query *ListDevicesQuery) (int64, error)
 	UpdateDevice(device *model.Device) error
@@ -63,6 +68,7 @@ type Dao interface {
 	// Task 相关方法
 	CreateTask(task *model.Task) error
 	GetTask(taskID uint) (*model.Task, error)
+	GetTaskByEdgeID(edgeID uint64) (*model.Task, error)
 	ListTasks(query *ListTasksQuery) ([]*model.Task, error)
 	UpdateTaskStatus(taskID uint, status model.TaskStatus) error
 	UpdateTaskResult(taskID uint, status model.TaskStatus, result []byte) error

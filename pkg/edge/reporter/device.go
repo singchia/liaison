@@ -25,7 +25,12 @@ func (r *reporter) loopReportDevice(ctx context.Context) {
 			log.Errorf("get device error: %v", err)
 			continue
 		}
-		r.reportDevice(ctx, device)
+		device.EdgeID, _ = r.frontierBound.EdgeID()
+		err = r.reportDevice(ctx, device)
+		if err != nil {
+			log.Errorf("report device error: %v", err)
+			continue
+		}
 		time.Sleep(time.Hour)
 	}
 }
@@ -37,7 +42,11 @@ func (r *reporter) loopReportDeviceUsage(ctx context.Context) {
 			log.Errorf("get device usage error: %v", err)
 			continue
 		}
-		r.reportDeviceUsage(ctx, deviceUsage)
+		err = r.reportDeviceUsage(ctx, deviceUsage)
+		if err != nil {
+			log.Errorf("report device usage error: %v", err)
+			continue
+		}
 		time.Sleep(time.Minute)
 	}
 }
@@ -56,6 +65,7 @@ func (r *reporter) reportDevice(ctx context.Context, device *proto.Device) error
 	if rsp.Error() != nil {
 		return rsp.Error()
 	}
+	log.Infof("report device success: %s", string(data))
 	return nil
 }
 
@@ -72,6 +82,7 @@ func (r *reporter) reportDeviceUsage(ctx context.Context, deviceUsage *proto.Dev
 	if rsp.Error() != nil {
 		return rsp.Error()
 	}
+	log.Infof("report device usage success: %s", string(data))
 	return nil
 }
 
@@ -103,6 +114,13 @@ func getDevice() (*proto.Device, error) {
 	os := info.OS
 	osVersion := info.KernelVersion
 
+	// 根磁盘大小
+	diskUsage, err := disk.Usage("/")
+	if err != nil {
+		return nil, err
+	}
+	diskMB := diskUsage.Total / 1024 / 1024
+
 	// 网络接口
 	interfaces, err := getDeviceEthernetInterface()
 	if err != nil {
@@ -119,6 +137,7 @@ func getDevice() (*proto.Device, error) {
 		HostName:    hostname,
 		CPU:         cpuCount,
 		Memory:      int(memMB),
+		Disk:        int(diskMB),
 		OS:          os,
 		OSVersion:   osVersion,
 		Interfaces:  interfaces,
@@ -152,13 +171,9 @@ func getDeviceEthernetInterface() ([]*proto.DeviceEthernetInterface, error) {
 				ip := v.IP.String()
 				mask := ""
 				if v.Mask != nil {
-					// IPv4 -> 点分十进制，IPv6 -> 前缀长度
-					if v.IP.To4() != nil {
-						mask = net.IP(v.Mask).String()
-					} else {
-						ones, _ := v.Mask.Size()
-						mask = fmt.Sprintf("%d", ones) // IPv6 用前缀长度
-					}
+					// 统一使用前缀长度（CIDR notation）
+					ones, _ := v.Mask.Size()
+					mask = fmt.Sprintf("%d", ones)
 				}
 				ipMasks = append(ipMasks, &proto.IPMask{
 					IP:      ip,

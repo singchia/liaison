@@ -8,9 +8,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
+	"strings"
 	"time"
 
+	"github.com/jumboframes/armorigo/log"
 	v1 "github.com/singchia/liaison/api/v1"
 	"github.com/singchia/liaison/pkg/liaison/manager/frontierbound"
 	"github.com/singchia/liaison/pkg/liaison/repo/dao"
@@ -24,6 +25,7 @@ func (cp *controlPlane) CreateEdge(_ context.Context, req *v1.CreateEdgeRequest)
 	edge := &model.Edge{
 		Name:        req.Name,
 		Description: req.Description,
+		Status:      model.EdgeStatusRunning, // 默认状态为运行中
 		Online:      model.EdgeOnlineStatusOffline,
 	}
 
@@ -52,6 +54,31 @@ func (cp *controlPlane) CreateEdge(_ context.Context, req *v1.CreateEdgeRequest)
 		return nil, err
 	}
 
+	// 生成安装命令
+	serverURL := cp.conf.Manager.ServerURL
+	serverAddr := ""
+	if serverURL == "" {
+		// 如果没有配置，从 Listen 地址生成
+		listen := cp.conf.Manager.Listen
+		if listen.TLS.Enable {
+			serverURL = fmt.Sprintf("https://%s", listen.Addr)
+		} else {
+			serverURL = fmt.Sprintf("http://%s", listen.Addr)
+		}
+		serverAddr = listen.Addr
+	} else {
+		// 从 serverURL 中提取地址（移除 http:// 或 https:// 前缀）
+		if strings.HasPrefix(serverURL, "https://") {
+			serverAddr = strings.TrimPrefix(serverURL, "https://")
+		} else if strings.HasPrefix(serverURL, "http://") {
+			serverAddr = strings.TrimPrefix(serverURL, "http://")
+		} else {
+			serverAddr = serverURL
+		}
+	}
+	installCommand := fmt.Sprintf("curl -sSL %s/install.sh | bash -s -- --access-key=%s --secret-key=%s --server-addr=%s",
+		serverURL, accessKey, secretKey, serverAddr)
+
 	// 返回响应
 	return &v1.CreateEdgeResponse{
 		Code:    200,
@@ -59,6 +86,7 @@ func (cp *controlPlane) CreateEdge(_ context.Context, req *v1.CreateEdgeRequest)
 		Data: &v1.AccessKey{
 			AccessKey: accessKey,
 			SecretKey: secretKey,
+			Command:   installCommand,
 		},
 	}, nil
 }
@@ -75,6 +103,7 @@ func (cp *controlPlane) GetEdge(_ context.Context, req *v1.GetEdgeRequest) (*v1.
 			Id:          uint64(edge.ID),
 			Name:        edge.Name,
 			Description: edge.Description,
+			Status:      int32(edge.Status),
 			Online:      int32(edge.Online),
 			CreatedAt:   edge.CreatedAt.Format(time.DateTime),
 			UpdatedAt:   edge.UpdatedAt.Format(time.DateTime),
@@ -106,15 +135,28 @@ func (cp *controlPlane) UpdateEdge(_ context.Context, req *v1.UpdateEdgeRequest)
 	if err != nil {
 		return nil, err
 	}
-	edge.Name = req.Name
-	edge.Description = req.Description
+	if req.Name != "" {
+		edge.Name = req.Name
+	}
+	if req.Description != "" {
+		edge.Description = req.Description
+	}
+	if req.Status != 0 {
+		edge.Status = model.EdgeStatus(req.Status)
+	}
 	err = cp.repo.UpdateEdge(edge)
+	if err != nil {
+		return nil, err
+	}
+	// 重新获取更新后的 edge 以返回完整数据
+	updatedEdge, err := cp.repo.GetEdge(req.Id)
 	if err != nil {
 		return nil, err
 	}
 	return &v1.UpdateEdgeResponse{
 		Code:    200,
 		Message: "success",
+		Data:    transformEdge(updatedEdge),
 	}, nil
 }
 
@@ -133,28 +175,42 @@ func (cp *controlPlane) CreateEdgeScanApplicationTask(_ context.Context, req *v1
 	// 获取edge
 	edge, err := cp.repo.GetEdge(req.EdgeId)
 	if err != nil {
+		log.Errorf("get edge error: %s", err)
 		return nil, err
 	}
 	if edge.Online != model.EdgeOnlineStatusOnline {
+		log.Errorf("edge is not online")
 		return nil, errors.New("edge is not online")
 	}
 
 	// 获取设备
 	device, err := cp.repo.GetDeviceByID(uint(edge.DeviceID))
 	if err != nil {
+		log.Errorf("get device error: %s", err)
 		return nil, err
 	}
 	nets := []string{}
 	for _, iface := range device.Interfaces {
 		// 获取IP地址所在网段
-		ip := net.ParseIP(iface.IP)
-		if ip == nil {
-			continue
-		}
-		nets = append(nets, fmt.Sprintf("%s/%s", ip.Mask(net.IPMask(iface.Netmask)), iface.Netmask))
+		//ip := net.ParseIP(iface.IP)
+		//if ip == nil {
+		//	continue
+		//}
+		//nets = append(nets, fmt.Sprintf("%s/%s", ip.Mask(net.IPMask(iface.Netmask)), iface.Netmask))
+		nets = append(nets, iface.IP)
 	}
 
 	// 创建任务
+	params := model.TaskScanApplicationParams{
+		Nets:     nets,
+		Port:     int(req.Port),
+		Protocol: req.Protocol,
+	}
+	data, err := json.Marshal(params)
+	if err != nil {
+		log.Errorf("marshal params error: %s", err)
+		return nil, err
+	}
 	expiration := 10 * time.Minute
 	task := &model.Task{
 		EdgeID:      req.EdgeId,
@@ -162,23 +218,33 @@ func (cp *controlPlane) CreateEdgeScanApplicationTask(_ context.Context, req *v1
 		TaskSubType: model.TaskSubTypeScanApplication,
 		TaskStatus:  model.TaskStatusPending,
 		ExpiredAt:   time.Now().Add(expiration), // 10分钟过期
-		TaskParams:  []byte(fmt.Sprintf(`{"protocol":"%s","port":%d}`, req.Protocol, req.Port)),
+		TaskParams:  data,
+		TaskResult:  []byte(`{"scanned_applications":[]}`), // 初始化为空结果
+		Error:       "",                                    // 初始化为空错误
 	}
 	err = cp.repo.CreateTask(task)
 	if err != nil {
+		log.Errorf("create task error: %s", err)
 		return nil, err
 	}
 	go func() {
 		time.Sleep(expiration)
 		task, err := cp.repo.GetTask(task.ID)
 		if err != nil {
+			log.Errorf("get task error: %s", err)
 			return
 		}
 		switch task.TaskStatus {
 		case model.TaskStatusPending:
-			cp.repo.UpdateTaskError(task.ID, "task expired")
+			err = cp.repo.UpdateTaskError(task.ID, "task expired")
+			if err != nil {
+				log.Errorf("update task error: %s", err)
+			}
 		case model.TaskStatusRunning:
-			cp.repo.UpdateTaskError(task.ID, "task expired")
+			err = cp.repo.UpdateTaskError(task.ID, "task expired")
+			if err != nil {
+				log.Errorf("update task error: %s", err)
+			}
 		}
 	}()
 
@@ -189,7 +255,10 @@ func (cp *controlPlane) CreateEdgeScanApplicationTask(_ context.Context, req *v1
 		Port:     int(req.Port),
 	})
 	if err != nil {
-		cp.repo.UpdateTaskError(task.ID, err.Error())
+		err = cp.repo.UpdateTaskError(task.ID, err.Error())
+		if err != nil {
+			log.Errorf("update task error: %s", err)
+		}
 		return nil, err
 	}
 	return &v1.CreateEdgeScanApplicationTaskResponse{
@@ -203,13 +272,16 @@ func (cp *controlPlane) GetEdgeScanApplicationTask(_ context.Context, req *v1.Ge
 		EdgeID:      uint(req.EdgeId),
 		TaskType:    model.TaskTypeScan,
 		TaskSubType: model.TaskSubTypeScanApplication,
-		Status:      []model.TaskStatus{model.TaskStatusPending, model.TaskStatusRunning},
+		//Status:      []model.TaskStatus{model.TaskStatusPending, model.TaskStatusRunning},
 		Query: dao.Query{
 			Page:     1,
 			PageSize: 1,
+			Order:    "id",
+			Desc:     true,
 		},
 	})
 	if err != nil {
+		log.Errorf("list tasks error: %s", err)
 		return nil, err
 	}
 	if len(tasks) == 0 {
@@ -224,6 +296,7 @@ func (cp *controlPlane) GetEdgeScanApplicationTask(_ context.Context, req *v1.Ge
 	result := model.TaskScanApplicationResult{}
 	err = json.Unmarshal(tasks[0].TaskResult, &result)
 	if err != nil {
+		log.Errorf("unmarshal task result error: %s", err)
 		return nil, err
 	}
 	applications := []string{}
@@ -260,7 +333,7 @@ func transformEdge(edge *model.Edge) *v1.Edge {
 		Id:          uint64(edge.ID),
 		Name:        edge.Name,
 		Description: edge.Description,
-		Status:      1, // 默认状态为运行中，因为数据库中没有 status 字段
+		Status:      int32(edge.Status),
 		Online:      int32(edge.Online),
 		CreatedAt:   edge.CreatedAt.Format(time.DateTime),
 		UpdatedAt:   edge.UpdatedAt.Format(time.DateTime),

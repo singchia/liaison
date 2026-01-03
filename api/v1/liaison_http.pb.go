@@ -76,28 +76,28 @@ type LiaisonServiceHTTPServer interface {
 
 func RegisterLiaisonServiceHTTPServer(s *http.Server, srv LiaisonServiceHTTPServer) {
 	r := s.Route("/")
-	r.POST("/v1/edges", _LiaisonService_CreateEdge0_HTTP_Handler(srv))
-	r.GET("/v1/edges/{id}", _LiaisonService_GetEdge0_HTTP_Handler(srv))
-	r.GET("/v1/edges", _LiaisonService_ListEdges0_HTTP_Handler(srv))
-	r.PUT("/v1/edges/{id}", _LiaisonService_UpdateEdge0_HTTP_Handler(srv))
-	r.DELETE("/v1/edges/{id}", _LiaisonService_DeleteEdge0_HTTP_Handler(srv))
-	r.GET("/v1/devices", _LiaisonService_ListDevices0_HTTP_Handler(srv))
-	r.PUT("/v1/devices/{id}", _LiaisonService_UpdateDevice0_HTTP_Handler(srv))
-	r.GET("/v1/devices/{id}", _LiaisonService_GetDevice0_HTTP_Handler(srv))
-	r.POST("/v1/applications", _LiaisonService_CreateApplication0_HTTP_Handler(srv))
-	r.GET("/v1/applications", _LiaisonService_ListApplications0_HTTP_Handler(srv))
-	r.PUT("/v1/applications/{id}", _LiaisonService_UpdateApplication0_HTTP_Handler(srv))
-	r.DELETE("/v1/applications/{id}", _LiaisonService_DeleteApplication0_HTTP_Handler(srv))
-	r.GET("/v1/proxies", _LiaisonService_ListProxies0_HTTP_Handler(srv))
-	r.POST("/v1/proxies", _LiaisonService_CreateProxy0_HTTP_Handler(srv))
-	r.PUT("/v1/proxies/{id}", _LiaisonService_UpdateProxy0_HTTP_Handler(srv))
-	r.DELETE("/v1/proxies/{id}", _LiaisonService_DeleteProxy0_HTTP_Handler(srv))
-	r.POST("/v1/edges/{edge_id}/scan_application_tasks", _LiaisonService_CreateEdgeScanApplicationTask0_HTTP_Handler(srv))
-	r.GET("/v1/edges/{edge_id}/scan_application_tasks", _LiaisonService_GetEdgeScanApplicationTask0_HTTP_Handler(srv))
-	r.POST("/v1/iam/login", _LiaisonService_Login0_HTTP_Handler(srv))
-	r.POST("/v1/iam/logout", _LiaisonService_Logout0_HTTP_Handler(srv))
-	r.GET("/v1/iam/profile", _LiaisonService_GetProfile0_HTTP_Handler(srv))
-	r.GET("/health", _LiaisonService_Health0_HTTP_Handler(srv))
+	r.POST("/api/v1/edges", _LiaisonService_CreateEdge0_HTTP_Handler(srv))
+	r.GET("/api/v1/edges/{id}", _LiaisonService_GetEdge0_HTTP_Handler(srv))
+	r.GET("/api/v1/edges", _LiaisonService_ListEdges0_HTTP_Handler(srv))
+	r.PUT("/api/v1/edges/{id}", _LiaisonService_UpdateEdge0_HTTP_Handler(srv))
+	r.DELETE("/api/v1/edges/{id}", _LiaisonService_DeleteEdge0_HTTP_Handler(srv))
+	r.GET("/api/v1/devices", _LiaisonService_ListDevices0_HTTP_Handler(srv))
+	r.PUT("/api/v1/devices/{id}", _LiaisonService_UpdateDevice0_HTTP_Handler(srv))
+	r.GET("/api/v1/devices/{id}", _LiaisonService_GetDevice0_HTTP_Handler(srv))
+	r.POST("/api/v1/applications", _LiaisonService_CreateApplication0_HTTP_Handler(srv))
+	r.GET("/api/v1/applications", _LiaisonService_ListApplications0_HTTP_Handler(srv))
+	r.PUT("/api/v1/applications/{id}", _LiaisonService_UpdateApplication0_HTTP_Handler(srv))
+	r.DELETE("/api/v1/applications/{id}", _LiaisonService_DeleteApplication0_HTTP_Handler(srv))
+	r.GET("/api/v1/proxies", _LiaisonService_ListProxies0_HTTP_Handler(srv))
+	r.POST("/api/v1/proxies", _LiaisonService_CreateProxy0_HTTP_Handler(srv))
+	r.PUT("/api/v1/proxies/{id}", _LiaisonService_UpdateProxy0_HTTP_Handler(srv))
+	r.DELETE("/api/v1/proxies/{id}", _LiaisonService_DeleteProxy0_HTTP_Handler(srv))
+	r.POST("/api/v1/edges/{edge_id}/scan_application_tasks", _LiaisonService_CreateEdgeScanApplicationTask0_HTTP_Handler(srv))
+	r.GET("/api/v1/edges/{edge_id}/scan_application_tasks", _LiaisonService_GetEdgeScanApplicationTask0_HTTP_Handler(srv))
+	r.POST("/api/v1/iam/login", _LiaisonService_Login0_HTTP_Handler(srv))
+	r.POST("/api/v1/iam/logout", _LiaisonService_Logout0_HTTP_Handler(srv))
+	r.GET("/api/v1/iam/profile", _LiaisonService_GetProfile0_HTTP_Handler(srv))
+	r.GET("/api/health", _LiaisonService_Health0_HTTP_Handler(srv))
 }
 
 func _LiaisonService_CreateEdge0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
@@ -616,7 +616,7 @@ func NewLiaisonServiceHTTPClient(client *http.Client) LiaisonServiceHTTPClient {
 
 func (c *LiaisonServiceHTTPClientImpl) CreateApplication(ctx context.Context, in *CreateApplicationRequest, opts ...http.CallOption) (*CreateApplicationResponse, error) {
 	var out CreateApplicationResponse
-	pattern := "/v1/applications"
+	pattern := "/api/v1/applications"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationLiaisonServiceCreateApplication))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -629,7 +629,7 @@ func (c *LiaisonServiceHTTPClientImpl) CreateApplication(ctx context.Context, in
 
 func (c *LiaisonServiceHTTPClientImpl) CreateEdge(ctx context.Context, in *CreateEdgeRequest, opts ...http.CallOption) (*CreateEdgeResponse, error) {
 	var out CreateEdgeResponse
-	pattern := "/v1/edges"
+	pattern := "/api/v1/edges"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationLiaisonServiceCreateEdge))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -642,7 +642,7 @@ func (c *LiaisonServiceHTTPClientImpl) CreateEdge(ctx context.Context, in *Creat
 
 func (c *LiaisonServiceHTTPClientImpl) CreateEdgeScanApplicationTask(ctx context.Context, in *CreateEdgeScanApplicationTaskRequest, opts ...http.CallOption) (*CreateEdgeScanApplicationTaskResponse, error) {
 	var out CreateEdgeScanApplicationTaskResponse
-	pattern := "/v1/edges/{edge_id}/scan_application_tasks"
+	pattern := "/api/v1/edges/{edge_id}/scan_application_tasks"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationLiaisonServiceCreateEdgeScanApplicationTask))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -655,7 +655,7 @@ func (c *LiaisonServiceHTTPClientImpl) CreateEdgeScanApplicationTask(ctx context
 
 func (c *LiaisonServiceHTTPClientImpl) CreateProxy(ctx context.Context, in *CreateProxyRequest, opts ...http.CallOption) (*CreateProxyResponse, error) {
 	var out CreateProxyResponse
-	pattern := "/v1/proxies"
+	pattern := "/api/v1/proxies"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationLiaisonServiceCreateProxy))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -668,7 +668,7 @@ func (c *LiaisonServiceHTTPClientImpl) CreateProxy(ctx context.Context, in *Crea
 
 func (c *LiaisonServiceHTTPClientImpl) DeleteApplication(ctx context.Context, in *DeleteApplicationRequest, opts ...http.CallOption) (*DeleteApplicationResponse, error) {
 	var out DeleteApplicationResponse
-	pattern := "/v1/applications/{id}"
+	pattern := "/api/v1/applications/{id}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationLiaisonServiceDeleteApplication))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -681,7 +681,7 @@ func (c *LiaisonServiceHTTPClientImpl) DeleteApplication(ctx context.Context, in
 
 func (c *LiaisonServiceHTTPClientImpl) DeleteEdge(ctx context.Context, in *DeleteEdgeRequest, opts ...http.CallOption) (*DeleteEdgeResponse, error) {
 	var out DeleteEdgeResponse
-	pattern := "/v1/edges/{id}"
+	pattern := "/api/v1/edges/{id}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationLiaisonServiceDeleteEdge))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -694,7 +694,7 @@ func (c *LiaisonServiceHTTPClientImpl) DeleteEdge(ctx context.Context, in *Delet
 
 func (c *LiaisonServiceHTTPClientImpl) DeleteProxy(ctx context.Context, in *DeleteProxyRequest, opts ...http.CallOption) (*DeleteProxyResponse, error) {
 	var out DeleteProxyResponse
-	pattern := "/v1/proxies/{id}"
+	pattern := "/api/v1/proxies/{id}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationLiaisonServiceDeleteProxy))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -707,7 +707,7 @@ func (c *LiaisonServiceHTTPClientImpl) DeleteProxy(ctx context.Context, in *Dele
 
 func (c *LiaisonServiceHTTPClientImpl) GetDevice(ctx context.Context, in *GetDeviceRequest, opts ...http.CallOption) (*GetDeviceResponse, error) {
 	var out GetDeviceResponse
-	pattern := "/v1/devices/{id}"
+	pattern := "/api/v1/devices/{id}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationLiaisonServiceGetDevice))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -720,7 +720,7 @@ func (c *LiaisonServiceHTTPClientImpl) GetDevice(ctx context.Context, in *GetDev
 
 func (c *LiaisonServiceHTTPClientImpl) GetEdge(ctx context.Context, in *GetEdgeRequest, opts ...http.CallOption) (*GetEdgeResponse, error) {
 	var out GetEdgeResponse
-	pattern := "/v1/edges/{id}"
+	pattern := "/api/v1/edges/{id}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationLiaisonServiceGetEdge))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -733,7 +733,7 @@ func (c *LiaisonServiceHTTPClientImpl) GetEdge(ctx context.Context, in *GetEdgeR
 
 func (c *LiaisonServiceHTTPClientImpl) GetEdgeScanApplicationTask(ctx context.Context, in *GetEdgeScanApplicationTaskRequest, opts ...http.CallOption) (*GetEdgeScanApplicationTaskResponse, error) {
 	var out GetEdgeScanApplicationTaskResponse
-	pattern := "/v1/edges/{edge_id}/scan_application_tasks"
+	pattern := "/api/v1/edges/{edge_id}/scan_application_tasks"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationLiaisonServiceGetEdgeScanApplicationTask))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -746,7 +746,7 @@ func (c *LiaisonServiceHTTPClientImpl) GetEdgeScanApplicationTask(ctx context.Co
 
 func (c *LiaisonServiceHTTPClientImpl) GetProfile(ctx context.Context, in *GetProfileRequest, opts ...http.CallOption) (*GetProfileResponse, error) {
 	var out GetProfileResponse
-	pattern := "/v1/iam/profile"
+	pattern := "/api/v1/iam/profile"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationLiaisonServiceGetProfile))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -759,7 +759,7 @@ func (c *LiaisonServiceHTTPClientImpl) GetProfile(ctx context.Context, in *GetPr
 
 func (c *LiaisonServiceHTTPClientImpl) Health(ctx context.Context, in *HealthRequest, opts ...http.CallOption) (*HealthResponse, error) {
 	var out HealthResponse
-	pattern := "/health"
+	pattern := "/api/health"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationLiaisonServiceHealth))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -772,7 +772,7 @@ func (c *LiaisonServiceHTTPClientImpl) Health(ctx context.Context, in *HealthReq
 
 func (c *LiaisonServiceHTTPClientImpl) ListApplications(ctx context.Context, in *ListApplicationsRequest, opts ...http.CallOption) (*ListApplicationsResponse, error) {
 	var out ListApplicationsResponse
-	pattern := "/v1/applications"
+	pattern := "/api/v1/applications"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationLiaisonServiceListApplications))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -785,7 +785,7 @@ func (c *LiaisonServiceHTTPClientImpl) ListApplications(ctx context.Context, in 
 
 func (c *LiaisonServiceHTTPClientImpl) ListDevices(ctx context.Context, in *ListDevicesRequest, opts ...http.CallOption) (*ListDevicesResponse, error) {
 	var out ListDevicesResponse
-	pattern := "/v1/devices"
+	pattern := "/api/v1/devices"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationLiaisonServiceListDevices))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -798,7 +798,7 @@ func (c *LiaisonServiceHTTPClientImpl) ListDevices(ctx context.Context, in *List
 
 func (c *LiaisonServiceHTTPClientImpl) ListEdges(ctx context.Context, in *ListEdgesRequest, opts ...http.CallOption) (*ListEdgesResponse, error) {
 	var out ListEdgesResponse
-	pattern := "/v1/edges"
+	pattern := "/api/v1/edges"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationLiaisonServiceListEdges))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -811,7 +811,7 @@ func (c *LiaisonServiceHTTPClientImpl) ListEdges(ctx context.Context, in *ListEd
 
 func (c *LiaisonServiceHTTPClientImpl) ListProxies(ctx context.Context, in *ListProxiesRequest, opts ...http.CallOption) (*ListProxiesResponse, error) {
 	var out ListProxiesResponse
-	pattern := "/v1/proxies"
+	pattern := "/api/v1/proxies"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationLiaisonServiceListProxies))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -824,7 +824,7 @@ func (c *LiaisonServiceHTTPClientImpl) ListProxies(ctx context.Context, in *List
 
 func (c *LiaisonServiceHTTPClientImpl) Login(ctx context.Context, in *LoginRequest, opts ...http.CallOption) (*LoginResponse, error) {
 	var out LoginResponse
-	pattern := "/v1/iam/login"
+	pattern := "/api/v1/iam/login"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationLiaisonServiceLogin))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -837,7 +837,7 @@ func (c *LiaisonServiceHTTPClientImpl) Login(ctx context.Context, in *LoginReque
 
 func (c *LiaisonServiceHTTPClientImpl) Logout(ctx context.Context, in *LogoutRequest, opts ...http.CallOption) (*LogoutResponse, error) {
 	var out LogoutResponse
-	pattern := "/v1/iam/logout"
+	pattern := "/api/v1/iam/logout"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationLiaisonServiceLogout))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -850,7 +850,7 @@ func (c *LiaisonServiceHTTPClientImpl) Logout(ctx context.Context, in *LogoutReq
 
 func (c *LiaisonServiceHTTPClientImpl) UpdateApplication(ctx context.Context, in *UpdateApplicationRequest, opts ...http.CallOption) (*UpdateApplicationResponse, error) {
 	var out UpdateApplicationResponse
-	pattern := "/v1/applications/{id}"
+	pattern := "/api/v1/applications/{id}"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationLiaisonServiceUpdateApplication))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -863,7 +863,7 @@ func (c *LiaisonServiceHTTPClientImpl) UpdateApplication(ctx context.Context, in
 
 func (c *LiaisonServiceHTTPClientImpl) UpdateDevice(ctx context.Context, in *UpdateDeviceRequest, opts ...http.CallOption) (*UpdateDeviceResponse, error) {
 	var out UpdateDeviceResponse
-	pattern := "/v1/devices/{id}"
+	pattern := "/api/v1/devices/{id}"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationLiaisonServiceUpdateDevice))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -876,7 +876,7 @@ func (c *LiaisonServiceHTTPClientImpl) UpdateDevice(ctx context.Context, in *Upd
 
 func (c *LiaisonServiceHTTPClientImpl) UpdateEdge(ctx context.Context, in *UpdateEdgeRequest, opts ...http.CallOption) (*UpdateEdgeResponse, error) {
 	var out UpdateEdgeResponse
-	pattern := "/v1/edges/{id}"
+	pattern := "/api/v1/edges/{id}"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationLiaisonServiceUpdateEdge))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -889,7 +889,7 @@ func (c *LiaisonServiceHTTPClientImpl) UpdateEdge(ctx context.Context, in *Updat
 
 func (c *LiaisonServiceHTTPClientImpl) UpdateProxy(ctx context.Context, in *UpdateProxyRequest, opts ...http.CallOption) (*UpdateProxyResponse, error) {
 	var out UpdateProxyResponse
-	pattern := "/v1/proxies/{id}"
+	pattern := "/api/v1/proxies/{id}"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationLiaisonServiceUpdateProxy))
 	opts = append(opts, http.PathTemplate(pattern))

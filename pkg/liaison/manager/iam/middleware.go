@@ -59,7 +59,7 @@ func AuthMiddleware(iamService *IAMService) middleware.Middleware {
 				ctx = context.WithValue(ctx, "user_email", user.Email)
 				ctx = context.WithValue(ctx, "user", user)
 
-				log.Infof("User authentication successful: %s", user.Email)
+				log.Debugf("User authentication successful: %s", user.Email)
 			}
 
 			return handler(ctx, req)
@@ -71,8 +71,14 @@ func AuthMiddleware(iamService *IAMService) middleware.Middleware {
 func isIAMEndpoint(path string) bool {
 	// 不需要认证的接口路径
 	noAuthPaths := []string{
-		"/v1/iam/login", // 用户登录
-		// /health 需要认证，不在此列表中
+		"/api/v1/iam/login",  // 用户登录
+		"/api/v1/iam/logout", // 用户登出
+		"/install.sh",        // 安装脚本
+	}
+
+	// 安装包路径不需要认证
+	if strings.HasPrefix(path, "/packages/") {
+		return true
 	}
 
 	for _, noAuthPath := range noAuthPaths {

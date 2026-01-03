@@ -9,10 +9,6 @@ const (
 	ProxyStatusStopped
 )
 
-const (
-	TableNameProxy = "proxy"
-)
-
 type Proxy struct {
 	gorm.Model
 	ApplicationID uint        `gorm:"column:application_id;type:int;not null"`
@@ -22,4 +18,8 @@ type Proxy struct {
 	Description   string      `gorm:"column:description;type:varchar(255);not null"`
 	// 以下用于中间使用
 	Application *Application `gorm:"-"`
+}
+
+func (Proxy) TableName() string {
+	return "proxies"
 }
