@@ -62,7 +62,7 @@ type DeviceUsage struct {
 type ScanApplicationTaskRequest struct {
 	TaskID   uint     `json:"task_id"`
 	Nets     []string `json:"nets"`
-	Port     int      `json:"port"`
+	Port     int      `json:"port"` // 如果为0，则扫描主流端口
 	Protocol string   `json:"protocol"`
 }
 
@@ -81,4 +81,15 @@ type ScanApplicationTaskResult struct {
 
 type Dst struct {
 	Addr string `json:"addr"`
+}
+
+type PullTaskScanApplicationRequest struct {
+	EdgeID uint64 `json:"edge_id"`
+}
+
+type PullTaskScanApplicationResponse struct {
+	TaskID   uint     `json:"task_id"`
+	Nets     []string `json:"nets"`
+	Port     int      `json:"port"`
+	Protocol string   `json:"protocol"`
 }

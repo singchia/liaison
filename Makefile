@@ -239,7 +239,7 @@ build-edge-linux-arm64:
 build-edge-darwin-amd64:
 	@echo "Building liaison-edge for darwin-amd64..."
 	@mkdir -p ./bin
-	@CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o ./bin/liaison-edge-darwin-amd64 cmd/edge/main.go
+	@CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o ./bin/liaison-edge-darwin-amd64 cmd/edge/main.go
 	@chmod +x ./bin/liaison-edge-darwin-amd64
 	@echo "✅ Built: ./bin/liaison-edge-darwin-amd64"
 
@@ -247,7 +247,7 @@ build-edge-darwin-amd64:
 build-edge-darwin-arm64:
 	@echo "Building liaison-edge for darwin-arm64..."
 	@mkdir -p ./bin
-	@CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags "-s -w" -o ./bin/liaison-edge-darwin-arm64 cmd/edge/main.go
+	@CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags "-s -w" -o ./bin/liaison-edge-darwin-arm64 cmd/edge/main.go
 	@chmod +x ./bin/liaison-edge-darwin-arm64
 	@echo "✅ Built: ./bin/liaison-edge-darwin-arm64"
 
@@ -259,13 +259,14 @@ build-edge-windows-amd64:
 		--platform linux/amd64 \
 		-v "$(shell pwd):/build" \
 		-w /build \
+		-e CGO_ENABLED=1 \
 		-e GOOS=windows \
 		-e GOARCH=amd64 \
 		-e GOTOOLCHAIN=auto \
 		golang:latest sh -c "\
 			go env -w GOTOOLCHAIN=auto && \
 			go mod download && \
-			CGO_ENABLED=0 go build -trimpath -ldflags '-s -w' -o ./bin/liaison-edge-windows-amd64.exe cmd/edge/main.go"
+			CGO_ENABLED=1 go build -trimpath -ldflags '-s -w' -o ./bin/liaison-edge-windows-amd64.exe cmd/edge/main.go"
 	@echo "✅ Built: ./bin/liaison-edge-windows-amd64.exe"
 
 # ============================================================================

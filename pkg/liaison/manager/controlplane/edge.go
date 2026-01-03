@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
 	"strings"
 	"time"
 
@@ -193,14 +192,25 @@ func (cp *controlPlane) CreateEdgeScanApplicationTask(_ context.Context, req *v1
 	nets := []string{}
 	for _, iface := range device.Interfaces {
 		// 获取IP地址所在网段
-		ip := net.ParseIP(iface.IP)
-		if ip == nil {
-			continue
-		}
-		nets = append(nets, fmt.Sprintf("%s/%s", ip.Mask(net.IPMask(iface.Netmask)), iface.Netmask))
+		//ip := net.ParseIP(iface.IP)
+		//if ip == nil {
+		//	continue
+		//}
+		//nets = append(nets, fmt.Sprintf("%s/%s", ip.Mask(net.IPMask(iface.Netmask)), iface.Netmask))
+		nets = append(nets, iface.IP)
 	}
 
 	// 创建任务
+	params := model.TaskScanApplicationParams{
+		Nets:     nets,
+		Port:     int(req.Port),
+		Protocol: req.Protocol,
+	}
+	data, err := json.Marshal(params)
+	if err != nil {
+		log.Errorf("marshal params error: %s", err)
+		return nil, err
+	}
 	expiration := 10 * time.Minute
 	task := &model.Task{
 		EdgeID:      req.EdgeId,
@@ -208,7 +218,7 @@ func (cp *controlPlane) CreateEdgeScanApplicationTask(_ context.Context, req *v1
 		TaskSubType: model.TaskSubTypeScanApplication,
 		TaskStatus:  model.TaskStatusPending,
 		ExpiredAt:   time.Now().Add(expiration), // 10分钟过期
-		TaskParams:  []byte(fmt.Sprintf(`{"protocol":"%s","port":%d}`, req.Protocol, req.Port)),
+		TaskParams:  data,
 		TaskResult:  []byte(`{"scanned_applications":[]}`), // 初始化为空结果
 		Error:       "",                                    // 初始化为空错误
 	}
@@ -262,10 +272,12 @@ func (cp *controlPlane) GetEdgeScanApplicationTask(_ context.Context, req *v1.Ge
 		EdgeID:      uint(req.EdgeId),
 		TaskType:    model.TaskTypeScan,
 		TaskSubType: model.TaskSubTypeScanApplication,
-		Status:      []model.TaskStatus{model.TaskStatusPending, model.TaskStatusRunning},
+		//Status:      []model.TaskStatus{model.TaskStatusPending, model.TaskStatusRunning},
 		Query: dao.Query{
 			Page:     1,
 			PageSize: 1,
+			Order:    "id",
+			Desc:     true,
 		},
 	})
 	if err != nil {

@@ -68,6 +68,7 @@ type Dao interface {
 	// Task 相关方法
 	CreateTask(task *model.Task) error
 	GetTask(taskID uint) (*model.Task, error)
+	GetTaskByEdgeID(edgeID uint64) (*model.Task, error)
 	ListTasks(query *ListTasksQuery) ([]*model.Task, error)
 	UpdateTaskStatus(taskID uint, status model.TaskStatus) error
 	UpdateTaskResult(taskID uint, status model.TaskStatus, result []byte) error

@@ -59,7 +59,7 @@ func AuthMiddleware(iamService *IAMService) middleware.Middleware {
 				ctx = context.WithValue(ctx, "user_email", user.Email)
 				ctx = context.WithValue(ctx, "user", user)
 
-				log.Infof("User authentication successful: %s", user.Email)
+				log.Debugf("User authentication successful: %s", user.Email)
 			}
 
 			return handler(ctx, req)

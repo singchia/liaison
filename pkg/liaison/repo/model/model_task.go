@@ -60,9 +60,9 @@ func (Task) TableName() string {
 
 // task scan application
 type TaskScanApplicationParams struct {
-	Network  string `json:"network"`
-	Port     int    `json:"port"`
-	Protocol string `json:"protocol"`
+	Nets     []string `json:"nets"`
+	Port     int      `json:"port"`
+	Protocol string   `json:"protocol"`
 }
 
 type ScannedApplication struct {
