@@ -1,3 +1,61 @@
+# ============================================================================
+# Liaison Makefile
+# ============================================================================
+#
+# 这个 Makefile 提供了 Liaison 项目的构建、测试、打包等功能。
+#
+# 主要功能：
+#   1. 本地开发构建（macOS）
+#      - make build-local          # 构建 liaison 和 liaison-edge（本地）
+#      - make build-liaison        # 仅构建 liaison
+#      - make build-edge           # 仅构建 liaison-edge
+#
+#   2. Linux 构建（使用 Docker，支持 CGO 交叉编译）
+#      - make build-linux          # 构建 Linux 版本的 liaison 和 liaison-edge
+#      - make build-liaison-linux  # 仅构建 Linux 版本的 liaison
+#      - make build-edge-linux     # 仅构建 Linux 版本的 liaison-edge
+#
+#   3. Edge 多架构构建
+#      - make build-edge-all       # 构建所有架构的 edge 二进制文件
+#      - make build-edge-linux-amd64    # Linux amd64
+#      - make build-edge-linux-arm64    # Linux arm64
+#      - make build-edge-darwin-amd64   # macOS amd64
+#      - make build-edge-darwin-arm64   # macOS arm64 (Apple Silicon)
+#      - make build-edge-windows-amd64   # Windows amd64
+#
+#   4. Edge 打包（生成 tar.gz 安装包）
+#      - make package-edge-all     # 打包所有架构的 edge
+#      - make package-edge-linux-amd64  # 打包 Linux amd64
+#      - make package-edge-linux-arm64 # 打包 Linux arm64
+#      - make package-edge-darwin-amd64 # 打包 macOS amd64
+#      - make package-edge-darwin-arm64 # 打包 macOS arm64
+#      - make package-edge-windows-amd64 # 打包 Windows amd64
+#
+#   5. 代码生成
+#      - make gen                  # 生成 API 和 Swagger 文档
+#      - make gen-api              # 仅生成 API 代码
+#      - make gen-swagger          # 仅生成 Swagger 文档
+#
+#   6. 测试
+#      - make test                 # 运行单元测试
+#      - make test-e2e             # 运行 E2E 测试
+#      - make test-all             # 运行所有测试
+#
+#   7. 工具构建
+#      - make build-tools           # 构建所有工具（本地）
+#      - make build-tools-linux     # 构建所有工具（Linux）
+#
+#   8. 完整打包
+#      - make package               # 打包完整的 Liaison 安装包（Linux）
+#
+# 注意事项：
+#   - liaison 需要 CGO（SQLite），本地构建需要 CGO_ENABLED=1
+#   - liaison-edge 使用纯 Go 实现，不需要 CGO，可以 CGO_ENABLED=0
+#   - Linux 构建使用 Docker，自动处理依赖安装
+#   - Edge 二进制文件不依赖 libpcap，可以在任何系统上运行
+#
+# ============================================================================
+
 include ./Makefile.defs
 
 # ============================================================================
