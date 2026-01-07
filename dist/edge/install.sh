@@ -161,8 +161,9 @@ mkdir -p "$INSTALL_DIR"
 cp "${TMP_DIR}/${BINARY_NAME}" "${INSTALL_DIR}/liaison-edge"
 chmod +x "${INSTALL_DIR}/liaison-edge"
 
-# 创建配置文件
+# 创建配置文件和日志目录
 mkdir -p "${INSTALL_DIR}/etc"
+mkdir -p "${INSTALL_DIR}/logs"
 
 cat > "${INSTALL_DIR}/etc/liaison-edge.yaml" <<EOF
 manager:
@@ -186,6 +187,191 @@ echo -e "${GREEN}Installation completed!${NC}"
 echo -e "${GREEN}Edge binary: ${INSTALL_DIR}/liaison-edge${NC}"
 echo -e "${GREEN}Config file: ${INSTALL_DIR}/etc/liaison-edge.yaml${NC}"
 echo ""
-echo -e "${YELLOW}To start the edge, run:${NC}"
-echo -e "${YELLOW}  ${INSTALL_DIR}/liaison-edge -c ${INSTALL_DIR}/etc/liaison-edge.yaml${NC}"
+
+# 根据操作系统提供不同的后台运行方式选择
+setup_service() {
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        # Linux 系统
+        echo -e "${YELLOW}请选择后台运行方式:${NC}"
+        echo "1) systemd 服务（推荐，支持开机自启、自动重启）"
+        echo "2) nohup 后台运行（简单方式）"
+        echo "3) screen 会话（适合调试）"
+        echo "4) 跳过，稍后手动启动"
+        echo ""
+        read -p "请输入选项 [1-4] (默认: 1): " choice
+        choice=${choice:-1}
+        
+        case $choice in
+            1)
+                echo -e "${YELLOW}设置 systemd 服务...${NC}"
+                CURRENT_USER=$(whoami)
+                SERVICE_FILE="/etc/systemd/system/liaison-edge.service"
+                
+                # 检查是否有 sudo 权限
+                if ! sudo -n true 2>/dev/null; then
+                    echo -e "${YELLOW}需要 sudo 权限来创建 systemd 服务，请输入密码:${NC}"
+                    sudo tee "${SERVICE_FILE}" > /dev/null <<EOF
+[Unit]
+Description=Liaison Edge Service
+After=network.target
+
+[Service]
+Type=simple
+User=${CURRENT_USER}
+WorkingDirectory=${INSTALL_DIR}
+ExecStart=${INSTALL_DIR}/liaison-edge -c ${INSTALL_DIR}/etc/liaison-edge.yaml
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+EOF
+                sudo systemctl daemon-reload
+                sudo systemctl enable liaison-edge
+                sudo systemctl start liaison-edge
+                echo -e "${GREEN}systemd 服务已创建并启动${NC}"
+                echo -e "${YELLOW}查看状态: sudo systemctl status liaison-edge${NC}"
+                echo -e "${YELLOW}查看日志: sudo journalctl -u liaison-edge -f${NC}"
+                ;;
+            2)
+                echo -e "${YELLOW}使用 nohup 后台运行...${NC}"
+                nohup "${INSTALL_DIR}/liaison-edge" -c "${INSTALL_DIR}/etc/liaison-edge.yaml" > "${INSTALL_DIR}/logs/liaison-edge.log" 2>&1 &
+                PID=$!
+                echo -e "${GREEN}Edge 已在后台启动 (PID: $PID)${NC}"
+                ;;
+            3)
+                echo -e "${YELLOW}使用 screen 会话运行...${NC}"
+                if command -v screen >/dev/null 2>&1; then
+                    screen -dmS liaison-edge "${INSTALL_DIR}/liaison-edge" -c "${INSTALL_DIR}/etc/liaison-edge.yaml"
+                    echo -e "${GREEN}Edge 已在 screen 会话中启动${NC}"
+                    echo -e "${YELLOW}查看会话: screen -r liaison-edge${NC}"
+                else
+                    echo -e "${RED}错误: screen 未安装，请先安装 screen${NC}"
+                    echo "  Ubuntu/Debian: sudo apt-get install screen"
+                    echo "  CentOS/RHEL: sudo yum install screen"
+                fi
+                ;;
+            4)
+                echo -e "${YELLOW}跳过服务设置${NC}"
+                ;;
+            *)
+                echo -e "${RED}无效选项${NC}"
+                ;;
+        esac
+        
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS 系统
+        echo -e "${YELLOW}请选择后台运行方式:${NC}"
+        echo "1) launchd 服务（推荐，支持开机自启、自动重启）"
+        echo "2) nohup 后台运行（简单方式）"
+        echo "3) screen 会话（适合调试）"
+        echo "4) 跳过，稍后手动启动"
+        echo ""
+        read -p "请输入选项 [1-4] (默认: 1): " choice
+        choice=${choice:-1}
+        
+        case $choice in
+            1)
+                echo -e "${YELLOW}设置 launchd 服务...${NC}"
+                PLIST_FILE="$HOME/Library/LaunchAgents/com.liaison.edge.plist"
+                mkdir -p "$HOME/Library/LaunchAgents"
+                
+                cat > "${PLIST_FILE}" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.liaison.edge</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>${INSTALL_DIR}/liaison-edge</string>
+        <string>-c</string>
+        <string>${INSTALL_DIR}/etc/liaison-edge.yaml</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>${INSTALL_DIR}</string>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>${INSTALL_DIR}/logs/liaison-edge.log</string>
+    <key>StandardErrorPath</key>
+    <string>${INSTALL_DIR}/logs/liaison-edge.error.log</string>
+</dict>
+</plist>
+EOF
+                launchctl load "${PLIST_FILE}" 2>/dev/null || launchctl unload "${PLIST_FILE}" 2>/dev/null; launchctl load "${PLIST_FILE}"
+                launchctl start com.liaison.edge
+                echo -e "${GREEN}launchd 服务已创建并启动${NC}"
+                echo -e "${YELLOW}查看状态: launchctl list | grep liaison${NC}"
+                ;;
+            2)
+                echo -e "${YELLOW}使用 nohup 后台运行...${NC}"
+                nohup "${INSTALL_DIR}/liaison-edge" -c "${INSTALL_DIR}/etc/liaison-edge.yaml" > "${INSTALL_DIR}/logs/liaison-edge.log" 2>&1 &
+                PID=$!
+                echo -e "${GREEN}Edge 已在后台启动 (PID: $PID)${NC}"
+                ;;
+            3)
+                echo -e "${YELLOW}使用 screen 会话运行...${NC}"
+                if command -v screen >/dev/null 2>&1; then
+                    screen -dmS liaison-edge "${INSTALL_DIR}/liaison-edge" -c "${INSTALL_DIR}/etc/liaison-edge.yaml"
+                    echo -e "${GREEN}Edge 已在 screen 会话中启动${NC}"
+                    echo -e "${YELLOW}查看会话: screen -r liaison-edge${NC}"
+                else
+                    echo -e "${RED}错误: screen 未安装，请先安装 screen${NC}"
+                    echo "  brew install screen"
+                fi
+                ;;
+            4)
+                echo -e "${YELLOW}跳过服务设置${NC}"
+                ;;
+            *)
+                echo -e "${RED}无效选项${NC}"
+                ;;
+        esac
+        
+    elif [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]] || [[ "$OSTYPE" == "win32" ]]; then
+        # Windows 系统
+        echo -e "${YELLOW}请选择后台运行方式:${NC}"
+        echo "1) nohup 后台运行（Git Bash/Cygwin）"
+        echo "2) 跳过，稍后手动启动"
+        echo ""
+        read -p "请输入选项 [1-2] (默认: 1): " choice
+        choice=${choice:-1}
+        
+        case $choice in
+            1)
+                echo -e "${YELLOW}使用 nohup 后台运行...${NC}"
+                nohup "${INSTALL_DIR}/liaison-edge.exe" -c "${INSTALL_DIR}/etc/liaison-edge.yaml" > "${INSTALL_DIR}/logs/liaison-edge.log" 2>&1 &
+                PID=$!
+                echo -e "${GREEN}Edge 已在后台启动 (PID: $PID)${NC}"
+                ;;
+            2)
+                echo -e "${YELLOW}跳过服务设置${NC}"
+                ;;
+            *)
+                echo -e "${RED}无效选项${NC}"
+                ;;
+        esac
+    else
+        # 其他系统
+        echo -e "${YELLOW}使用 nohup 后台运行...${NC}"
+        nohup "${INSTALL_DIR}/liaison-edge" -c "${INSTALL_DIR}/etc/liaison-edge.yaml" > "${INSTALL_DIR}/logs/liaison-edge.log" 2>&1 &
+        PID=$!
+        echo -e "${GREEN}Edge 已在后台启动 (PID: $PID)${NC}"
+    fi
+}
+
+# 询问是否设置后台运行
+echo -e "${YELLOW}是否现在设置后台运行？${NC}"
+read -p "请输入 [y/N] (默认: y): " setup
+setup=${setup:-y}
+
+if [[ "$setup" =~ ^[Yy]$ ]]; then
+    setup_service
+else
+    echo -e "${YELLOW}跳过服务设置${NC}"
+fi
 

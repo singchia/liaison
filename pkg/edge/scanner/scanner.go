@@ -174,6 +174,13 @@ func (s *scanner) Close() error {
 	return nil
 }
 
+// scanTask 扫描任务
+type scanTask struct {
+	IP       string
+	Port     int
+	Protocol string
+}
+
 // scanWithGo 使用纯 Go 实现的端口扫描（不依赖 libpcap）
 func (s *scanner) scanWithGo(ctx context.Context, task *proto.ScanApplicationTaskRequest, result *proto.ScanApplicationTaskResult) error {
 	// 获取要扫描的端口列表
@@ -188,48 +195,72 @@ func (s *scanner) scanWithGo(ctx context.Context, task *proto.ScanApplicationTas
 		return fmt.Errorf("get IPs from nets error: %s", err)
 	}
 
-	// 并发扫描
+	// 创建任务队列（带缓冲，避免阻塞）
+	taskChan := make(chan scanTask, 1000)
+	protocol := strings.ToLower(task.Protocol)
+
+	// 任务分发：独立 goroutine 负责将任务放入队列
 	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		defer close(taskChan) // 分发完成后关闭 channel
+
+		for _, ip := range ips {
+			for _, port := range ports {
+				select {
+				case <-ctx.Done():
+					return
+				case taskChan <- scanTask{
+					IP:       ip,
+					Port:     port,
+					Protocol: protocol,
+				}:
+				}
+			}
+		}
+	}()
+
+	// 使用 worker pool 模式，限制 goroutine 数量
 	var mu sync.Mutex
 	timeout := 2 * time.Second
-	maxConcurrency := 100
-	sem := make(chan struct{}, maxConcurrency)
+	maxWorkers := 100 // 限制最多 100 个 worker goroutine
 
-	for _, ip := range ips {
-		for _, port := range ports {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			default:
+	// 启动 worker
+	for i := 0; i < maxWorkers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case scanTask, ok := <-taskChan:
+					if !ok {
+						// 任务队列已关闭
+						return
+					}
+
+					var open bool
+					switch scanTask.Protocol {
+					case "udp":
+						open = scanUDP(scanTask.IP, scanTask.Port, timeout)
+					default: // tcp 或其他
+						open = scanTCP(scanTask.IP, scanTask.Port, timeout)
+					}
+
+					if open {
+						mu.Lock()
+						result.ScannedApplications = append(result.ScannedApplications, proto.ScannedApplication{
+							IP:       scanTask.IP,
+							Port:     scanTask.Port,
+							Protocol: scanTask.Protocol,
+						})
+						mu.Unlock()
+					}
+				}
 			}
-
-			wg.Add(1)
-			sem <- struct{}{} // 获取信号量
-
-			go func(ip string, port int) {
-				defer wg.Done()
-				defer func() { <-sem }() // 释放信号量
-
-				var open bool
-				protocol := strings.ToLower(task.Protocol)
-				switch protocol {
-				case "udp":
-					open = scanUDP(ip, port, timeout)
-				default: // tcp 或其他
-					open = scanTCP(ip, port, timeout)
-				}
-
-				if open {
-					mu.Lock()
-					result.ScannedApplications = append(result.ScannedApplications, proto.ScannedApplication{
-						IP:       ip,
-						Port:     port,
-						Protocol: protocol,
-					})
-					mu.Unlock()
-				}
-			}(ip, port)
-		}
+		}()
 	}
 
 	wg.Wait()
@@ -296,27 +327,20 @@ func isNetworkOrBroadcast(ip net.IP, ipNet *net.IPNet) bool {
 	return false
 }
 
-// getTopPorts 返回常见端口列表
+// getTopPorts 返回常见端口列表（基于 Nmap top 100 ports）
 func getTopPorts(count int) []int {
-	// 常见端口列表（基于实际使用频率）
+	// Nmap top 100 ports: 7,9,13,21-23,25-26,37,53,79-81,88,106,110-111,113,119,135,139,143-144,179,199,389,427,443-445,465,513-515,543-544,548,554,587,631,646,873,990,993,995,1025-1029,1110,1433,1720,1723,1755,1900,2000-2001,2049,2121,2717,3000,3128,3306,3389,3986,4899,5000,5009,5051,5060,5101,5190,5357,5432,5631,5666,5800,5900,6000-6001,6646,7070,8000,8008-8009,8080-8081,8443,8888,9100,9999-10000,32768,49152-49157
 	commonPorts := []int{
-		22, 23, 25, 53, 80, 110, 111, 135, 139, 143,
-		443, 445, 993, 995, 1723, 3306, 3389, 5900, 8080, 8443,
-		// 添加更多常见端口
-		21, 69, 79, 88, 102, 110, 143, 389, 443, 445,
-		636, 993, 995, 1433, 1521, 1723, 3306, 3389, 5432, 5900,
-		6000, 8000, 8080, 8443, 8888, 9000, 9090, 9200, 9300, 10000,
-		// 继续添加
-		7, 9, 13, 17, 19, 20, 21, 22, 23, 25,
-		26, 37, 53, 79, 80, 81, 88, 106, 110, 111,
-		113, 119, 135, 139, 143, 144, 179, 199, 389, 427,
-		443, 444, 445, 465, 514, 515, 543, 544, 548, 554,
-		587, 631, 646, 873, 990, 993, 995, 1025, 1026, 1027,
-		1028, 1029, 1110, 1433, 1720, 1723, 1755, 1900, 2000, 2049,
-		2121, 2717, 3000, 3128, 3306, 3389, 3986, 4899, 5000, 5009,
-		5051, 5060, 5101, 5190, 5357, 5432, 5631, 5666, 5800, 5900,
-		6000, 6001, 6646, 7070, 8000, 8008, 8009, 8080, 8081, 8443,
-		8888, 9100, 9999, 10000, 32768, 49152, 49153, 49154, 49155, 49156,
+		7, 9, 13, 21, 22, 23, 25, 26, 37, 53,
+		79, 80, 81, 88, 106, 110, 111, 113, 119, 135,
+		139, 143, 144, 179, 199, 389, 427, 443, 444, 445,
+		465, 513, 514, 515, 543, 544, 548, 554, 587, 631,
+		646, 873, 990, 993, 995, 1025, 1026, 1027, 1028, 1029,
+		1110, 1433, 1720, 1723, 1755, 1900, 2000, 2001, 2049, 2121,
+		2717, 3000, 3128, 3306, 3389, 3986, 4899, 5000, 5009, 5051,
+		5060, 5101, 5190, 5357, 5432, 5631, 5666, 5800, 5900, 6000,
+		6001, 6646, 7070, 8000, 8008, 8009, 8080, 8081, 8443, 8888,
+		9100, 9999, 10000, 32768, 49152, 49153, 49154, 49155, 49156, 49157,
 	}
 
 	if count > len(commonPorts) {
