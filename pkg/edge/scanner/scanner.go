@@ -160,7 +160,7 @@ func (s *scanner) scan(ctx context.Context, task *proto.ScanApplicationTaskReque
 			return
 		}
 		reportReq = s.frontierBound.NewRequest(data)
-		_, err = s.frontierBound.Call(ctx, "report_task_scan_application", reportReq)
+		_, err = s.frontierBound.Call(context.Background(), "report_task_scan_application", reportReq)
 		if err != nil {
 			log.Errorf("call report task scan application error: %s", err)
 			return

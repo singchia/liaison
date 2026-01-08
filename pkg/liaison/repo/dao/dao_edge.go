@@ -38,18 +38,33 @@ func (d *dao) GetEdgeByDeviceID(deviceID uint) (*model.Edge, error) {
 	return &edge, nil
 }
 
-func (d *dao) CountEdges() (int64, error) {
+func (d *dao) CountEdges(query *ListEdgesQuery) (int64, error) {
 	var count int64
-	if err := d.getDB().Model(&model.Edge{}).Count(&count).Error; err != nil {
+	db := d.getDB()
+	if len(query.DeviceIDs) > 0 {
+		db = db.Where("device_id IN ?", query.DeviceIDs)
+	}
+	if err := db.Model(&model.Edge{}).Count(&count).Error; err != nil {
 		return 0, err
 	}
 	return count, nil
 }
 
-func (d *dao) ListEdges(page, pageSize int) ([]*model.Edge, error) {
+func (d *dao) ListEdges(query *ListEdgesQuery) ([]*model.Edge, error) {
 	db := d.getDB()
-	if page > 0 && pageSize > 0 {
-		db = db.Offset((page - 1) * pageSize)
+	if query.Page > 0 && query.PageSize > 0 {
+		db = db.Offset((query.Page - 1) * query.PageSize).Limit(query.PageSize)
+	}
+	if len(query.DeviceIDs) > 0 {
+		db = db.Where("device_id IN ?", query.DeviceIDs)
+	}
+	// 应用排序
+	if query.Order != "" {
+		if query.Desc {
+			db = db.Order(query.Order + " DESC")
+		} else {
+			db = db.Order(query.Order + " ASC")
+		}
 	}
 	var edges []*model.Edge
 	if err := db.Find(&edges).Error; err != nil {

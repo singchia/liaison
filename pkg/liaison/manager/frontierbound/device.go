@@ -54,6 +54,7 @@ func (fb *frontierBound) reportDevice(ctx context.Context, req geminio.Request, 
 
 	if deviceModel == nil {
 		deviceModel = &model.Device{
+			Name:        device.HostName,
 			Fingerprint: device.Fingerprint,
 			HostName:    device.HostName,
 			CPU:         device.CPU,
@@ -84,6 +85,9 @@ func (fb *frontierBound) reportDevice(ctx context.Context, req geminio.Request, 
 			DiskUsage:   device.DeviceUsage.DiskUsage,
 		}
 		updates.ID = deviceModel.ID
+		if deviceModel.Name == "" {
+			updates.Name = device.HostName
+		}
 		if err := tx.UpdateDevice(updates); err != nil {
 			log.Errorf("update device error: %s", err)
 			rsp.SetError(err)

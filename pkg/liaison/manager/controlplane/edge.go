@@ -112,11 +112,75 @@ func (cp *controlPlane) GetEdge(_ context.Context, req *v1.GetEdgeRequest) (*v1.
 }
 
 func (cp *controlPlane) ListEdges(_ context.Context, req *v1.ListEdgesRequest) (*v1.ListEdgesResponse, error) {
-	edges, err := cp.repo.ListEdges(int(req.Page), int(req.PageSize))
+	var (
+		deviceIDs       []uint
+		devices         []*model.Device
+		err             error
+		preDeviceSearch bool
+	)
+	if req.DeviceName != "" {
+		devices, err = cp.repo.ListDevices(&dao.ListDevicesQuery{
+			Query: dao.Query{
+				Order: "id",
+				Desc:  true,
+			},
+			Name: req.DeviceName,
+		})
+		if err != nil {
+			return nil, err
+		}
+		for _, device := range devices {
+			deviceIDs = append(deviceIDs, device.ID)
+		}
+		preDeviceSearch = true
+	}
+
+	query := &dao.ListEdgesQuery{
+		Query: dao.Query{
+			Page:     int(req.Page),
+			PageSize: int(req.PageSize),
+			Order:    "id",
+			Desc:     true,
+		},
+	}
+	if len(deviceIDs) > 0 {
+		query.DeviceIDs = deviceIDs
+	}
+	// 搜索Edges
+	edges, err := cp.repo.ListEdges(query)
 	if err != nil {
 		return nil, err
 	}
-	count, err := cp.repo.CountEdges()
+	if !preDeviceSearch {
+		// 如果没有提前搜索设备， 则后置关联devices
+		deviceIDs := []uint{}
+		for _, edge := range edges {
+			deviceIDs = append(deviceIDs, edge.DeviceID)
+		}
+		devices, err = cp.repo.ListDevices(&dao.ListDevicesQuery{
+			Query: dao.Query{
+				Order: "id",
+				Desc:  true,
+			},
+			IDs: deviceIDs,
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+	// 创建设备映射，通过 ID 匹配
+	deviceMap := make(map[uint]*model.Device)
+	for _, device := range devices {
+		deviceMap[device.ID] = device
+	}
+	// 关联设备到 edge
+	for _, edge := range edges {
+		if device, ok := deviceMap[edge.DeviceID]; ok {
+			edge.Device = device
+		}
+	}
+
+	count, err := cp.repo.CountEdges(query)
 	if err != nil {
 		return nil, err
 	}
@@ -329,7 +393,7 @@ func transformEdges(edges []*model.Edge) []*v1.Edge {
 }
 
 func transformEdge(edge *model.Edge) *v1.Edge {
-	return &v1.Edge{
+	edgeV1 := &v1.Edge{
 		Id:          uint64(edge.ID),
 		Name:        edge.Name,
 		Description: edge.Description,
@@ -338,6 +402,11 @@ func transformEdge(edge *model.Edge) *v1.Edge {
 		CreatedAt:   edge.CreatedAt.Format(time.DateTime),
 		UpdatedAt:   edge.UpdatedAt.Format(time.DateTime),
 	}
+	// 填充设备信息
+	if edge.Device != nil {
+		edgeV1.Device = transformDevice(edge.Device)
+	}
+	return edgeV1
 }
 
 // generateAccessKey 生成 Access Key

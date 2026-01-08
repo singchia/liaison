@@ -19,6 +19,7 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationLiaisonServiceChangePassword = "/LiaisonService/ChangePassword"
 const OperationLiaisonServiceCreateApplication = "/LiaisonService/CreateApplication"
 const OperationLiaisonServiceCreateEdge = "/LiaisonService/CreateEdge"
 const OperationLiaisonServiceCreateEdgeScanApplicationTask = "/LiaisonService/CreateEdgeScanApplicationTask"
@@ -43,6 +44,7 @@ const OperationLiaisonServiceUpdateEdge = "/LiaisonService/UpdateEdge"
 const OperationLiaisonServiceUpdateProxy = "/LiaisonService/UpdateProxy"
 
 type LiaisonServiceHTTPServer interface {
+	ChangePassword(context.Context, *ChangePasswordRequest) (*ChangePasswordResponse, error)
 	// CreateApplication 应用
 	CreateApplication(context.Context, *CreateApplicationRequest) (*CreateApplicationResponse, error)
 	// CreateEdge 边缘
@@ -97,6 +99,7 @@ func RegisterLiaisonServiceHTTPServer(s *http.Server, srv LiaisonServiceHTTPServ
 	r.POST("/api/v1/iam/login", _LiaisonService_Login0_HTTP_Handler(srv))
 	r.POST("/api/v1/iam/logout", _LiaisonService_Logout0_HTTP_Handler(srv))
 	r.GET("/api/v1/iam/profile", _LiaisonService_GetProfile0_HTTP_Handler(srv))
+	r.POST("/api/v1/iam/password", _LiaisonService_ChangePassword0_HTTP_Handler(srv))
 	r.GET("/api/health", _LiaisonService_Health0_HTTP_Handler(srv))
 }
 
@@ -562,6 +565,28 @@ func _LiaisonService_GetProfile0_HTTP_Handler(srv LiaisonServiceHTTPServer) func
 	}
 }
 
+func _LiaisonService_ChangePassword0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ChangePasswordRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationLiaisonServiceChangePassword)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ChangePassword(ctx, req.(*ChangePasswordRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ChangePasswordResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
 func _LiaisonService_Health0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in HealthRequest
@@ -582,6 +607,7 @@ func _LiaisonService_Health0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx
 }
 
 type LiaisonServiceHTTPClient interface {
+	ChangePassword(ctx context.Context, req *ChangePasswordRequest, opts ...http.CallOption) (rsp *ChangePasswordResponse, err error)
 	CreateApplication(ctx context.Context, req *CreateApplicationRequest, opts ...http.CallOption) (rsp *CreateApplicationResponse, err error)
 	CreateEdge(ctx context.Context, req *CreateEdgeRequest, opts ...http.CallOption) (rsp *CreateEdgeResponse, err error)
 	CreateEdgeScanApplicationTask(ctx context.Context, req *CreateEdgeScanApplicationTaskRequest, opts ...http.CallOption) (rsp *CreateEdgeScanApplicationTaskResponse, err error)
@@ -612,6 +638,19 @@ type LiaisonServiceHTTPClientImpl struct {
 
 func NewLiaisonServiceHTTPClient(client *http.Client) LiaisonServiceHTTPClient {
 	return &LiaisonServiceHTTPClientImpl{client}
+}
+
+func (c *LiaisonServiceHTTPClientImpl) ChangePassword(ctx context.Context, in *ChangePasswordRequest, opts ...http.CallOption) (*ChangePasswordResponse, error) {
+	var out ChangePasswordResponse
+	pattern := "/api/v1/iam/password"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationLiaisonServiceChangePassword))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 func (c *LiaisonServiceHTTPClientImpl) CreateApplication(ctx context.Context, in *CreateApplicationRequest, opts ...http.CallOption) (*CreateApplicationResponse, error) {

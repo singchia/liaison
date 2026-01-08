@@ -67,9 +67,17 @@ func (d *dao) CountDevices(query *ListDevicesQuery) (int64, error) {
 	var count int64
 	db := d.getDB()
 	if len(query.IDs) > 0 {
-		db = db.Where("id IN ?", query.IDs)
+		db = db.Where("devices.id IN ?", query.IDs)
 	}
-	if err := db.Model(&model.Device{}).Count(&count).Error; err != nil {
+	if query.Name != "" {
+		db = db.Where("devices.name LIKE ?", "%"+query.Name+"%")
+	}
+	if query.IP != "" {
+		// 通过JOIN ethernet_interfaces表来搜索IP
+		db = db.Joins("JOIN ethernet_interfaces ON ethernet_interfaces.device_id = devices.id").
+			Where("ethernet_interfaces.ip LIKE ?", "%"+query.IP+"%")
+	}
+	if err := db.Model(&model.Device{}).Distinct("devices.id").Count(&count).Error; err != nil {
 		return 0, err
 	}
 	return count, nil
@@ -81,10 +89,30 @@ func (d *dao) ListDevices(query *ListDevicesQuery) ([]*model.Device, error) {
 		db = db.Offset((query.Page - 1) * query.PageSize).Limit(query.PageSize)
 	}
 	if len(query.IDs) > 0 {
-		db = db.Where("id IN ?", query.IDs)
+		db = db.Where("devices.id IN ?", query.IDs)
+	}
+	if query.Name != "" {
+		db = db.Where("devices.name LIKE ?", "%"+query.Name+"%")
+	}
+	if query.IP != "" {
+		// 通过JOIN ethernet_interfaces表来搜索IP
+		db = db.Joins("JOIN ethernet_interfaces ON ethernet_interfaces.device_id = devices.id").
+			Where("ethernet_interfaces.ip LIKE ?", "%"+query.IP+"%")
+	}
+	// 应用排序
+	if query.Order != "" {
+		orderField := query.Order
+		if query.Order == "id" {
+			orderField = "devices.id"
+		}
+		if query.Desc {
+			db = db.Order(orderField + " DESC")
+		} else {
+			db = db.Order(orderField + " ASC")
+		}
 	}
 	var devices []*model.Device
-	if err := db.Find(&devices).Error; err != nil {
+	if err := db.Distinct("devices.*").Find(&devices).Error; err != nil {
 		return nil, err
 	}
 	return devices, nil

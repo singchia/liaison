@@ -31,6 +31,17 @@ func (d *dao) ListProxies(query *ListProxiesQuery) ([]*model.Proxy, error) {
 	if len(query.IDs) > 0 {
 		db = db.Where("id IN ?", query.IDs)
 	}
+	if len(query.ApplicationIDs) > 0 {
+		db = db.Where("application_id IN ?", query.ApplicationIDs)
+	}
+	// 应用排序
+	if query.Order != "" {
+		if query.Desc {
+			db = db.Order(query.Order + " DESC")
+		} else {
+			db = db.Order(query.Order + " ASC")
+		}
+	}
 	var proxies []*model.Proxy
 	if err := db.Find(&proxies).Error; err != nil {
 		return nil, err

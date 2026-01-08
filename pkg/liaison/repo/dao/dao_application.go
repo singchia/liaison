@@ -24,8 +24,8 @@ func (d *dao) UpdateApplication(application *model.Application) error {
 
 func (d *dao) CountApplications(query *ListApplicationsQuery) (int64, error) {
 	db := d.getDB()
-	if query.DeviceID != 0 {
-		db = db.Where("device_id = ?", query.DeviceID)
+	if len(query.DeviceIDs) > 0 {
+		db = db.Where("device_id IN ?", query.DeviceIDs)
 	}
 	if len(query.IDs) > 0 {
 		db = db.Where("id IN ?", query.IDs)
@@ -40,9 +40,9 @@ func (d *dao) CountApplications(query *ListApplicationsQuery) (int64, error) {
 func (d *dao) ListApplications(query *ListApplicationsQuery) ([]*model.Application, error) {
 	var applications []*model.Application
 	db := d.getDB()
-	// device_id
-	if query.DeviceID != 0 {
-		db = db.Where("device_id = ?", query.DeviceID)
+	// device_ids
+	if len(query.DeviceIDs) > 0 {
+		db = db.Where("device_id IN ?", query.DeviceIDs)
 	}
 	// page & page_size
 	if query.Page > 0 && query.PageSize > 0 {
@@ -51,6 +51,14 @@ func (d *dao) ListApplications(query *ListApplicationsQuery) ([]*model.Applicati
 	// ids
 	if len(query.IDs) > 0 {
 		db = db.Where("id IN ?", query.IDs)
+	}
+	// 应用排序
+	if query.Order != "" {
+		if query.Desc {
+			db = db.Order(query.Order + " DESC")
+		} else {
+			db = db.Order(query.Order + " ASC")
+		}
 	}
 
 	if err := db.Find(&applications).Error; err != nil {

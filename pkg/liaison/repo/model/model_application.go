@@ -54,6 +54,9 @@ type Application struct {
 	Port            int             `gorm:"column:port;type:int;not null"`
 	HeartbeatAt     time.Time       `gorm:"column:heartbeat_at;type:datetime;not null"`
 	ApplicationType ApplicationType `gorm:"column:application_type;type:varchar(255);not null"`
+	// 以下用于中间使用
+	Device *Device `gorm:"-"`
+	Proxy  *Proxy  `gorm:"-"`
 }
 
 func (Application) TableName() string {

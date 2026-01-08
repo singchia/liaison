@@ -18,6 +18,7 @@ type Proxy struct {
 	Description   string      `gorm:"column:description;type:varchar(255);not null"`
 	// 以下用于中间使用
 	Application *Application `gorm:"-"`
+	Device      *Device      `gorm:"-"`
 }
 
 func (Proxy) TableName() string {

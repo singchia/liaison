@@ -59,6 +59,8 @@ func (cp *controlPlane) ListProxies(_ context.Context, req *v1.ListProxiesReques
 		Query: dao.Query{
 			Page:     int(req.Page),
 			PageSize: int(req.PageSize),
+			Order:    "id",
+			Desc:     true,
 		},
 	}
 	proxies, err := cp.repo.ListProxies(&query)
@@ -78,6 +80,8 @@ func (cp *controlPlane) ListProxies(_ context.Context, req *v1.ListProxiesReques
 		Query: dao.Query{
 			Page:     int(req.Page),
 			PageSize: int(req.PageSize),
+			Order:    "id",
+			Desc:     true,
 		},
 		IDs: ids,
 	})

@@ -22,16 +22,24 @@ type ListTasksQuery struct {
 
 type ListApplicationsQuery struct {
 	Query
-	DeviceID uint
-	IDs      []uint
+	DeviceIDs []uint
+	IDs       []uint
 }
 
 type ListDevicesQuery struct {
 	Query
-	IDs []uint
+	IDs  []uint
+	Name string
+	IP   string
 }
 
 type ListProxiesQuery struct {
 	Query
-	IDs []uint
+	IDs            []uint
+	ApplicationIDs []uint
+}
+
+type ListEdgesQuery struct {
+	Query
+	DeviceIDs []uint
 }
