@@ -52,6 +52,17 @@ type LogoutResponse struct {
 	Message string `json:"message"`
 }
 
+// ChangePasswordRequest 修改密码请求
+type ChangePasswordRequest struct {
+	OldPassword string `json:"old_password" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required"`
+}
+
+// ChangePasswordResponse 修改密码响应
+type ChangePasswordResponse struct {
+	Message string `json:"message"`
+}
+
 // User 用户信息（用于API响应）
 type User struct {
 	ID    uint   `json:"id"`
@@ -59,7 +70,7 @@ type User struct {
 }
 
 // Login 用户登录
-func (s *IAMService) Login(req *LoginRequest) (*LoginResponse, error) {
+func (s *IAMService) Login(req *LoginRequest, loginIP string) (*LoginResponse, error) {
 	// 获取用户
 	user, err := s.repo.GetUserByEmail(req.Email)
 	if err != nil {
@@ -83,9 +94,9 @@ func (s *IAMService) Login(req *LoginRequest) (*LoginResponse, error) {
 		return nil, errors.New("invalid password")
 	}
 
-	// 更新最后登录时间
-	if err := s.repo.UpdateUserLastLogin(user.ID); err != nil {
-		log.Errorf("Failed to update last login time: %v", err)
+	// 更新最后登录时间和IP
+	if err := s.repo.UpdateUserLastLoginAndIP(user.ID, loginIP); err != nil {
+		log.Errorf("Failed to update last login time and IP: %v", err)
 	}
 
 	// 生成JWT token
@@ -197,4 +208,51 @@ func (s *IAMService) GetUserByToken(tokenString string) (*model.User, error) {
 	}
 
 	return user, nil
+}
+
+// GetUserByID 根据用户ID获取用户信息
+func (s *IAMService) GetUserByID(userID uint) (*model.User, error) {
+	user, err := s.repo.GetUserByID(userID)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, errors.New("user not found")
+	}
+	return user, nil
+}
+
+// ChangePassword 修改密码
+func (s *IAMService) ChangePassword(userID uint, req *ChangePasswordRequest) error {
+	// 获取用户
+	user, err := s.repo.GetUserByID(userID)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return errors.New("user not found")
+	}
+
+	// 验证旧密码
+	valid, err := utils.VerifyPassword(req.OldPassword, user.Password)
+	if err != nil {
+		return err
+	}
+	if !valid {
+		return errors.New("invalid old password")
+	}
+
+	// 加密新密码
+	hashedPassword, err := utils.HashPassword(req.NewPassword)
+	if err != nil {
+		return err
+	}
+
+	// 更新密码
+	user.Password = hashedPassword
+	if err := s.repo.UpdateUser(user); err != nil {
+		return err
+	}
+
+	return nil
 }

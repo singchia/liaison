@@ -30,8 +30,9 @@ type Edge struct {
 	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"` // 描述
 	Status        int32                  `protobuf:"varint,4,opt,name=status,proto3" json:"status,omitempty"`          // 1. running 运行中, 2. stopped 停止
 	Online        int32                  `protobuf:"varint,5,opt,name=online,proto3" json:"online,omitempty"`          // 1. online 在线, 2. offline 离线
-	CreatedAt     string                 `protobuf:"bytes,6,opt,name=created_at,proto3" json:"created_at,omitempty"`   // 创建时间
-	UpdatedAt     string                 `protobuf:"bytes,7,opt,name=updated_at,proto3" json:"updated_at,omitempty"`   // 更新时间
+	Device        *Device                `protobuf:"bytes,6,opt,name=device,proto3" json:"device,omitempty"`           // 所在设备
+	CreatedAt     string                 `protobuf:"bytes,7,opt,name=created_at,proto3" json:"created_at,omitempty"`   // 创建时间
+	UpdatedAt     string                 `protobuf:"bytes,8,opt,name=updated_at,proto3" json:"updated_at,omitempty"`   // 更新时间
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -99,6 +100,13 @@ func (x *Edge) GetOnline() int32 {
 		return x.Online
 	}
 	return 0
+}
+
+func (x *Edge) GetDevice() *Device {
+	if x != nil {
+		return x.Device
+	}
+	return nil
 }
 
 func (x *Edge) GetCreatedAt() string {
@@ -451,6 +459,8 @@ type ListEdgesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
 	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,proto3" json:"page_size,omitempty"`
+	DeviceName    string                 `protobuf:"bytes,3,opt,name=device_name,proto3" json:"device_name,omitempty"`
+	Name          string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"` // 连接器名称
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -497,6 +507,20 @@ func (x *ListEdgesRequest) GetPageSize() int32 {
 		return x.PageSize
 	}
 	return 0
+}
+
+func (x *ListEdgesRequest) GetDeviceName() string {
+	if x != nil {
+		return x.DeviceName
+	}
+	return ""
+}
+
+func (x *ListEdgesRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
 }
 
 type ListEdgesResponse struct {
@@ -791,14 +815,14 @@ type Device struct {
 	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"` // 名称
 	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	Cpu           int32                  `protobuf:"varint,4,opt,name=cpu,proto3" json:"cpu,omitempty"`              // 核心数
-	Memory        int32                  `protobuf:"varint,5,opt,name=memory,proto3" json:"memory,omitempty"`        // 内存，MB
-	Disk          int32                  `protobuf:"varint,6,opt,name=disk,proto3" json:"disk,omitempty"`            // 磁盘，MB
-	Os            string                 `protobuf:"bytes,7,opt,name=os,proto3" json:"os,omitempty"`                 // 操作系统
-	Version       string                 `protobuf:"bytes,8,opt,name=version,proto3" json:"version,omitempty"`       // 系统版本
-	Interfaces    []*EthernetInterface   `protobuf:"bytes,9,rep,name=interfaces,proto3" json:"interfaces,omitempty"` // 网卡
-	CreatedAt     string                 `protobuf:"bytes,10,opt,name=created_at,proto3" json:"created_at,omitempty"`
-	UpdatedAt     string                 `protobuf:"bytes,11,opt,name=updated_at,proto3" json:"updated_at,omitempty"`
+	Cpu           int32                  `protobuf:"varint,4,opt,name=cpu,proto3" json:"cpu,omitempty"`               // 核心数
+	Memory        int32                  `protobuf:"varint,5,opt,name=memory,proto3" json:"memory,omitempty"`         // 内存，MB
+	Disk          int32                  `protobuf:"varint,6,opt,name=disk,proto3" json:"disk,omitempty"`             // 磁盘，MB
+	Os            string                 `protobuf:"bytes,7,opt,name=os,proto3" json:"os,omitempty"`                  // 操作系统
+	Version       string                 `protobuf:"bytes,8,opt,name=version,proto3" json:"version,omitempty"`        // 系统版本
+	Interfaces    []*EthernetInterface   `protobuf:"bytes,9,rep,name=interfaces,proto3" json:"interfaces,omitempty"`  // 网卡
+	CreatedAt     string                 `protobuf:"bytes,10,opt,name=created_at,proto3" json:"created_at,omitempty"` // 创建时间
+	UpdatedAt     string                 `protobuf:"bytes,11,opt,name=updated_at,proto3" json:"updated_at,omitempty"` // 更新时间
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -914,7 +938,7 @@ type EthernetInterface struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"` // 网卡名
 	Mac           string                 `protobuf:"bytes,2,opt,name=mac,proto3" json:"mac,omitempty"`   // 网卡MAC地址
-	Ip            []string               `protobuf:"bytes,3,rep,name=ip,proto3" json:"ip,omitempty"`     // 网卡IP地址
+	Ip            []string               `protobuf:"bytes,3,rep,name=ip,proto3" json:"ip,omitempty"`     // 网卡IP地址，带掩码
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -972,8 +996,8 @@ func (x *EthernetInterface) GetIp() []string {
 
 type Devices struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Total         int32                  `protobuf:"varint,1,opt,name=total,proto3" json:"total,omitempty"`
-	Devices       []*Device              `protobuf:"bytes,2,rep,name=devices,proto3" json:"devices,omitempty"`
+	Total         int32                  `protobuf:"varint,1,opt,name=total,proto3" json:"total,omitempty"`    // 总数
+	Devices       []*Device              `protobuf:"bytes,2,rep,name=devices,proto3" json:"devices,omitempty"` // 分页数
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1025,7 +1049,7 @@ func (x *Devices) GetDevices() []*Device {
 // 获取设备请求
 type GetDeviceRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"` // 设备ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1069,9 +1093,9 @@ func (x *GetDeviceRequest) GetId() uint64 {
 
 type GetDeviceResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
-	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
-	Data          *Device                `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`      // 状态码
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"` // 消息
+	Data          *Device                `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`       // 设备
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1130,8 +1154,10 @@ func (x *GetDeviceResponse) GetData() *Device {
 // 列举设备请求
 type ListDevicesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,proto3" json:"page_size,omitempty"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`           // 页码
+	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,proto3" json:"page_size,omitempty"` // 每页数量
+	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`            // 设备名
+	Ip            string                 `protobuf:"bytes,4,opt,name=ip,proto3" json:"ip,omitempty"`                // IP搜索
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1180,11 +1206,25 @@ func (x *ListDevicesRequest) GetPageSize() int32 {
 	return 0
 }
 
+func (x *ListDevicesRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *ListDevicesRequest) GetIp() string {
+	if x != nil {
+		return x.Ip
+	}
+	return ""
+}
+
 type ListDevicesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
-	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
-	Data          *Devices               `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`      // 状态码
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"` // 消息
+	Data          *Devices               `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`       // 设备列表
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1243,9 +1283,9 @@ func (x *ListDevicesResponse) GetData() *Devices {
 // 更新设备请求
 type UpdateDeviceRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`                  // 设备ID
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`               // 名称
+	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"` // 描述
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1303,9 +1343,9 @@ func (x *UpdateDeviceRequest) GetDescription() string {
 
 type UpdateDeviceResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
-	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
-	Data          *Device                `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`      // 状态码
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"` // 消息
+	Data          *Device                `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`       // 设备
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1364,15 +1404,17 @@ func (x *UpdateDeviceResponse) GetData() *Device {
 // 应用
 type Application struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
-	Id              uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	EdgeId          uint64                 `protobuf:"varint,2,opt,name=edge_id,proto3" json:"edge_id,omitempty"`
-	Device          *Device                `protobuf:"bytes,3,opt,name=device,proto3" json:"device,omitempty"`
-	Name            string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
-	Ip              string                 `protobuf:"bytes,5,opt,name=ip,proto3" json:"ip,omitempty"`
-	Port            int32                  `protobuf:"varint,6,opt,name=port,proto3" json:"port,omitempty"`
-	ApplicationType string                 `protobuf:"bytes,7,opt,name=application_type,proto3" json:"application_type,omitempty"`
-	CreatedAt       string                 `protobuf:"bytes,8,opt,name=created_at,proto3" json:"created_at,omitempty"`
-	UpdatedAt       string                 `protobuf:"bytes,9,opt,name=updated_at,proto3" json:"updated_at,omitempty"`
+	Id              uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`                            // 应用ID
+	EdgeId          uint64                 `protobuf:"varint,2,opt,name=edge_id,proto3" json:"edge_id,omitempty"`                  // 边缘ID
+	Device          *Device                `protobuf:"bytes,3,opt,name=device,proto3" json:"device,omitempty"`                     // 所属设备
+	Proxy           *Proxy                 `protobuf:"bytes,4,opt,name=proxy,proto3" json:"proxy,omitempty"`                       // 关联Proxy
+	Name            string                 `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`                         // 名称
+	Description     string                 `protobuf:"bytes,11,opt,name=description,proto3" json:"description,omitempty"`          // 描述
+	Ip              string                 `protobuf:"bytes,6,opt,name=ip,proto3" json:"ip,omitempty"`                             // 内网IP地址
+	Port            int32                  `protobuf:"varint,7,opt,name=port,proto3" json:"port,omitempty"`                        // 端口
+	ApplicationType string                 `protobuf:"bytes,8,opt,name=application_type,proto3" json:"application_type,omitempty"` // 应用类型
+	CreatedAt       string                 `protobuf:"bytes,9,opt,name=created_at,proto3" json:"created_at,omitempty"`             // 创建时间
+	UpdatedAt       string                 `protobuf:"bytes,10,opt,name=updated_at,proto3" json:"updated_at,omitempty"`            // 更新时间
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -1428,9 +1470,23 @@ func (x *Application) GetDevice() *Device {
 	return nil
 }
 
+func (x *Application) GetProxy() *Proxy {
+	if x != nil {
+		return x.Proxy
+	}
+	return nil
+}
+
 func (x *Application) GetName() string {
 	if x != nil {
 		return x.Name
+	}
+	return ""
+}
+
+func (x *Application) GetDescription() string {
+	if x != nil {
+		return x.Description
 	}
 	return ""
 }
@@ -1526,6 +1582,7 @@ func (x *Applications) GetApplications() []*Application {
 type CreateApplicationRequest struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Name            string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Description     string                 `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"` // 描述
 	Ip              string                 `protobuf:"bytes,2,opt,name=ip,proto3" json:"ip,omitempty"`
 	Port            int32                  `protobuf:"varint,3,opt,name=port,proto3" json:"port,omitempty"`
 	ApplicationType string                 `protobuf:"bytes,4,opt,name=application_type,proto3" json:"application_type,omitempty"`
@@ -1568,6 +1625,13 @@ func (*CreateApplicationRequest) Descriptor() ([]byte, []int) {
 func (x *CreateApplicationRequest) GetName() string {
 	if x != nil {
 		return x.Name
+	}
+	return ""
+}
+
+func (x *CreateApplicationRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
 	}
 	return ""
 }
@@ -1661,12 +1725,14 @@ func (x *CreateApplicationResponse) GetMessage() string {
 
 // 列举应用请求
 type ListApplicationsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,proto3" json:"page_size,omitempty"`
-	DeviceId      uint64                 `protobuf:"varint,3,opt,name=device_id,proto3" json:"device_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Page            int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize        int32                  `protobuf:"varint,2,opt,name=page_size,proto3" json:"page_size,omitempty"`
+	DeviceId        *uint64                `protobuf:"varint,3,opt,name=device_id,proto3,oneof" json:"device_id,omitempty"`
+	DeviceName      *string                `protobuf:"bytes,4,opt,name=device_name,proto3,oneof" json:"device_name,omitempty"`
+	ApplicationName *string                `protobuf:"bytes,5,opt,name=application_name,proto3,oneof" json:"application_name,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *ListApplicationsRequest) Reset() {
@@ -1714,10 +1780,24 @@ func (x *ListApplicationsRequest) GetPageSize() int32 {
 }
 
 func (x *ListApplicationsRequest) GetDeviceId() uint64 {
-	if x != nil {
-		return x.DeviceId
+	if x != nil && x.DeviceId != nil {
+		return *x.DeviceId
 	}
 	return 0
+}
+
+func (x *ListApplicationsRequest) GetDeviceName() string {
+	if x != nil && x.DeviceName != nil {
+		return *x.DeviceName
+	}
+	return ""
+}
+
+func (x *ListApplicationsRequest) GetApplicationName() string {
+	if x != nil && x.ApplicationName != nil {
+		return *x.ApplicationName
+	}
+	return ""
 }
 
 type ListApplicationsResponse struct {
@@ -1785,6 +1865,7 @@ type UpdateApplicationRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"` // 描述
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1829,6 +1910,13 @@ func (x *UpdateApplicationRequest) GetId() uint64 {
 func (x *UpdateApplicationRequest) GetName() string {
 	if x != nil {
 		return x.Name
+	}
+	return ""
+}
+
+func (x *UpdateApplicationRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
 	}
 	return ""
 }
@@ -2148,6 +2236,7 @@ type ListProxiesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
 	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,proto3" json:"page_size,omitempty"`
+	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"` // 代理名称
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2194,6 +2283,13 @@ func (x *ListProxiesRequest) GetPageSize() int32 {
 		return x.PageSize
 	}
 	return 0
+}
+
+func (x *ListProxiesRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
 }
 
 type ListProxiesResponse struct {
@@ -2935,6 +3031,9 @@ type User struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,3,opt,name=created_at,proto3" json:"created_at,omitempty"` // 注册时间
+	LastLogin     string                 `protobuf:"bytes,4,opt,name=last_login,proto3" json:"last_login,omitempty"` // 最后登录时间
+	LoginIp       string                 `protobuf:"bytes,5,opt,name=login_ip,proto3" json:"login_ip,omitempty"`     // 登录IP
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2979,6 +3078,27 @@ func (x *User) GetId() uint64 {
 func (x *User) GetEmail() string {
 	if x != nil {
 		return x.Email
+	}
+	return ""
+}
+
+func (x *User) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+func (x *User) GetLastLogin() string {
+	if x != nil {
+		return x.LastLogin
+	}
+	return ""
+}
+
+func (x *User) GetLoginIp() string {
+	if x != nil {
+		return x.LoginIp
 	}
 	return ""
 }
@@ -3337,6 +3457,112 @@ func (x *LogoutResponse) GetMessage() string {
 	return ""
 }
 
+// 修改密码请求
+type ChangePasswordRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OldPassword   string                 `protobuf:"bytes,1,opt,name=old_password,proto3" json:"old_password,omitempty"` // 旧密码
+	NewPassword   string                 `protobuf:"bytes,2,opt,name=new_password,proto3" json:"new_password,omitempty"` // 新密码
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ChangePasswordRequest) Reset() {
+	*x = ChangePasswordRequest{}
+	mi := &file_liaison_proto_msgTypes[55]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChangePasswordRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChangePasswordRequest) ProtoMessage() {}
+
+func (x *ChangePasswordRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[55]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChangePasswordRequest.ProtoReflect.Descriptor instead.
+func (*ChangePasswordRequest) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{55}
+}
+
+func (x *ChangePasswordRequest) GetOldPassword() string {
+	if x != nil {
+		return x.OldPassword
+	}
+	return ""
+}
+
+func (x *ChangePasswordRequest) GetNewPassword() string {
+	if x != nil {
+		return x.NewPassword
+	}
+	return ""
+}
+
+// 修改密码响应
+type ChangePasswordResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ChangePasswordResponse) Reset() {
+	*x = ChangePasswordResponse{}
+	mi := &file_liaison_proto_msgTypes[56]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChangePasswordResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChangePasswordResponse) ProtoMessage() {}
+
+func (x *ChangePasswordResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_liaison_proto_msgTypes[56]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChangePasswordResponse.ProtoReflect.Descriptor instead.
+func (*ChangePasswordResponse) Descriptor() ([]byte, []int) {
+	return file_liaison_proto_rawDescGZIP(), []int{56}
+}
+
+func (x *ChangePasswordResponse) GetCode() int32 {
+	if x != nil {
+		return x.Code
+	}
+	return 0
+}
+
+func (x *ChangePasswordResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 // 健康检查请求
 type HealthRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -3346,7 +3572,7 @@ type HealthRequest struct {
 
 func (x *HealthRequest) Reset() {
 	*x = HealthRequest{}
-	mi := &file_liaison_proto_msgTypes[55]
+	mi := &file_liaison_proto_msgTypes[57]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3358,7 +3584,7 @@ func (x *HealthRequest) String() string {
 func (*HealthRequest) ProtoMessage() {}
 
 func (x *HealthRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_liaison_proto_msgTypes[55]
+	mi := &file_liaison_proto_msgTypes[57]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3371,7 +3597,7 @@ func (x *HealthRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HealthRequest.ProtoReflect.Descriptor instead.
 func (*HealthRequest) Descriptor() ([]byte, []int) {
-	return file_liaison_proto_rawDescGZIP(), []int{55}
+	return file_liaison_proto_rawDescGZIP(), []int{57}
 }
 
 // 健康检查响应
@@ -3384,7 +3610,7 @@ type HealthResponse struct {
 
 func (x *HealthResponse) Reset() {
 	*x = HealthResponse{}
-	mi := &file_liaison_proto_msgTypes[56]
+	mi := &file_liaison_proto_msgTypes[58]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3396,7 +3622,7 @@ func (x *HealthResponse) String() string {
 func (*HealthResponse) ProtoMessage() {}
 
 func (x *HealthResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_liaison_proto_msgTypes[56]
+	mi := &file_liaison_proto_msgTypes[58]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3409,7 +3635,7 @@ func (x *HealthResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HealthResponse.ProtoReflect.Descriptor instead.
 func (*HealthResponse) Descriptor() ([]byte, []int) {
-	return file_liaison_proto_rawDescGZIP(), []int{56}
+	return file_liaison_proto_rawDescGZIP(), []int{58}
 }
 
 func (x *HealthResponse) GetStatus() string {
@@ -3423,18 +3649,19 @@ var File_liaison_proto protoreflect.FileDescriptor
 
 const file_liaison_proto_rawDesc = "" +
 	"\n" +
-	"\rliaison.proto\x1a\x1cgoogle/api/annotations.proto\"\xbc\x01\n" +
+	"\rliaison.proto\x1a\x1cgoogle/api/annotations.proto\"\xdd\x01\n" +
 	"\x04Edge\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x16\n" +
 	"\x06status\x18\x04 \x01(\x05R\x06status\x12\x16\n" +
-	"\x06online\x18\x05 \x01(\x05R\x06online\x12\x1e\n" +
+	"\x06online\x18\x05 \x01(\x05R\x06online\x12\x1f\n" +
+	"\x06device\x18\x06 \x01(\v2\a.DeviceR\x06device\x12\x1e\n" +
 	"\n" +
-	"created_at\x18\x06 \x01(\tR\n" +
+	"created_at\x18\a \x01(\tR\n" +
 	"created_at\x12\x1e\n" +
 	"\n" +
-	"updated_at\x18\a \x01(\tR\n" +
+	"updated_at\x18\b \x01(\tR\n" +
 	"updated_at\":\n" +
 	"\x05Edges\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x05R\x05total\x12\x1b\n" +
@@ -3460,10 +3687,12 @@ const file_liaison_proto_rawDesc = "" +
 	"\x0fGetEdgeResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x19\n" +
-	"\x04data\x18\x03 \x01(\v2\x05.EdgeR\x04data\"D\n" +
+	"\x04data\x18\x03 \x01(\v2\x05.EdgeR\x04data\"z\n" +
 	"\x10ListEdgesRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1c\n" +
-	"\tpage_size\x18\x02 \x01(\x05R\tpage_size\"]\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\tpage_size\x12 \n" +
+	"\vdevice_name\x18\x03 \x01(\tR\vdevice_name\x12\x12\n" +
+	"\x04name\x18\x04 \x01(\tR\x04name\"]\n" +
 	"\x11ListEdgesResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1a\n" +
@@ -3513,10 +3742,12 @@ const file_liaison_proto_rawDesc = "" +
 	"\x11GetDeviceResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1b\n" +
-	"\x04data\x18\x03 \x01(\v2\a.DeviceR\x04data\"F\n" +
+	"\x04data\x18\x03 \x01(\v2\a.DeviceR\x04data\"j\n" +
 	"\x12ListDevicesRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1c\n" +
-	"\tpage_size\x18\x02 \x01(\x05R\tpage_size\"a\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\tpage_size\x12\x12\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\x12\x0e\n" +
+	"\x02ip\x18\x04 \x01(\tR\x02ip\"a\n" +
 	"\x13ListDevicesResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1c\n" +
@@ -3528,26 +3759,30 @@ const file_liaison_proto_rawDesc = "" +
 	"\x14UpdateDeviceResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1b\n" +
-	"\x04data\x18\x03 \x01(\v2\a.DeviceR\x04data\"\xfc\x01\n" +
+	"\x04data\x18\x03 \x01(\v2\a.DeviceR\x04data\"\xbc\x02\n" +
 	"\vApplication\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x18\n" +
 	"\aedge_id\x18\x02 \x01(\x04R\aedge_id\x12\x1f\n" +
-	"\x06device\x18\x03 \x01(\v2\a.DeviceR\x06device\x12\x12\n" +
-	"\x04name\x18\x04 \x01(\tR\x04name\x12\x0e\n" +
-	"\x02ip\x18\x05 \x01(\tR\x02ip\x12\x12\n" +
-	"\x04port\x18\x06 \x01(\x05R\x04port\x12*\n" +
-	"\x10application_type\x18\a \x01(\tR\x10application_type\x12\x1e\n" +
+	"\x06device\x18\x03 \x01(\v2\a.DeviceR\x06device\x12\x1c\n" +
+	"\x05proxy\x18\x04 \x01(\v2\x06.ProxyR\x05proxy\x12\x12\n" +
+	"\x04name\x18\x05 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\v \x01(\tR\vdescription\x12\x0e\n" +
+	"\x02ip\x18\x06 \x01(\tR\x02ip\x12\x12\n" +
+	"\x04port\x18\a \x01(\x05R\x04port\x12*\n" +
+	"\x10application_type\x18\b \x01(\tR\x10application_type\x12\x1e\n" +
 	"\n" +
-	"created_at\x18\b \x01(\tR\n" +
+	"created_at\x18\t \x01(\tR\n" +
 	"created_at\x12\x1e\n" +
 	"\n" +
-	"updated_at\x18\t \x01(\tR\n" +
+	"updated_at\x18\n" +
+	" \x01(\tR\n" +
 	"updated_at\"V\n" +
 	"\fApplications\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x05R\x05total\x120\n" +
-	"\fapplications\x18\x02 \x03(\v2\f.ApplicationR\fapplications\"\xc9\x01\n" +
+	"\fapplications\x18\x02 \x03(\v2\f.ApplicationR\fapplications\"\xeb\x01\n" +
 	"\x18CreateApplicationRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x0e\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\a \x01(\tR\vdescription\x12\x0e\n" +
 	"\x02ip\x18\x02 \x01(\tR\x02ip\x12\x12\n" +
 	"\x04port\x18\x03 \x01(\x05R\x04port\x12*\n" +
 	"\x10application_type\x18\x04 \x01(\tR\x10application_type\x12\x18\n" +
@@ -3557,18 +3792,25 @@ const file_liaison_proto_rawDesc = "" +
 	"_device_id\"I\n" +
 	"\x19CreateApplicationResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\"i\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"\xf9\x01\n" +
 	"\x17ListApplicationsRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1c\n" +
-	"\tpage_size\x18\x02 \x01(\x05R\tpage_size\x12\x1c\n" +
-	"\tdevice_id\x18\x03 \x01(\x04R\tdevice_id\"k\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\tpage_size\x12!\n" +
+	"\tdevice_id\x18\x03 \x01(\x04H\x00R\tdevice_id\x88\x01\x01\x12%\n" +
+	"\vdevice_name\x18\x04 \x01(\tH\x01R\vdevice_name\x88\x01\x01\x12/\n" +
+	"\x10application_name\x18\x05 \x01(\tH\x02R\x10application_name\x88\x01\x01B\f\n" +
+	"\n" +
+	"_device_idB\x0e\n" +
+	"\f_device_nameB\x13\n" +
+	"\x11_application_name\"k\n" +
 	"\x18ListApplicationsResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12!\n" +
-	"\x04data\x18\x03 \x01(\v2\r.ApplicationsR\x04data\">\n" +
+	"\x04data\x18\x03 \x01(\v2\r.ApplicationsR\x04data\"`\n" +
 	"\x18UpdateApplicationRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\"k\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\"k\n" +
 	"\x19UpdateApplicationResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12 \n" +
@@ -3593,10 +3835,11 @@ const file_liaison_proto_rawDesc = "" +
 	"updated_at\"A\n" +
 	"\aProxies\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x05R\x05total\x12 \n" +
-	"\aproxies\x18\x02 \x03(\v2\x06.ProxyR\aproxies\"F\n" +
+	"\aproxies\x18\x02 \x03(\v2\x06.ProxyR\aproxies\"Z\n" +
 	"\x12ListProxiesRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1c\n" +
-	"\tpage_size\x18\x02 \x01(\x05R\tpage_size\"a\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\tpage_size\x12\x12\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\"a\n" +
 	"\x13ListProxiesResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1c\n" +
@@ -3649,10 +3892,17 @@ const file_liaison_proto_rawDesc = "" +
 	"\"GetEdgeScanApplicationTaskResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12,\n" +
-	"\x04data\x18\x03 \x01(\v2\x18.EdgeScanApplicationTaskR\x04data\",\n" +
+	"\x04data\x18\x03 \x01(\v2\x18.EdgeScanApplicationTaskR\x04data\"\x88\x01\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x14\n" +
-	"\x05email\x18\x02 \x01(\tR\x05email\"@\n" +
+	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1e\n" +
+	"\n" +
+	"created_at\x18\x03 \x01(\tR\n" +
+	"created_at\x12\x1e\n" +
+	"\n" +
+	"last_login\x18\x04 \x01(\tR\n" +
+	"last_login\x12\x1a\n" +
+	"\blogin_ip\x18\x05 \x01(\tR\blogin_ip\"@\n" +
 	"\fLoginRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\"]\n" +
@@ -3672,10 +3922,16 @@ const file_liaison_proto_rawDesc = "" +
 	"\rLogoutRequest\">\n" +
 	"\x0eLogoutResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"_\n" +
+	"\x15ChangePasswordRequest\x12\"\n" +
+	"\fold_password\x18\x01 \x01(\tR\fold_password\x12\"\n" +
+	"\fnew_password\x18\x02 \x01(\tR\fnew_password\"F\n" +
+	"\x16ChangePasswordResponse\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\"\x0f\n" +
 	"\rHealthRequest\"(\n" +
 	"\x0eHealthResponse\x12\x16\n" +
-	"\x06status\x18\x01 \x01(\tR\x06status2\xa3\x10\n" +
+	"\x06status\x18\x01 \x01(\tR\x06status2\x87\x11\n" +
 	"\x0eLiaisonService\x12O\n" +
 	"\n" +
 	"CreateEdge\x12\x12.CreateEdgeRequest\x1a\x13.CreateEdgeResponse\"\x18\x82\xd3\xe4\x93\x02\x12:\x01*\"\r/api/v1/edges\x12H\n" +
@@ -3701,7 +3957,8 @@ const file_liaison_proto_rawDesc = "" +
 	"\x05Login\x12\r.LoginRequest\x1a\x0e.LoginResponse\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/api/v1/iam/login\x12H\n" +
 	"\x06Logout\x12\x0e.LogoutRequest\x1a\x0f.LogoutResponse\"\x1d\x82\xd3\xe4\x93\x02\x17:\x01*\"\x12/api/v1/iam/logout\x12R\n" +
 	"\n" +
-	"GetProfile\x12\x12.GetProfileRequest\x1a\x13.GetProfileResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/api/v1/iam/profile\x12>\n" +
+	"GetProfile\x12\x12.GetProfileRequest\x1a\x13.GetProfileResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/api/v1/iam/profile\x12b\n" +
+	"\x0eChangePassword\x12\x16.ChangePasswordRequest\x1a\x17.ChangePasswordResponse\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\"\x14/api/v1/iam/password\x12>\n" +
 	"\x06Health\x12\x0e.HealthRequest\x1a\x0f.HealthResponse\"\x13\x82\xd3\xe4\x93\x02\r\x12\v/api/healthB'Z%github.com/singchia/liaison/api/v1;v1b\x06proto3"
 
 var (
@@ -3716,7 +3973,7 @@ func file_liaison_proto_rawDescGZIP() []byte {
 	return file_liaison_proto_rawDescData
 }
 
-var file_liaison_proto_msgTypes = make([]protoimpl.MessageInfo, 57)
+var file_liaison_proto_msgTypes = make([]protoimpl.MessageInfo, 59)
 var file_liaison_proto_goTypes = []any{
 	(*Edge)(nil),                                  // 0: Edge
 	(*Edges)(nil),                                 // 1: Edges
@@ -3773,82 +4030,88 @@ var file_liaison_proto_goTypes = []any{
 	(*GetProfileResponse)(nil),                    // 52: GetProfileResponse
 	(*LogoutRequest)(nil),                         // 53: LogoutRequest
 	(*LogoutResponse)(nil),                        // 54: LogoutResponse
-	(*HealthRequest)(nil),                         // 55: HealthRequest
-	(*HealthResponse)(nil),                        // 56: HealthResponse
+	(*ChangePasswordRequest)(nil),                 // 55: ChangePasswordRequest
+	(*ChangePasswordResponse)(nil),                // 56: ChangePasswordResponse
+	(*HealthRequest)(nil),                         // 57: HealthRequest
+	(*HealthResponse)(nil),                        // 58: HealthResponse
 }
 var file_liaison_proto_depIdxs = []int32{
-	0,  // 0: Edges.edges:type_name -> Edge
-	2,  // 1: CreateEdgeResponse.data:type_name -> AccessKey
-	0,  // 2: GetEdgeResponse.data:type_name -> Edge
-	1,  // 3: ListEdgesResponse.data:type_name -> Edges
-	0,  // 4: UpdateEdgeResponse.data:type_name -> Edge
-	14, // 5: Device.interfaces:type_name -> EthernetInterface
-	13, // 6: Devices.devices:type_name -> Device
-	13, // 7: GetDeviceResponse.data:type_name -> Device
-	15, // 8: ListDevicesResponse.data:type_name -> Devices
-	13, // 9: UpdateDeviceResponse.data:type_name -> Device
-	13, // 10: Application.device:type_name -> Device
-	22, // 11: Applications.applications:type_name -> Application
-	23, // 12: ListApplicationsResponse.data:type_name -> Applications
-	22, // 13: UpdateApplicationResponse.data:type_name -> Application
-	22, // 14: Proxy.application:type_name -> Application
-	32, // 15: Proxies.proxies:type_name -> Proxy
-	33, // 16: ListProxiesResponse.data:type_name -> Proxies
-	32, // 17: CreateProxyResponse.data:type_name -> Proxy
-	32, // 18: UpdateProxyResponse.data:type_name -> Proxy
-	42, // 19: GetEdgeScanApplicationTaskResponse.data:type_name -> EdgeScanApplicationTask
-	50, // 20: LoginResponse.data:type_name -> LoginData
-	47, // 21: LoginData.user:type_name -> User
-	47, // 22: GetProfileResponse.data:type_name -> User
-	3,  // 23: LiaisonService.CreateEdge:input_type -> CreateEdgeRequest
-	5,  // 24: LiaisonService.GetEdge:input_type -> GetEdgeRequest
-	7,  // 25: LiaisonService.ListEdges:input_type -> ListEdgesRequest
-	9,  // 26: LiaisonService.UpdateEdge:input_type -> UpdateEdgeRequest
-	11, // 27: LiaisonService.DeleteEdge:input_type -> DeleteEdgeRequest
-	18, // 28: LiaisonService.ListDevices:input_type -> ListDevicesRequest
-	20, // 29: LiaisonService.UpdateDevice:input_type -> UpdateDeviceRequest
-	16, // 30: LiaisonService.GetDevice:input_type -> GetDeviceRequest
-	24, // 31: LiaisonService.CreateApplication:input_type -> CreateApplicationRequest
-	26, // 32: LiaisonService.ListApplications:input_type -> ListApplicationsRequest
-	28, // 33: LiaisonService.UpdateApplication:input_type -> UpdateApplicationRequest
-	30, // 34: LiaisonService.DeleteApplication:input_type -> DeleteApplicationRequest
-	34, // 35: LiaisonService.ListProxies:input_type -> ListProxiesRequest
-	36, // 36: LiaisonService.CreateProxy:input_type -> CreateProxyRequest
-	38, // 37: LiaisonService.UpdateProxy:input_type -> UpdateProxyRequest
-	40, // 38: LiaisonService.DeleteProxy:input_type -> DeleteProxyRequest
-	43, // 39: LiaisonService.CreateEdgeScanApplicationTask:input_type -> CreateEdgeScanApplicationTaskRequest
-	45, // 40: LiaisonService.GetEdgeScanApplicationTask:input_type -> GetEdgeScanApplicationTaskRequest
-	48, // 41: LiaisonService.Login:input_type -> LoginRequest
-	53, // 42: LiaisonService.Logout:input_type -> LogoutRequest
-	51, // 43: LiaisonService.GetProfile:input_type -> GetProfileRequest
-	55, // 44: LiaisonService.Health:input_type -> HealthRequest
-	4,  // 45: LiaisonService.CreateEdge:output_type -> CreateEdgeResponse
-	6,  // 46: LiaisonService.GetEdge:output_type -> GetEdgeResponse
-	8,  // 47: LiaisonService.ListEdges:output_type -> ListEdgesResponse
-	10, // 48: LiaisonService.UpdateEdge:output_type -> UpdateEdgeResponse
-	12, // 49: LiaisonService.DeleteEdge:output_type -> DeleteEdgeResponse
-	19, // 50: LiaisonService.ListDevices:output_type -> ListDevicesResponse
-	21, // 51: LiaisonService.UpdateDevice:output_type -> UpdateDeviceResponse
-	17, // 52: LiaisonService.GetDevice:output_type -> GetDeviceResponse
-	25, // 53: LiaisonService.CreateApplication:output_type -> CreateApplicationResponse
-	27, // 54: LiaisonService.ListApplications:output_type -> ListApplicationsResponse
-	29, // 55: LiaisonService.UpdateApplication:output_type -> UpdateApplicationResponse
-	31, // 56: LiaisonService.DeleteApplication:output_type -> DeleteApplicationResponse
-	35, // 57: LiaisonService.ListProxies:output_type -> ListProxiesResponse
-	37, // 58: LiaisonService.CreateProxy:output_type -> CreateProxyResponse
-	39, // 59: LiaisonService.UpdateProxy:output_type -> UpdateProxyResponse
-	41, // 60: LiaisonService.DeleteProxy:output_type -> DeleteProxyResponse
-	44, // 61: LiaisonService.CreateEdgeScanApplicationTask:output_type -> CreateEdgeScanApplicationTaskResponse
-	46, // 62: LiaisonService.GetEdgeScanApplicationTask:output_type -> GetEdgeScanApplicationTaskResponse
-	49, // 63: LiaisonService.Login:output_type -> LoginResponse
-	54, // 64: LiaisonService.Logout:output_type -> LogoutResponse
-	52, // 65: LiaisonService.GetProfile:output_type -> GetProfileResponse
-	56, // 66: LiaisonService.Health:output_type -> HealthResponse
-	45, // [45:67] is the sub-list for method output_type
-	23, // [23:45] is the sub-list for method input_type
-	23, // [23:23] is the sub-list for extension type_name
-	23, // [23:23] is the sub-list for extension extendee
-	0,  // [0:23] is the sub-list for field type_name
+	13, // 0: Edge.device:type_name -> Device
+	0,  // 1: Edges.edges:type_name -> Edge
+	2,  // 2: CreateEdgeResponse.data:type_name -> AccessKey
+	0,  // 3: GetEdgeResponse.data:type_name -> Edge
+	1,  // 4: ListEdgesResponse.data:type_name -> Edges
+	0,  // 5: UpdateEdgeResponse.data:type_name -> Edge
+	14, // 6: Device.interfaces:type_name -> EthernetInterface
+	13, // 7: Devices.devices:type_name -> Device
+	13, // 8: GetDeviceResponse.data:type_name -> Device
+	15, // 9: ListDevicesResponse.data:type_name -> Devices
+	13, // 10: UpdateDeviceResponse.data:type_name -> Device
+	13, // 11: Application.device:type_name -> Device
+	32, // 12: Application.proxy:type_name -> Proxy
+	22, // 13: Applications.applications:type_name -> Application
+	23, // 14: ListApplicationsResponse.data:type_name -> Applications
+	22, // 15: UpdateApplicationResponse.data:type_name -> Application
+	22, // 16: Proxy.application:type_name -> Application
+	32, // 17: Proxies.proxies:type_name -> Proxy
+	33, // 18: ListProxiesResponse.data:type_name -> Proxies
+	32, // 19: CreateProxyResponse.data:type_name -> Proxy
+	32, // 20: UpdateProxyResponse.data:type_name -> Proxy
+	42, // 21: GetEdgeScanApplicationTaskResponse.data:type_name -> EdgeScanApplicationTask
+	50, // 22: LoginResponse.data:type_name -> LoginData
+	47, // 23: LoginData.user:type_name -> User
+	47, // 24: GetProfileResponse.data:type_name -> User
+	3,  // 25: LiaisonService.CreateEdge:input_type -> CreateEdgeRequest
+	5,  // 26: LiaisonService.GetEdge:input_type -> GetEdgeRequest
+	7,  // 27: LiaisonService.ListEdges:input_type -> ListEdgesRequest
+	9,  // 28: LiaisonService.UpdateEdge:input_type -> UpdateEdgeRequest
+	11, // 29: LiaisonService.DeleteEdge:input_type -> DeleteEdgeRequest
+	18, // 30: LiaisonService.ListDevices:input_type -> ListDevicesRequest
+	20, // 31: LiaisonService.UpdateDevice:input_type -> UpdateDeviceRequest
+	16, // 32: LiaisonService.GetDevice:input_type -> GetDeviceRequest
+	24, // 33: LiaisonService.CreateApplication:input_type -> CreateApplicationRequest
+	26, // 34: LiaisonService.ListApplications:input_type -> ListApplicationsRequest
+	28, // 35: LiaisonService.UpdateApplication:input_type -> UpdateApplicationRequest
+	30, // 36: LiaisonService.DeleteApplication:input_type -> DeleteApplicationRequest
+	34, // 37: LiaisonService.ListProxies:input_type -> ListProxiesRequest
+	36, // 38: LiaisonService.CreateProxy:input_type -> CreateProxyRequest
+	38, // 39: LiaisonService.UpdateProxy:input_type -> UpdateProxyRequest
+	40, // 40: LiaisonService.DeleteProxy:input_type -> DeleteProxyRequest
+	43, // 41: LiaisonService.CreateEdgeScanApplicationTask:input_type -> CreateEdgeScanApplicationTaskRequest
+	45, // 42: LiaisonService.GetEdgeScanApplicationTask:input_type -> GetEdgeScanApplicationTaskRequest
+	48, // 43: LiaisonService.Login:input_type -> LoginRequest
+	53, // 44: LiaisonService.Logout:input_type -> LogoutRequest
+	51, // 45: LiaisonService.GetProfile:input_type -> GetProfileRequest
+	55, // 46: LiaisonService.ChangePassword:input_type -> ChangePasswordRequest
+	57, // 47: LiaisonService.Health:input_type -> HealthRequest
+	4,  // 48: LiaisonService.CreateEdge:output_type -> CreateEdgeResponse
+	6,  // 49: LiaisonService.GetEdge:output_type -> GetEdgeResponse
+	8,  // 50: LiaisonService.ListEdges:output_type -> ListEdgesResponse
+	10, // 51: LiaisonService.UpdateEdge:output_type -> UpdateEdgeResponse
+	12, // 52: LiaisonService.DeleteEdge:output_type -> DeleteEdgeResponse
+	19, // 53: LiaisonService.ListDevices:output_type -> ListDevicesResponse
+	21, // 54: LiaisonService.UpdateDevice:output_type -> UpdateDeviceResponse
+	17, // 55: LiaisonService.GetDevice:output_type -> GetDeviceResponse
+	25, // 56: LiaisonService.CreateApplication:output_type -> CreateApplicationResponse
+	27, // 57: LiaisonService.ListApplications:output_type -> ListApplicationsResponse
+	29, // 58: LiaisonService.UpdateApplication:output_type -> UpdateApplicationResponse
+	31, // 59: LiaisonService.DeleteApplication:output_type -> DeleteApplicationResponse
+	35, // 60: LiaisonService.ListProxies:output_type -> ListProxiesResponse
+	37, // 61: LiaisonService.CreateProxy:output_type -> CreateProxyResponse
+	39, // 62: LiaisonService.UpdateProxy:output_type -> UpdateProxyResponse
+	41, // 63: LiaisonService.DeleteProxy:output_type -> DeleteProxyResponse
+	44, // 64: LiaisonService.CreateEdgeScanApplicationTask:output_type -> CreateEdgeScanApplicationTaskResponse
+	46, // 65: LiaisonService.GetEdgeScanApplicationTask:output_type -> GetEdgeScanApplicationTaskResponse
+	49, // 66: LiaisonService.Login:output_type -> LoginResponse
+	54, // 67: LiaisonService.Logout:output_type -> LogoutResponse
+	52, // 68: LiaisonService.GetProfile:output_type -> GetProfileResponse
+	56, // 69: LiaisonService.ChangePassword:output_type -> ChangePasswordResponse
+	58, // 70: LiaisonService.Health:output_type -> HealthResponse
+	48, // [48:71] is the sub-list for method output_type
+	25, // [25:48] is the sub-list for method input_type
+	25, // [25:25] is the sub-list for extension type_name
+	25, // [25:25] is the sub-list for extension extendee
+	0,  // [0:25] is the sub-list for field type_name
 }
 
 func init() { file_liaison_proto_init() }
@@ -3857,13 +4120,14 @@ func file_liaison_proto_init() {
 		return
 	}
 	file_liaison_proto_msgTypes[24].OneofWrappers = []any{}
+	file_liaison_proto_msgTypes[26].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_liaison_proto_rawDesc), len(file_liaison_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   57,
+			NumMessages:   59,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

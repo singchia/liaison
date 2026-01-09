@@ -9,13 +9,20 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {},
+        "contact": {
+            "name": "Austin Zhai",
+            "email": "singchia@163.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/v1/applications": {
+        "/api/v1/applications": {
             "get": {
                 "tags": [
                     "1.0"
@@ -23,8 +30,18 @@ const docTemplate = `{
                 "summary": "ListApplications",
                 "parameters": [
                     {
+                        "type": "string",
+                        "name": "application_name",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "name": "device_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "device_name",
                         "in": "query"
                     },
                     {
@@ -94,7 +111,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/applications/{id}": {
+        "/api/v1/applications/{id}": {
             "put": {
                 "tags": [
                     "1.0"
@@ -152,7 +169,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/devices": {
+        "/api/v1/devices": {
             "get": {
                 "tags": [
                     "1.0"
@@ -160,12 +177,26 @@ const docTemplate = `{
                 "summary": "ListDevices",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "IP搜索",
+                        "name": "ip",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "设备名",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
+                        "description": "页码",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
+                        "description": "每页数量",
                         "name": "page_size",
                         "in": "query"
                     }
@@ -180,7 +211,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/devices/{id}": {
+        "/api/v1/devices/{id}": {
             "get": {
                 "tags": [
                     "1.0"
@@ -196,6 +227,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
+                        "description": "设备ID",
                         "name": "id",
                         "in": "query"
                     }
@@ -224,16 +256,19 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "描述",
                         "name": "description",
                         "in": "query"
                     },
                     {
                         "type": "integer",
+                        "description": "设备ID",
                         "name": "id",
                         "in": "query"
                     },
                     {
                         "type": "string",
+                        "description": "名称",
                         "name": "name",
                         "in": "query"
                     }
@@ -248,13 +283,18 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/edges": {
+        "/api/v1/edges": {
             "get": {
                 "tags": [
                     "1.0"
                 ],
                 "summary": "ListEdges",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "name": "device_name",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "name": "page",
@@ -283,11 +323,13 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "描述",
                         "name": "description",
                         "in": "query"
                     },
                     {
                         "type": "string",
+                        "description": "名称",
                         "name": "name",
                         "in": "query"
                     }
@@ -302,7 +344,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/edges/{edge_id}/scan_application_tasks": {
+        "/api/v1/edges/{edge_id}/scan_application_tasks": {
             "get": {
                 "tags": [
                     "1.0"
@@ -356,7 +398,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/edges/{id}": {
+        "/api/v1/edges/{id}": {
             "get": {
                 "tags": [
                     "1.0"
@@ -453,7 +495,104 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/proxies": {
+        "/api/v1/iam/login": {
+            "post": {
+                "tags": [
+                    "IAM"
+                ],
+                "summary": "Login",
+                "parameters": [
+                    {
+                        "description": "登录请求",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.LoginResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/iam/logout": {
+            "post": {
+                "tags": [
+                    "IAM"
+                ],
+                "summary": "Logout",
+                "parameters": [
+                    {
+                        "description": "登出请求",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.LogoutRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.LogoutResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/iam/password": {
+            "post": {
+                "tags": [
+                    "IAM"
+                ],
+                "summary": "ChangePassword",
+                "parameters": [
+                    {
+                        "description": "修改密码请求",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.ChangePasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.ChangePasswordResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/iam/profile": {
+            "get": {
+                "tags": [
+                    "IAM"
+                ],
+                "summary": "GetProfile",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.GetProfileResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/proxies": {
             "get": {
                 "tags": [
                     "1.0"
@@ -517,7 +656,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/proxies/{id}": {
+        "/api/v1/proxies/{id}": {
             "put": {
                 "tags": [
                     "1.0"
@@ -596,9 +735,15 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "access_key": {
+                    "description": "连接器Access Key",
+                    "type": "string"
+                },
+                "command": {
+                    "description": "连接器安装命令: ` + "`" + `curl -LsSf https://liaison.cc/install.sh | bash` + "`" + `",
                     "type": "string"
                 },
                 "secret_key": {
+                    "description": "连接器Secret Key",
                     "type": "string"
                 }
             }
@@ -607,30 +752,51 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "application_type": {
+                    "description": "应用类型",
                     "type": "string"
                 },
                 "created_at": {
+                    "description": "创建时间",
                     "type": "string"
                 },
                 "device": {
-                    "$ref": "#/definitions/v1.Device"
+                    "description": "所属设备",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.Device"
+                        }
+                    ]
                 },
                 "edge_id": {
+                    "description": "边缘ID",
                     "type": "integer"
                 },
                 "id": {
+                    "description": "应用ID",
                     "type": "integer"
                 },
                 "ip": {
+                    "description": "内网IP地址",
                     "type": "string"
                 },
                 "name": {
+                    "description": "名称",
                     "type": "string"
                 },
                 "port": {
+                    "description": "端口",
                     "type": "integer"
                 },
+                "proxy": {
+                    "description": "关联Proxy",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.Proxy"
+                        }
+                    ]
+                },
                 "updated_at": {
+                    "description": "更新时间",
                     "type": "string"
                 }
             }
@@ -646,6 +812,30 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "v1.ChangePasswordRequest": {
+            "type": "object",
+            "properties": {
+                "new_password": {
+                    "description": "新密码",
+                    "type": "string"
+                },
+                "old_password": {
+                    "description": "旧密码",
+                    "type": "string"
+                }
+            }
+        },
+        "v1.ChangePasswordResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
                 }
             }
         },
@@ -736,33 +926,48 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "cpu": {
+                    "description": "核心数",
                     "type": "integer"
                 },
                 "created_at": {
+                    "description": "创建时间",
                     "type": "string"
                 },
                 "description": {
                     "type": "string"
                 },
                 "disk": {
+                    "description": "磁盘，MB",
                     "type": "integer"
                 },
                 "id": {
                     "type": "integer"
                 },
+                "interfaces": {
+                    "description": "网卡",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.EthernetInterface"
+                    }
+                },
                 "memory": {
+                    "description": "内存，MB",
                     "type": "integer"
                 },
                 "name": {
+                    "description": "名称",
                     "type": "string"
                 },
                 "os": {
+                    "description": "操作系统",
                     "type": "string"
                 },
                 "updated_at": {
+                    "description": "更新时间",
                     "type": "string"
                 },
                 "version": {
+                    "description": "系统版本",
                     "type": "string"
                 }
             }
@@ -771,12 +976,14 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "devices": {
+                    "description": "分页数",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/v1.Device"
                     }
                 },
                 "total": {
+                    "description": "总数",
                     "type": "integer"
                 }
             }
@@ -785,24 +992,38 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "created_at": {
+                    "description": "创建时间",
                     "type": "string"
                 },
                 "description": {
+                    "description": "描述",
                     "type": "string"
+                },
+                "device": {
+                    "description": "所在设备",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.Device"
+                        }
+                    ]
                 },
                 "id": {
                     "type": "integer"
                 },
                 "name": {
+                    "description": "名称",
                     "type": "string"
                 },
                 "online": {
+                    "description": "1. online 在线, 2. offline 离线",
                     "type": "integer"
                 },
                 "status": {
+                    "description": "1. running 运行中, 2. stopped 停止",
                     "type": "integer"
                 },
                 "updated_at": {
+                    "description": "更新时间",
                     "type": "string"
                 }
             }
@@ -840,13 +1061,35 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "edges": {
+                    "description": "连接器列表",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/v1.Edge"
                     }
                 },
                 "total": {
+                    "description": "总数",
                     "type": "integer"
+                }
+            }
+        },
+        "v1.EthernetInterface": {
+            "type": "object",
+            "properties": {
+                "ip": {
+                    "description": "网卡IP地址，带掩码",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "mac": {
+                    "description": "网卡MAC地址",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "网卡名",
+                    "type": "string"
                 }
             }
         },
@@ -854,12 +1097,19 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "code": {
+                    "description": "状态码",
                     "type": "integer"
                 },
                 "data": {
-                    "$ref": "#/definitions/v1.Device"
+                    "description": "设备",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.Device"
+                        }
+                    ]
                 },
                 "message": {
+                    "description": "消息",
                     "type": "string"
                 }
             }
@@ -892,6 +1142,20 @@ const docTemplate = `{
                 }
             }
         },
+        "v1.GetProfileResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/v1.User"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "v1.ListApplicationsResponse": {
             "type": "object",
             "properties": {
@@ -910,12 +1174,19 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "code": {
+                    "description": "状态码",
                     "type": "integer"
                 },
                 "data": {
-                    "$ref": "#/definitions/v1.Devices"
+                    "description": "设备列表",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.Devices"
+                        }
+                    ]
                 },
                 "message": {
+                    "description": "消息",
                     "type": "string"
                 }
             }
@@ -942,6 +1213,56 @@ const docTemplate = `{
                 },
                 "data": {
                     "$ref": "#/definitions/v1.Proxies"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.LoginData": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/v1.User"
+                }
+            }
+        },
+        "v1.LoginRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/v1.LoginData"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.LogoutRequest": {
+            "type": "object"
+        },
+        "v1.LogoutResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
                 },
                 "message": {
                     "type": "string"
@@ -1009,12 +1330,19 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "code": {
+                    "description": "状态码",
                     "type": "integer"
                 },
                 "data": {
-                    "$ref": "#/definitions/v1.Device"
+                    "description": "设备",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.Device"
+                        }
+                    ]
                 },
                 "message": {
+                    "description": "消息",
                     "type": "string"
                 }
             }
@@ -1046,18 +1374,41 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "v1.User": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "description": "注册时间",
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_login": {
+                    "description": "最后登录时间",
+                    "type": "string"
+                },
+                "login_ip": {
+                    "description": "登录IP",
+                    "type": "string"
+                }
+            }
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
+	Version:          "1.0",
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Title:            "Liaison Swagger API",
+	Description:      "Liaison Swagger API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

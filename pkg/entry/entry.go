@@ -62,6 +62,10 @@ func (e *Entry) pullProxyConfigs() error {
 
 	for _, proxy := range rsp.Data.GetProxies() {
 		application := proxy.Application
+		if application == nil {
+			log.Warnf("proxy %d (name: %s) has no associated application, skipping", proxy.Id, proxy.Name)
+			continue
+		}
 		dst := fmt.Sprintf("%s:%d", application.Ip, application.Port)
 		e.gatekeeper.CreateProxy(context.Background(), &proto.Proxy{
 			ID:        int(proxy.Id),

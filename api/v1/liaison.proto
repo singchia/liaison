@@ -11,8 +11,9 @@ message Edge {
     string description = 3 [json_name = "description"]; // 描述
     int32 status = 4 [json_name = "status"]; // 1. running 运行中, 2. stopped 停止
     int32 online = 5 [json_name = "online"]; // 1. online 在线, 2. offline 离线
-    string created_at = 6 [json_name = "created_at"]; // 创建时间
-    string updated_at = 7 [json_name = "updated_at"]; // 更新时间
+    Device device = 6 [json_name = "device"]; // 所在设备
+    string created_at = 7 [json_name = "created_at"]; // 创建时间
+    string updated_at = 8 [json_name = "updated_at"]; // 更新时间
 }
 
 message Edges {
@@ -54,6 +55,8 @@ message GetEdgeResponse {
 message ListEdgesRequest {
     int32 page = 1 [json_name = "page"];
     int32 page_size = 2 [json_name = "page_size"];
+    string device_name = 3 [json_name = "device_name"];
+    string name = 4 [json_name = "name"];  // 连接器名称
 }
 
 message ListEdgesResponse {
@@ -127,6 +130,8 @@ message GetDeviceResponse {
 message ListDevicesRequest {
     int32 page = 1 [json_name = "page"]; // 页码
     int32 page_size = 2 [json_name = "page_size"]; // 每页数量
+    string name = 3 [json_name = "name"]; // 设备名
+    string ip = 4 [json_name = "ip"]; // IP搜索
 }
 
 message ListDevicesResponse {
@@ -153,12 +158,14 @@ message Application {
     uint64 id = 1 [json_name = "id"]; // 应用ID
     uint64 edge_id = 2 [json_name = "edge_id"]; // 边缘ID
     Device device = 3 [json_name = "device"]; // 所属设备
-    string name = 4 [json_name = "name"]; // 名称
-    string ip = 5 [json_name = "ip"]; // 内网IP地址
-    int32 port = 6 [json_name = "port"]; // 端口
-    string application_type = 7 [json_name = "application_type"]; // 应用类型
-    string created_at = 8 [json_name = "created_at"]; // 创建时间
-    string updated_at = 9 [json_name = "updated_at"]; // 更新时间
+    Proxy proxy = 4 [json_name = "proxy"]; // 关联Proxy
+    string name = 5 [json_name = "name"]; // 名称
+    string description = 11 [json_name = "description"]; // 描述
+    string ip = 6 [json_name = "ip"]; // 内网IP地址
+    int32 port = 7 [json_name = "port"]; // 端口
+    string application_type = 8 [json_name = "application_type"]; // 应用类型
+    string created_at = 9 [json_name = "created_at"]; // 创建时间
+    string updated_at = 10 [json_name = "updated_at"]; // 更新时间
 }
 
 message Applications {
@@ -169,6 +176,7 @@ message Applications {
 // 添加应用请求
 message CreateApplicationRequest {
     string name = 1 [json_name = "name"];
+    string description = 7 [json_name = "description"]; // 描述
     string ip = 2 [json_name = "ip"];
     int32 port = 3 [json_name = "port"];
     string application_type = 4 [json_name = "application_type"];
@@ -185,7 +193,9 @@ message CreateApplicationResponse {
 message ListApplicationsRequest {
     int32 page = 1 [json_name = "page"];
     int32 page_size = 2 [json_name = "page_size"];
-    uint64 device_id = 3 [json_name = "device_id"];
+    optional uint64 device_id = 3 [json_name = "device_id"];
+    optional string device_name = 4 [json_name = "device_name"];
+    optional string application_name = 5 [json_name = "application_name"];
 }
 
 message ListApplicationsResponse {
@@ -198,6 +208,7 @@ message ListApplicationsResponse {
 message UpdateApplicationRequest {
     uint64 id = 1 [json_name = "id"];
     string name = 2 [json_name = "name"];
+    string description = 3 [json_name = "description"]; // 描述
 }
 
 message UpdateApplicationResponse {
@@ -236,6 +247,7 @@ message Proxies {
 message ListProxiesRequest {
     int32 page = 1 [json_name = "page"];
     int32 page_size = 2 [json_name = "page_size"];
+    string name = 3 [json_name = "name"];  // 代理名称
 }
 
 message ListProxiesResponse {
@@ -444,6 +456,12 @@ service LiaisonService {
             get: "/api/v1/iam/profile"
         };
     };
+    rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/iam/password"
+            body: "*"
+        };
+    };
 
     // 健康检查
     rpc Health(HealthRequest) returns (HealthResponse) {
@@ -457,6 +475,9 @@ service LiaisonService {
 message User {
     uint64 id = 1 [json_name = "id"];
     string email = 2 [json_name = "email"];
+    string created_at = 3 [json_name = "created_at"]; // 注册时间
+    string last_login = 4 [json_name = "last_login"]; // 最后登录时间
+    string login_ip = 5 [json_name = "login_ip"]; // 登录IP
 }
 
 // 登录请求
@@ -495,6 +516,18 @@ message LogoutRequest {
 
 // 登出响应
 message LogoutResponse {
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
+}
+
+// 修改密码请求
+message ChangePasswordRequest {
+    string old_password = 1 [json_name = "old_password"]; // 旧密码
+    string new_password = 2 [json_name = "new_password"]; // 新密码
+}
+
+// 修改密码响应
+message ChangePasswordResponse {
     int32 code = 1 [json_name = "code"];
     string message = 2 [json_name = "message"];
 }

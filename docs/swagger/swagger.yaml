@@ -2,29 +2,48 @@ definitions:
   v1.AccessKey:
     properties:
       access_key:
+        description: 连接器Access Key
+        type: string
+      command:
+        description: '连接器安装命令: `curl -LsSf https://liaison.cc/install.sh | bash`'
         type: string
       secret_key:
+        description: 连接器Secret Key
         type: string
     type: object
   v1.Application:
     properties:
       application_type:
+        description: 应用类型
         type: string
       created_at:
+        description: 创建时间
         type: string
       device:
-        $ref: '#/definitions/v1.Device'
+        allOf:
+        - $ref: '#/definitions/v1.Device'
+        description: 所属设备
       edge_id:
+        description: 边缘ID
         type: integer
       id:
+        description: 应用ID
         type: integer
       ip:
+        description: 内网IP地址
         type: string
       name:
+        description: 名称
         type: string
       port:
+        description: 端口
         type: integer
+      proxy:
+        allOf:
+        - $ref: '#/definitions/v1.Proxy'
+        description: 关联Proxy
       updated_at:
+        description: 更新时间
         type: string
     type: object
   v1.Applications:
@@ -35,6 +54,22 @@ definitions:
         type: array
       total:
         type: integer
+    type: object
+  v1.ChangePasswordRequest:
+    properties:
+      new_password:
+        description: 新密码
+        type: string
+      old_password:
+        description: 旧密码
+        type: string
+    type: object
+  v1.ChangePasswordResponse:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
     type: object
   v1.CreateApplicationResponse:
     properties:
@@ -92,50 +127,75 @@ definitions:
   v1.Device:
     properties:
       cpu:
+        description: 核心数
         type: integer
       created_at:
+        description: 创建时间
         type: string
       description:
         type: string
       disk:
+        description: 磁盘，MB
         type: integer
       id:
         type: integer
+      interfaces:
+        description: 网卡
+        items:
+          $ref: '#/definitions/v1.EthernetInterface'
+        type: array
       memory:
+        description: 内存，MB
         type: integer
       name:
+        description: 名称
         type: string
       os:
+        description: 操作系统
         type: string
       updated_at:
+        description: 更新时间
         type: string
       version:
+        description: 系统版本
         type: string
     type: object
   v1.Devices:
     properties:
       devices:
+        description: 分页数
         items:
           $ref: '#/definitions/v1.Device'
         type: array
       total:
+        description: 总数
         type: integer
     type: object
   v1.Edge:
     properties:
       created_at:
+        description: 创建时间
         type: string
       description:
+        description: 描述
         type: string
+      device:
+        allOf:
+        - $ref: '#/definitions/v1.Device'
+        description: 所在设备
       id:
         type: integer
       name:
+        description: 名称
         type: string
       online:
+        description: 1. online 在线, 2. offline 离线
         type: integer
       status:
+        description: 1. running 运行中, 2. stopped 停止
         type: integer
       updated_at:
+        description: 更新时间
         type: string
     type: object
   v1.EdgeScanApplicationTask:
@@ -160,19 +220,39 @@ definitions:
   v1.Edges:
     properties:
       edges:
+        description: 连接器列表
         items:
           $ref: '#/definitions/v1.Edge'
         type: array
       total:
+        description: 总数
         type: integer
+    type: object
+  v1.EthernetInterface:
+    properties:
+      ip:
+        description: 网卡IP地址，带掩码
+        items:
+          type: string
+        type: array
+      mac:
+        description: 网卡MAC地址
+        type: string
+      name:
+        description: 网卡名
+        type: string
     type: object
   v1.GetDeviceResponse:
     properties:
       code:
+        description: 状态码
         type: integer
       data:
-        $ref: '#/definitions/v1.Device'
+        allOf:
+        - $ref: '#/definitions/v1.Device'
+        description: 设备
       message:
+        description: 消息
         type: string
     type: object
   v1.GetEdgeResponse:
@@ -193,6 +273,15 @@ definitions:
       message:
         type: string
     type: object
+  v1.GetProfileResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/v1.User'
+      message:
+        type: string
+    type: object
   v1.ListApplicationsResponse:
     properties:
       code:
@@ -205,10 +294,14 @@ definitions:
   v1.ListDevicesResponse:
     properties:
       code:
+        description: 状态码
         type: integer
       data:
-        $ref: '#/definitions/v1.Devices'
+        allOf:
+        - $ref: '#/definitions/v1.Devices'
+        description: 设备列表
       message:
+        description: 消息
         type: string
     type: object
   v1.ListEdgesResponse:
@@ -226,6 +319,38 @@ definitions:
         type: integer
       data:
         $ref: '#/definitions/v1.Proxies'
+      message:
+        type: string
+    type: object
+  v1.LoginData:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/v1.User'
+    type: object
+  v1.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  v1.LoginResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/v1.LoginData'
+      message:
+        type: string
+    type: object
+  v1.LogoutRequest:
+    type: object
+  v1.LogoutResponse:
+    properties:
+      code:
+        type: integer
       message:
         type: string
     type: object
@@ -269,10 +394,14 @@ definitions:
   v1.UpdateDeviceResponse:
     properties:
       code:
+        description: 状态码
         type: integer
       data:
-        $ref: '#/definitions/v1.Device'
+        allOf:
+        - $ref: '#/definitions/v1.Device'
+        description: 设备
       message:
+        description: 消息
         type: string
     type: object
   v1.UpdateEdgeResponse:
@@ -293,15 +422,45 @@ definitions:
       message:
         type: string
     type: object
+  v1.User:
+    properties:
+      created_at:
+        description: 注册时间
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      last_login:
+        description: 最后登录时间
+        type: string
+      login_ip:
+        description: 登录IP
+        type: string
+    type: object
 info:
-  contact: {}
+  contact:
+    email: singchia@163.com
+    name: Austin Zhai
+  description: Liaison Swagger API
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Liaison Swagger API
+  version: "1.0"
 paths:
-  /v1/applications:
+  /api/v1/applications:
     get:
       parameters:
       - in: query
+        name: application_name
+        type: string
+      - in: query
         name: device_id
         type: integer
+      - in: query
+        name: device_name
+        type: string
       - in: query
         name: page
         type: integer
@@ -344,7 +503,7 @@ paths:
       summary: CreateApplication
       tags:
       - "1.0"
-  /v1/applications/{id}:
+  /api/v1/applications/{id}:
     delete:
       parameters:
       - description: application id
@@ -381,13 +540,23 @@ paths:
       summary: UpdateApplication
       tags:
       - "1.0"
-  /v1/devices:
+  /api/v1/devices:
     get:
       parameters:
-      - in: query
+      - description: IP搜索
+        in: query
+        name: ip
+        type: string
+      - description: 设备名
+        in: query
+        name: name
+        type: string
+      - description: 页码
+        in: query
         name: page
         type: integer
-      - in: query
+      - description: 每页数量
+        in: query
         name: page_size
         type: integer
       responses:
@@ -398,7 +567,7 @@ paths:
       summary: ListDevices
       tags:
       - "1.0"
-  /v1/devices/{id}:
+  /api/v1/devices/{id}:
     get:
       parameters:
       - description: device id
@@ -406,7 +575,8 @@ paths:
         name: id
         required: true
         type: integer
-      - in: query
+      - description: 设备ID
+        in: query
         name: id
         type: integer
       responses:
@@ -424,13 +594,16 @@ paths:
         name: id
         required: true
         type: integer
-      - in: query
+      - description: 描述
+        in: query
         name: description
         type: string
-      - in: query
+      - description: 设备ID
+        in: query
         name: id
         type: integer
-      - in: query
+      - description: 名称
+        in: query
         name: name
         type: string
       responses:
@@ -441,9 +614,12 @@ paths:
       summary: UpdateDevice
       tags:
       - "1.0"
-  /v1/edges:
+  /api/v1/edges:
     get:
       parameters:
+      - in: query
+        name: device_name
+        type: string
       - in: query
         name: page
         type: integer
@@ -460,10 +636,12 @@ paths:
       - "1.0"
     post:
       parameters:
-      - in: query
+      - description: 描述
+        in: query
         name: description
         type: string
-      - in: query
+      - description: 名称
+        in: query
         name: name
         type: string
       responses:
@@ -474,7 +652,7 @@ paths:
       summary: CreateEdge
       tags:
       - "1.0"
-  /v1/edges/{edge_id}/scan_application_tasks:
+  /api/v1/edges/{edge_id}/scan_application_tasks:
     get:
       parameters:
       - in: query
@@ -507,7 +685,7 @@ paths:
       summary: CreateEdgeScanApplicationTask
       tags:
       - "1.0"
-  /v1/edges/{id}:
+  /api/v1/edges/{id}:
     delete:
       parameters:
       - description: edge id
@@ -569,7 +747,68 @@ paths:
       summary: UpdateEdge
       tags:
       - "1.0"
-  /v1/proxies:
+  /api/v1/iam/login:
+    post:
+      parameters:
+      - description: 登录请求
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/v1.LoginRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.LoginResponse'
+      summary: Login
+      tags:
+      - IAM
+  /api/v1/iam/logout:
+    post:
+      parameters:
+      - description: 登出请求
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/v1.LogoutRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.LogoutResponse'
+      summary: Logout
+      tags:
+      - IAM
+  /api/v1/iam/password:
+    post:
+      parameters:
+      - description: 修改密码请求
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/v1.ChangePasswordRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.ChangePasswordResponse'
+      summary: ChangePassword
+      tags:
+      - IAM
+  /api/v1/iam/profile:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.GetProfileResponse'
+      summary: GetProfile
+      tags:
+      - IAM
+  /api/v1/proxies:
     get:
       parameters:
       - in: query
@@ -608,7 +847,7 @@ paths:
       summary: CreateProxy
       tags:
       - "1.0"
-  /v1/proxies/{id}:
+  /api/v1/proxies/{id}:
     delete:
       parameters:
       - description: proxy id

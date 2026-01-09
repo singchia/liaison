@@ -18,6 +18,7 @@ func (cp *controlPlane) CreateApplication(_ context.Context, req *v1.CreateAppli
 	// 注意如果edge id不在线，应用可能无法访问
 	application := &model.Application{
 		Name:            req.Name,
+		Description:     req.Description,
 		IP:              req.Ip,
 		Port:            int(req.Port),
 		ApplicationType: model.ApplicationType(req.ApplicationType),
@@ -35,18 +36,132 @@ func (cp *controlPlane) CreateApplication(_ context.Context, req *v1.CreateAppli
 }
 
 func (cp *controlPlane) ListApplications(_ context.Context, req *v1.ListApplicationsRequest) (*v1.ListApplicationsResponse, error) {
+	var (
+		deviceIDs       []uint
+		devices         []*model.Device
+		preDeviceSearch bool
+		err             error
+	)
+	// 如果提供了设备名，先通过设备名查找设备ID和设备信息
+	if req.DeviceName != nil && *req.DeviceName != "" {
+		devices, err = cp.repo.ListDevices(&dao.ListDevicesQuery{
+			Query: dao.Query{
+				Order: "id",
+				Desc:  true,
+			},
+			Name: *req.DeviceName,
+		})
+		if err != nil {
+			return nil, err
+		}
+		if len(devices) > 0 {
+			deviceIDs = make([]uint, len(devices))
+			for i, device := range devices {
+				deviceIDs[i] = device.ID
+			}
+			preDeviceSearch = true
+			// 获取设备的网卡信息
+			for _, device := range devices {
+				interfaces, err := cp.repo.GetEthernetInterfacesByDeviceID(uint(device.ID))
+				if err != nil {
+					return nil, err
+				}
+				device.Interfaces = interfaces
+			}
+		} else {
+			// 如果找不到设备，返回空列表
+			return &v1.ListApplicationsResponse{
+				Code:    200,
+				Message: "success",
+				Data: &v1.Applications{
+					Total:        0,
+					Applications: []*v1.Application{},
+				},
+			}, nil
+		}
+	} else if req.DeviceId != nil && *req.DeviceId > 0 {
+		deviceIDs = []uint{uint(*req.DeviceId)}
+	}
+
 	applications, err := cp.repo.ListApplications(&dao.ListApplicationsQuery{
 		Query: dao.Query{
 			Page:     int(req.Page),
 			PageSize: int(req.PageSize),
+			Order:    "id",
+			Desc:     true,
 		},
-		DeviceID: uint(req.DeviceId),
+		DeviceIDs: deviceIDs,
 	})
 	if err != nil {
 		return nil, err
 	}
+
+	// 如果没有提前搜索设备，则批量获取设备信息
+	if !preDeviceSearch {
+		deviceIDs := []uint{}
+		deviceIDSet := make(map[uint]bool)
+		for _, app := range applications {
+			if app.DeviceID > 0 && !deviceIDSet[app.DeviceID] {
+				deviceIDs = append(deviceIDs, app.DeviceID)
+				deviceIDSet[app.DeviceID] = true
+			}
+		}
+		if len(deviceIDs) > 0 {
+			devices, err = cp.repo.ListDevices(&dao.ListDevicesQuery{
+				Query: dao.Query{
+					Order: "id",
+					Desc:  true,
+				},
+				IDs: deviceIDs,
+			})
+			if err != nil {
+				return nil, err
+			}
+			// 获取设备的网卡信息
+			for _, device := range devices {
+				interfaces, err := cp.repo.GetEthernetInterfacesByDeviceID(uint(device.ID))
+				if err != nil {
+					return nil, err
+				}
+				device.Interfaces = interfaces
+			}
+		}
+	}
+
+	// 批量获取Proxy信息
+	applicationIDs := make([]uint, len(applications))
+	for i, app := range applications {
+		applicationIDs[i] = app.ID
+	}
+	proxies, err := cp.repo.ListProxies(&dao.ListProxiesQuery{
+		ApplicationIDs: applicationIDs,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// 创建设备和Proxy映射，并关联到Application
+	deviceMap := make(map[uint]*model.Device)
+	for _, device := range devices {
+		deviceMap[device.ID] = device
+	}
+	proxyMap := make(map[uint]*model.Proxy)
+	for _, proxy := range proxies {
+		proxyMap[proxy.ApplicationID] = proxy
+	}
+
+	// 将Device和Proxy关联到Application
+	for _, app := range applications {
+		if device, ok := deviceMap[app.DeviceID]; ok {
+			app.Device = device
+		}
+		if proxy, ok := proxyMap[app.ID]; ok {
+			app.Proxy = proxy
+		}
+	}
+
 	count, err := cp.repo.CountApplications(&dao.ListApplicationsQuery{
-		DeviceID: uint(req.DeviceId),
+		DeviceIDs: deviceIDs,
 	})
 	if err != nil {
 		return nil, err
@@ -66,20 +181,25 @@ func (cp *controlPlane) UpdateApplication(_ context.Context, req *v1.UpdateAppli
 	if err != nil {
 		return nil, err
 	}
-	application.Name = req.Name
+	if req.Name != "" {
+		application.Name = req.Name
+	}
+	if req.Description != "" {
+		application.Description = req.Description
+	}
 	err = cp.repo.UpdateApplication(application)
+	if err != nil {
+		return nil, err
+	}
+	// 重新获取更新后的 application 以返回完整数据
+	updatedApplication, err := cp.repo.GetApplicationByID(uint(req.Id))
 	if err != nil {
 		return nil, err
 	}
 	return &v1.UpdateApplicationResponse{
 		Code:    200,
 		Message: "success",
-		Data: &v1.Application{
-			Id:        uint64(application.ID),
-			Name:      application.Name,
-			CreatedAt: application.CreatedAt.Format(time.DateTime),
-			UpdatedAt: application.UpdatedAt.Format(time.DateTime),
-		},
+		Data:    transformApplication(updatedApplication),
 	}, nil
 }
 
@@ -109,14 +229,46 @@ func transformApplication(application *model.Application) *v1.Application {
 		edgeId = uint64(application.EdgeIDs[0])
 	}
 
-	return &v1.Application{
+	appV1 := &v1.Application{
 		Id:              uint64(application.ID),
 		EdgeId:          edgeId,
 		Name:            application.Name,
+		Description:     application.Description,
 		Ip:              application.IP,
 		Port:            int32(application.Port),
 		ApplicationType: string(application.ApplicationType),
 		CreatedAt:       application.CreatedAt.Format(time.DateTime),
 		UpdatedAt:       application.UpdatedAt.Format(time.DateTime),
 	}
+
+	// 填充设备信息
+	if application.Device != nil {
+		appV1.Device = transformDevice(application.Device)
+	}
+
+	// 填充Proxy信息（简化版，不包含Application以避免循环依赖）
+	if application.Proxy != nil {
+		// 将 ProxyStatus 转换为字符串
+		var status string
+		switch application.Proxy.Status {
+		case model.ProxyStatusRunning:
+			status = "running"
+		case model.ProxyStatusStopped:
+			status = "stopped"
+		default:
+			status = "unknown"
+		}
+		appV1.Proxy = &v1.Proxy{
+			Id:          uint64(application.Proxy.ID),
+			Name:        application.Proxy.Name,
+			Port:        int32(application.Proxy.Port),
+			Status:      status,
+			Description: application.Proxy.Description,
+			CreatedAt:   application.Proxy.CreatedAt.Format(time.DateTime),
+			UpdatedAt:   application.Proxy.UpdatedAt.Format(time.DateTime),
+			// Application字段留空，避免循环依赖
+		}
+	}
+
+	return appV1
 }

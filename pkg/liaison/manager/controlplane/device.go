@@ -14,7 +14,11 @@ func (cp *controlPlane) ListDevices(_ context.Context, req *v1.ListDevicesReques
 		Query: dao.Query{
 			Page:     int(req.Page),
 			PageSize: int(req.PageSize),
+			Order:    "id",
+			Desc:     true,
 		},
+		Name: req.Name,
+		IP:   req.Ip,
 	}
 	devices, err := cp.repo.ListDevices(&query)
 	if err != nil {

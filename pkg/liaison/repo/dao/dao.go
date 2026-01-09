@@ -23,8 +23,8 @@ type Dao interface {
 	GetEdgeByAccessKey(accessKey string) (*model.AccessKey, *model.Edge, error)
 	CreateEdge(edge *model.Edge) error
 	GetEdgeByDeviceID(deviceID uint) (*model.Edge, error)
-	ListEdges(page, pageSize int) ([]*model.Edge, error)
-	CountEdges() (int64, error)
+	ListEdges(query *ListEdgesQuery) ([]*model.Edge, error)
+	CountEdges(query *ListEdgesQuery) (int64, error)
 	UpdateEdge(edge *model.Edge) error
 	UpdateEdgeOnlineStatus(edgeID uint64, onlineStatus model.EdgeOnlineStatus) error
 	UpdateEdgeHeartbeatAt(edgeID uint64, heartbeatAt time.Time) error
@@ -61,7 +61,7 @@ type Dao interface {
 	CreateProxy(proxy *model.Proxy) error
 	GetProxyByID(id uint) (*model.Proxy, error)
 	ListProxies(query *ListProxiesQuery) ([]*model.Proxy, error)
-	CountProxies() (int64, error)
+	CountProxies(query *ListProxiesQuery) (int64, error)
 	UpdateProxy(proxy *model.Proxy) error
 	DeleteProxy(id uint) error
 
@@ -80,6 +80,7 @@ type Dao interface {
 	GetUserByEmail(email string) (*model.User, error)
 	UpdateUser(user *model.User) error
 	UpdateUserLastLogin(userID uint) error
+	UpdateUserLastLoginAndIP(userID uint, loginIP string) error
 	ListUsers(offset, limit int) ([]*model.User, int64, error)
 	DeleteUser(id uint) error
 	CheckUserExists(email string) (bool, error)
@@ -235,6 +236,14 @@ func (d *dao) UpdateUser(user *model.User) error {
 func (d *dao) UpdateUserLastLogin(userID uint) error {
 	now := time.Now()
 	return d.getDB().Model(&model.User{}).Where("id = ?", userID).Update("last_login", now).Error
+}
+
+func (d *dao) UpdateUserLastLoginAndIP(userID uint, loginIP string) error {
+	now := time.Now()
+	return d.getDB().Model(&model.User{}).Where("id = ?", userID).Updates(map[string]interface{}{
+		"last_login": now,
+		"login_ip":   loginIP,
+	}).Error
 }
 
 func (d *dao) ListUsers(offset, limit int) ([]*model.User, int64, error) {
