@@ -18,6 +18,7 @@ func (cp *controlPlane) CreateApplication(_ context.Context, req *v1.CreateAppli
 	// 注意如果edge id不在线，应用可能无法访问
 	application := &model.Application{
 		Name:            req.Name,
+		Description:     req.Description,
 		IP:              req.Ip,
 		Port:            int(req.Port),
 		ApplicationType: model.ApplicationType(req.ApplicationType),
@@ -180,20 +181,25 @@ func (cp *controlPlane) UpdateApplication(_ context.Context, req *v1.UpdateAppli
 	if err != nil {
 		return nil, err
 	}
-	application.Name = req.Name
+	if req.Name != "" {
+		application.Name = req.Name
+	}
+	if req.Description != "" {
+		application.Description = req.Description
+	}
 	err = cp.repo.UpdateApplication(application)
+	if err != nil {
+		return nil, err
+	}
+	// 重新获取更新后的 application 以返回完整数据
+	updatedApplication, err := cp.repo.GetApplicationByID(uint(req.Id))
 	if err != nil {
 		return nil, err
 	}
 	return &v1.UpdateApplicationResponse{
 		Code:    200,
 		Message: "success",
-		Data: &v1.Application{
-			Id:        uint64(application.ID),
-			Name:      application.Name,
-			CreatedAt: application.CreatedAt.Format(time.DateTime),
-			UpdatedAt: application.UpdatedAt.Format(time.DateTime),
-		},
+		Data:    transformApplication(updatedApplication),
 	}, nil
 }
 
@@ -227,6 +233,7 @@ func transformApplication(application *model.Application) *v1.Application {
 		Id:              uint64(application.ID),
 		EdgeId:          edgeId,
 		Name:            application.Name,
+		Description:     application.Description,
 		Ip:              application.IP,
 		Port:            int32(application.Port),
 		ApplicationType: string(application.ApplicationType),

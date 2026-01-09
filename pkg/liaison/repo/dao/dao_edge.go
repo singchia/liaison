@@ -44,6 +44,9 @@ func (d *dao) CountEdges(query *ListEdgesQuery) (int64, error) {
 	if len(query.DeviceIDs) > 0 {
 		db = db.Where("device_id IN ?", query.DeviceIDs)
 	}
+	if query.Name != "" {
+		db = db.Where("name LIKE ?", "%"+query.Name+"%")
+	}
 	if err := db.Model(&model.Edge{}).Count(&count).Error; err != nil {
 		return 0, err
 	}
@@ -57,6 +60,9 @@ func (d *dao) ListEdges(query *ListEdgesQuery) ([]*model.Edge, error) {
 	}
 	if len(query.DeviceIDs) > 0 {
 		db = db.Where("device_id IN ?", query.DeviceIDs)
+	}
+	if query.Name != "" {
+		db = db.Where("name LIKE ?", "%"+query.Name+"%")
 	}
 	// 应用排序
 	if query.Order != "" {

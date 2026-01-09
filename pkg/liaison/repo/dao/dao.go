@@ -61,7 +61,7 @@ type Dao interface {
 	CreateProxy(proxy *model.Proxy) error
 	GetProxyByID(id uint) (*model.Proxy, error)
 	ListProxies(query *ListProxiesQuery) ([]*model.Proxy, error)
-	CountProxies() (int64, error)
+	CountProxies(query *ListProxiesQuery) (int64, error)
 	UpdateProxy(proxy *model.Proxy) error
 	DeleteProxy(id uint) error
 

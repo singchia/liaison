@@ -37,9 +37,11 @@ type ListProxiesQuery struct {
 	Query
 	IDs            []uint
 	ApplicationIDs []uint
+	Name           string
 }
 
 type ListEdgesQuery struct {
 	Query
 	DeviceIDs []uint
+	Name      string
 }

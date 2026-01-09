@@ -460,6 +460,7 @@ type ListEdgesRequest struct {
 	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
 	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,proto3" json:"page_size,omitempty"`
 	DeviceName    string                 `protobuf:"bytes,3,opt,name=device_name,proto3" json:"device_name,omitempty"`
+	Name          string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"` // 连接器名称
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -511,6 +512,13 @@ func (x *ListEdgesRequest) GetPageSize() int32 {
 func (x *ListEdgesRequest) GetDeviceName() string {
 	if x != nil {
 		return x.DeviceName
+	}
+	return ""
+}
+
+func (x *ListEdgesRequest) GetName() string {
+	if x != nil {
+		return x.Name
 	}
 	return ""
 }
@@ -1401,6 +1409,7 @@ type Application struct {
 	Device          *Device                `protobuf:"bytes,3,opt,name=device,proto3" json:"device,omitempty"`                     // 所属设备
 	Proxy           *Proxy                 `protobuf:"bytes,4,opt,name=proxy,proto3" json:"proxy,omitempty"`                       // 关联Proxy
 	Name            string                 `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`                         // 名称
+	Description     string                 `protobuf:"bytes,11,opt,name=description,proto3" json:"description,omitempty"`          // 描述
 	Ip              string                 `protobuf:"bytes,6,opt,name=ip,proto3" json:"ip,omitempty"`                             // 内网IP地址
 	Port            int32                  `protobuf:"varint,7,opt,name=port,proto3" json:"port,omitempty"`                        // 端口
 	ApplicationType string                 `protobuf:"bytes,8,opt,name=application_type,proto3" json:"application_type,omitempty"` // 应用类型
@@ -1471,6 +1480,13 @@ func (x *Application) GetProxy() *Proxy {
 func (x *Application) GetName() string {
 	if x != nil {
 		return x.Name
+	}
+	return ""
+}
+
+func (x *Application) GetDescription() string {
+	if x != nil {
+		return x.Description
 	}
 	return ""
 }
@@ -1566,6 +1582,7 @@ func (x *Applications) GetApplications() []*Application {
 type CreateApplicationRequest struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Name            string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Description     string                 `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"` // 描述
 	Ip              string                 `protobuf:"bytes,2,opt,name=ip,proto3" json:"ip,omitempty"`
 	Port            int32                  `protobuf:"varint,3,opt,name=port,proto3" json:"port,omitempty"`
 	ApplicationType string                 `protobuf:"bytes,4,opt,name=application_type,proto3" json:"application_type,omitempty"`
@@ -1608,6 +1625,13 @@ func (*CreateApplicationRequest) Descriptor() ([]byte, []int) {
 func (x *CreateApplicationRequest) GetName() string {
 	if x != nil {
 		return x.Name
+	}
+	return ""
+}
+
+func (x *CreateApplicationRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
 	}
 	return ""
 }
@@ -1841,6 +1865,7 @@ type UpdateApplicationRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"` // 描述
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1885,6 +1910,13 @@ func (x *UpdateApplicationRequest) GetId() uint64 {
 func (x *UpdateApplicationRequest) GetName() string {
 	if x != nil {
 		return x.Name
+	}
+	return ""
+}
+
+func (x *UpdateApplicationRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
 	}
 	return ""
 }
@@ -2204,6 +2236,7 @@ type ListProxiesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
 	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,proto3" json:"page_size,omitempty"`
+	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"` // 代理名称
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2250,6 +2283,13 @@ func (x *ListProxiesRequest) GetPageSize() int32 {
 		return x.PageSize
 	}
 	return 0
+}
+
+func (x *ListProxiesRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
 }
 
 type ListProxiesResponse struct {
@@ -3647,11 +3687,12 @@ const file_liaison_proto_rawDesc = "" +
 	"\x0fGetEdgeResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x19\n" +
-	"\x04data\x18\x03 \x01(\v2\x05.EdgeR\x04data\"f\n" +
+	"\x04data\x18\x03 \x01(\v2\x05.EdgeR\x04data\"z\n" +
 	"\x10ListEdgesRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1c\n" +
 	"\tpage_size\x18\x02 \x01(\x05R\tpage_size\x12 \n" +
-	"\vdevice_name\x18\x03 \x01(\tR\vdevice_name\"]\n" +
+	"\vdevice_name\x18\x03 \x01(\tR\vdevice_name\x12\x12\n" +
+	"\x04name\x18\x04 \x01(\tR\x04name\"]\n" +
 	"\x11ListEdgesResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1a\n" +
@@ -3718,13 +3759,14 @@ const file_liaison_proto_rawDesc = "" +
 	"\x14UpdateDeviceResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1b\n" +
-	"\x04data\x18\x03 \x01(\v2\a.DeviceR\x04data\"\x9a\x02\n" +
+	"\x04data\x18\x03 \x01(\v2\a.DeviceR\x04data\"\xbc\x02\n" +
 	"\vApplication\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x18\n" +
 	"\aedge_id\x18\x02 \x01(\x04R\aedge_id\x12\x1f\n" +
 	"\x06device\x18\x03 \x01(\v2\a.DeviceR\x06device\x12\x1c\n" +
 	"\x05proxy\x18\x04 \x01(\v2\x06.ProxyR\x05proxy\x12\x12\n" +
-	"\x04name\x18\x05 \x01(\tR\x04name\x12\x0e\n" +
+	"\x04name\x18\x05 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\v \x01(\tR\vdescription\x12\x0e\n" +
 	"\x02ip\x18\x06 \x01(\tR\x02ip\x12\x12\n" +
 	"\x04port\x18\a \x01(\x05R\x04port\x12*\n" +
 	"\x10application_type\x18\b \x01(\tR\x10application_type\x12\x1e\n" +
@@ -3737,9 +3779,10 @@ const file_liaison_proto_rawDesc = "" +
 	"updated_at\"V\n" +
 	"\fApplications\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x05R\x05total\x120\n" +
-	"\fapplications\x18\x02 \x03(\v2\f.ApplicationR\fapplications\"\xc9\x01\n" +
+	"\fapplications\x18\x02 \x03(\v2\f.ApplicationR\fapplications\"\xeb\x01\n" +
 	"\x18CreateApplicationRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x0e\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\a \x01(\tR\vdescription\x12\x0e\n" +
 	"\x02ip\x18\x02 \x01(\tR\x02ip\x12\x12\n" +
 	"\x04port\x18\x03 \x01(\x05R\x04port\x12*\n" +
 	"\x10application_type\x18\x04 \x01(\tR\x10application_type\x12\x18\n" +
@@ -3763,10 +3806,11 @@ const file_liaison_proto_rawDesc = "" +
 	"\x18ListApplicationsResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12!\n" +
-	"\x04data\x18\x03 \x01(\v2\r.ApplicationsR\x04data\">\n" +
+	"\x04data\x18\x03 \x01(\v2\r.ApplicationsR\x04data\"`\n" +
 	"\x18UpdateApplicationRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\"k\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\"k\n" +
 	"\x19UpdateApplicationResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12 \n" +
@@ -3791,10 +3835,11 @@ const file_liaison_proto_rawDesc = "" +
 	"updated_at\"A\n" +
 	"\aProxies\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x05R\x05total\x12 \n" +
-	"\aproxies\x18\x02 \x03(\v2\x06.ProxyR\aproxies\"F\n" +
+	"\aproxies\x18\x02 \x03(\v2\x06.ProxyR\aproxies\"Z\n" +
 	"\x12ListProxiesRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1c\n" +
-	"\tpage_size\x18\x02 \x01(\x05R\tpage_size\"a\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\tpage_size\x12\x12\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\"a\n" +
 	"\x13ListProxiesResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1c\n" +

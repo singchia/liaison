@@ -123,6 +123,11 @@ func (s *scanner) scan(ctx context.Context, task *proto.ScanApplicationTaskReque
 			s.mu.Unlock()
 		}()
 
+		// 创建一个独立的 context，避免使用可能被取消的原始 context
+		// 扫描任务应该在后台独立运行，不受原始 RPC 请求的生命周期影响
+		scanCtx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
 		running := proto.ScanApplicationTaskResult{
 			TaskID:              task.TaskID,
 			ScannedApplications: make([]proto.ScannedApplication, 0),
@@ -135,7 +140,8 @@ func (s *scanner) scan(ctx context.Context, task *proto.ScanApplicationTaskReque
 			return
 		}
 		reportReq := s.frontierBound.NewRequest(data)
-		_, err = s.frontierBound.Call(ctx, "report_task_scan_application", reportReq)
+		// 使用独立的 context，避免原始 RPC context 被取消导致上报失败
+		_, err = s.frontierBound.Call(scanCtx, "report_task_scan_application", reportReq)
 		if err != nil {
 			log.Errorf("call report task scan application error: %s", err)
 			return
@@ -143,7 +149,8 @@ func (s *scanner) scan(ctx context.Context, task *proto.ScanApplicationTaskReque
 		log.Infof("scan with go start: %v", task)
 
 		// 使用纯 Go 实现的扫描（不依赖 libpcap）
-		err = s.scanWithGo(ctx, task, &running)
+		// 使用独立的 context，但保留对原始 context 的监听，以便在需要时取消扫描
+		err = s.scanWithGo(scanCtx, task, &running)
 		if err != nil {
 			log.Errorf("scan with go error: %s", err)
 			return
@@ -160,7 +167,7 @@ func (s *scanner) scan(ctx context.Context, task *proto.ScanApplicationTaskReque
 			return
 		}
 		reportReq = s.frontierBound.NewRequest(data)
-		_, err = s.frontierBound.Call(context.Background(), "report_task_scan_application", reportReq)
+		_, err = s.frontierBound.Call(scanCtx, "report_task_scan_application", reportReq)
 		if err != nil {
 			log.Errorf("call report task scan application error: %s", err)
 			return

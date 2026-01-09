@@ -50,6 +50,7 @@ type Application struct {
 	EdgeIDs         UintSlice       `gorm:"column:edge_ids;type:json;not null"` // 关联的edge id
 	DeviceID        uint            `gorm:"column:device_id;type:int;not null"`
 	Name            string          `gorm:"column:name;type:varchar(255);not null"`
+	Description     string          `gorm:"column:description;type:varchar(255);default:''"` // 描述
 	IP              string          `gorm:"column:ip;type:varchar(255);not null"`
 	Port            int             `gorm:"column:port;type:int;not null"`
 	HeartbeatAt     time.Time       `gorm:"column:heartbeat_at;type:datetime;not null"`

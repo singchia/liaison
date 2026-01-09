@@ -56,6 +56,7 @@ message ListEdgesRequest {
     int32 page = 1 [json_name = "page"];
     int32 page_size = 2 [json_name = "page_size"];
     string device_name = 3 [json_name = "device_name"];
+    string name = 4 [json_name = "name"];  // 连接器名称
 }
 
 message ListEdgesResponse {
@@ -159,6 +160,7 @@ message Application {
     Device device = 3 [json_name = "device"]; // 所属设备
     Proxy proxy = 4 [json_name = "proxy"]; // 关联Proxy
     string name = 5 [json_name = "name"]; // 名称
+    string description = 11 [json_name = "description"]; // 描述
     string ip = 6 [json_name = "ip"]; // 内网IP地址
     int32 port = 7 [json_name = "port"]; // 端口
     string application_type = 8 [json_name = "application_type"]; // 应用类型
@@ -174,6 +176,7 @@ message Applications {
 // 添加应用请求
 message CreateApplicationRequest {
     string name = 1 [json_name = "name"];
+    string description = 7 [json_name = "description"]; // 描述
     string ip = 2 [json_name = "ip"];
     int32 port = 3 [json_name = "port"];
     string application_type = 4 [json_name = "application_type"];
@@ -205,6 +208,7 @@ message ListApplicationsResponse {
 message UpdateApplicationRequest {
     uint64 id = 1 [json_name = "id"];
     string name = 2 [json_name = "name"];
+    string description = 3 [json_name = "description"]; // 描述
 }
 
 message UpdateApplicationResponse {
@@ -243,6 +247,7 @@ message Proxies {
 message ListProxiesRequest {
     int32 page = 1 [json_name = "page"];
     int32 page_size = 2 [json_name = "page_size"];
+    string name = 3 [json_name = "name"];  // 代理名称
 }
 
 message ListProxiesResponse {
