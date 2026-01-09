@@ -1,0 +1,75 @@
+.login-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow: auto;
+  background: #f0f2f5;
+}
+
+.login-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 32px 0;
+  margin-top: calc(50vh - 240px);
+}
+
+.login-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.login-logo {
+  width: 44px;
+  height: 44px;
+  margin-right: 16px;
+}
+
+.login-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1890ff;
+  
+  @media screen and (max-width: 576px) {
+    font-size: 22px;
+  }
+}
+
+.login-desc {
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 14px;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.login-footer {
+  margin-top: 48px;
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 12px;
+  text-align: center;
+}
+
+:global {
+  .ant-pro-form-login-container {
+    background: #fff;
+    border-radius: 8px;
+    padding: 32px 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    max-width: 400px;
+    margin: 0 16px;
+  }
+  
+  .ant-pro-form-login-main {
+    width: 100%;
+  }
+  
+  .prefixIcon {
+    color: #1890ff;
+    font-size: 16px;
+  }
+}

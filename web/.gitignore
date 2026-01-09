@@ -1,69 +1,46 @@
-# Dependencies
-node_modules/
-.pnp
-.pnp.js
+/node_modules
+/.env.local
+/.umirc.local.ts
+/config/config.local.ts
+/src/.umi
+/src/.umi-production
+/src/.umi-test
+/.umi
+/.umi-production
+/.umi-test
+/dist
+/.mfsu
+.swc
 
-# Testing
-coverage/
-.nyc_output
-
-# Production
-dist/
-build/
-.umi/
-.umi-production/
-
-# Misc
+# 操作系统文件
 .DS_Store
-*.pem
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# 编辑器配置（可选，看团队约定）
+.vscode/
+.idea/
+*.sublime-*
+
+# 日志文件
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
-# Local env files
+# 环境变量文件（除了 .env.local）
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
 
-# Editor directories and files
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-.project
-.classpath
-.settings/
-*.sublime-project
-*.sublime-workspace
+# 测试覆盖率
+coverage/
+.nyc_output/
 
-# OS
-Thumbs.db
-.DS_Store
-
-# Package manager lock files (optional - uncomment if you want to ignore)
-# package-lock.json
-# pnpm-lock.yaml
-# yarn.lock
-
-# Temporary files
+# 临时文件
 *.tmp
 *.temp
 .cache/
-
-# UmiJS
-.umi/
-.umi-production/
-.umi-test/
-
-# TypeScript
-*.tsbuildinfo
-
-# Optional: Keep these if you want to track them
-# package-lock.json
-# pnpm-lock.yaml
