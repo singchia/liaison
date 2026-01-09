@@ -44,3 +44,6 @@ coverage/
 *.tmp
 *.temp
 .cache/
+
+# pnpm 存储目录
+.pnpm-store/
