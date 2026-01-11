@@ -42,7 +42,7 @@
 
 ### 安装服务端
 
-1. 下载安装包 `liaison-v1.1.0-linux-amd64.tar.gz` 并解压
+1. 下载安装包 [liaison-v1.1.0-linux-amd64.tar.gz](https://github.com/singchia/liaison/releases/download/v1.1.0/liaison-v1.1.0-linux-amd64.tar.gz) 并解压
 2. 进入解压后的目录，运行安装脚本：
    ```bash
    tar -xzf liaison-v1.1.0-linux-amd64.tar.gz
@@ -63,7 +63,7 @@
    ```
 3. 等待几秒钟，设备会自动出现在控制台中
 
-就这么简单！现在你可以开始使用你的设备了。
+就这么简单！现在你可以开始配置代理并连接到你的设备上。
 
 ## 使用场景
 
