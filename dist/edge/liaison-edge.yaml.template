@@ -4,7 +4,7 @@ manager:
       - ${SERVER_ADDR}  # 服务器地址，格式: host:port
     network: tcp
     tls:
-      enable: false  # 是否启用 TLS
+      enable: true  # 是否启用 TLS
   auth:
     access_key: "${ACCESS_KEY}"  # Access Key（必需）
     secret_key: "${SECRET_KEY}"  # Secret Key（必需）

@@ -70,6 +70,34 @@ If you prefer to install manually:
    sudo systemctl enable liaison
    ```
 
+## TLS/HTTPS Configuration
+
+### Binding to Privileged Ports (443, 80, etc.)
+
+The service file is configured with `CAP_NET_BIND_SERVICE` capability, which allows the service to bind to ports below 1024 (like 443 for HTTPS) without running as root.
+
+**Important Notes:**
+- The service uses `AmbientCapabilities=CAP_NET_BIND_SERVICE` to allow binding to privileged ports
+- `NoNewPrivileges=false` is required when using AmbientCapabilities
+- This is more secure than running the entire service as root
+
+### Alternative: Using Non-Privileged Ports
+
+If you prefer not to use capabilities, you can:
+1. Use a non-privileged port (e.g., 8443 instead of 443)
+2. Use iptables to forward traffic:
+   ```bash
+   sudo iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 8443
+   ```
+
+### Alternative: Using setcap (Not Recommended)
+
+You can also set the capability directly on the binary:
+```bash
+sudo setcap 'cap_net_bind_service=+ep' /opt/liaison/bin/liaison
+```
+However, this is less flexible than using systemd capabilities.
+
 ## Service Management
 
 ### Basic Commands

@@ -42,3 +42,9 @@ web/.umi/
 web/dist/
 web/build/
 web/.cache/
+
+# TLS certificates (keep private keys out of git)
+certs/*.key
+certs/*.crt
+!certs/README.md
+!certs/generate_certs.sh

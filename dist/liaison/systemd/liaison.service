@@ -23,19 +23,29 @@ StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=liaison
 
+# Capabilities for binding to privileged ports (e.g., 443)
+# This allows the service to bind to ports < 1024 without running as root
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+
 # Security settings
-NoNewPrivileges=true
+# Note: NoNewPrivileges must be false when using AmbientCapabilities
+NoNewPrivileges=false
 PrivateTmp=true
-ProtectSystem=strict
+# Use 'true' (equivalent to 'yes') to protect system directories
+# ReadWritePaths allows access to /opt/liaison despite ProtectSystem
+ProtectSystem=true
+# Allow access to /opt/liaison and its subdirectories
+ReadWritePaths=/opt/liaison
 ProtectHome=true
-ReadWritePaths=/opt/liaison/data /opt/liaison/logs /opt/liaison/conf
 ProtectKernelTunables=true
 ProtectKernelModules=true
 ProtectControlGroups=true
 RestrictRealtime=true
 RestrictSUIDSGID=true
 RemoveIPC=true
-RestrictNamespaces=true
+# Disable RestrictNamespaces to avoid mount namespace issues
+RestrictNamespaces=false
 
 # Resource limits
 LimitNOFILE=65536

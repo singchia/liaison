@@ -1,0 +1,14 @@
+edgebound:
+  listen:
+    network: tcp
+    addr: 0.0.0.0:30012
+    tls:
+      enable: true
+      certs:
+      - cert: /opt/liaison/certs/server.crt
+        key: /opt/liaison/certs/server.key
+  edgeid_alloc_when_no_idservice_on: false
+servicebound:
+  listen:
+    network: tcp
+    addr: 0.0.0.0:30011

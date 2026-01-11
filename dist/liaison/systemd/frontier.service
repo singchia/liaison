@@ -1,0 +1,55 @@
+[Unit]
+Description=Liaison Edge Computing Management Service
+Documentation=https://github.com/singchia/liaison
+After=network.target network-online.target
+Wants=network-online.target
+StartLimitInterval=60s
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=liaison
+Group=liaison
+WorkingDirectory=/opt/liaison
+ExecStart=/opt/liaison/bin/frontier --config /opt/liaison/conf/frontier.yaml
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStop=/bin/kill -TERM $MAINPID
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=30s
+Restart=always
+RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=frontier
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+# Use 'true' (equivalent to 'yes') to protect system directories
+# ReadWritePaths allows access to /opt/liaison despite ProtectSystem
+ProtectSystem=true
+# Allow access to /opt/liaison and its subdirectories
+ReadWritePaths=/opt/liaison
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+RemoveIPC=true
+# Disable RestrictNamespaces to avoid mount namespace issues
+RestrictNamespaces=false
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=32768
+MemoryMax=2G
+CPUQuota=200%
+
+# Environment
+Environment=GOMAXPROCS=auto
+Environment=GOGC=100
+
+[Install]
+WantedBy=multi-user.target

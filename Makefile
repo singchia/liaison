@@ -45,8 +45,17 @@
 #      - make build-tools           # 构建所有工具（本地）
 #      - make build-tools-linux     # 构建所有工具（Linux）
 #
-#   8. 完整打包
+#   8. 前端构建
+#      - make build-web            # 构建前端到 web/dist
+#
+#   9. 完整打包
 #      - make package               # 打包完整的 Liaison 安装包（Linux）
+#                                    包含：
+#                                    - liaison (Linux amd64)
+#                                    - liaison-edge (所有平台：linux-amd64, linux-arm64, 
+#                                                    darwin-amd64, darwin-arm64, windows-amd64)
+#                                    - 前端文件 (web/dist)
+#                                    - systemd 配置文件
 #
 # 注意事项：
 #   - liaison 需要 CGO（SQLite），本地构建需要 CGO_ENABLED=1
@@ -57,6 +66,64 @@
 # ============================================================================
 
 include ./Makefile.defs
+
+# ============================================================================
+# Docker build variables and functions
+# ============================================================================
+DOCKER_IMAGE = golang:latest
+DOCKER_VOLUME = -v "$(shell pwd):/build"
+DOCKER_WORKDIR = -w /build
+DOCKER_BASE = docker run --rm $(DOCKER_VOLUME) $(DOCKER_WORKDIR)
+GO_BUILD_FLAGS = -trimpath -ldflags '-s -w'
+
+# Function to build with CGO (for liaison and tools)
+# Usage: $(call docker-build-cgo,platform,goos,goarch,output,source)
+define docker-build-cgo
+	@echo "Building $(4) for $(2)-$(3) using Docker..."
+	@mkdir -p ./bin
+	@$(DOCKER_BASE) \
+		--platform $(1) \
+		-e CGO_ENABLED=1 \
+		-e GOOS=$(2) \
+		-e GOARCH=$(3) \
+		-e GOTOOLCHAIN=auto \
+		$(DOCKER_IMAGE) sh -c "\
+			apt-get update -qq && \
+			DEBIAN_FRONTEND=noninteractive apt-get install -y -qq gcc libc6-dev libsqlite3-dev >/dev/null 2>&1 && \
+			go env -w GOTOOLCHAIN=auto && \
+			go mod download && \
+			CC=gcc CGO_ENABLED=1 go build $(GO_BUILD_FLAGS) -o ./bin/$(4) $(5)"
+	@chmod +x ./bin/$(4)
+	@echo "✅ Built: ./bin/$(4)"
+endef
+
+# Function to build without CGO (for edge)
+# Usage: $(call docker-build-no-cgo,platform,goos,goarch,output,source)
+define docker-build-no-cgo
+	@echo "Building $(4) for $(2)-$(3) using Docker..."
+	@mkdir -p ./bin
+	@$(DOCKER_BASE) \
+		--platform $(1) \
+		-e GOOS=$(2) \
+		-e GOARCH=$(3) \
+		-e GOTOOLCHAIN=auto \
+		$(DOCKER_IMAGE) sh -c "\
+			go env -w GOTOOLCHAIN=auto && \
+			go mod download && \
+			CGO_ENABLED=0 go build $(GO_BUILD_FLAGS) -o ./bin/$(4) $(5)"
+	@chmod +x ./bin/$(4)
+	@echo "✅ Built: ./bin/$(4)"
+endef
+
+# Function for local darwin builds
+# Usage: $(call local-build-darwin,goarch,output,source)
+define local-build-darwin
+	@echo "Building $(2) for darwin-$(1)..."
+	@mkdir -p ./bin
+	@CGO_ENABLED=1 GOOS=darwin GOARCH=$(1) go build $(GO_BUILD_FLAGS) -o ./bin/$(2) $(3)
+	@chmod +x ./bin/$(2)
+	@echo "✅ Built: ./bin/$(2)"
+endef
 
 # ============================================================================
 # Default targets
@@ -101,46 +168,23 @@ liaison-edge: build-edge
 # Linux builds using Docker (required for CGO cross-compilation from macOS)
 # ============================================================================
 .PHONY: build-linux
-build-linux: build-liaison-linux build-edge-linux
+build-linux: build-liaison-linux build-edge-linux build-frontier-linux
 
 .PHONY: build-liaison-linux
 build-liaison-linux:
-	@echo "Building liaison for Linux (amd64) using Docker..."
-	@mkdir -p ./bin
-	@docker run --rm \
-		--platform linux/amd64 \
-		-v "$(shell pwd):/build" \
-		-w /build \
-		-e CGO_ENABLED=1 \
-		-e GOOS=linux \
-		-e GOARCH=amd64 \
-		-e GOTOOLCHAIN=auto \
-		golang:latest sh -c "\
-			apt-get update -qq && \
-			DEBIAN_FRONTEND=noninteractive apt-get install -y -qq gcc libc6-dev libsqlite3-dev >/dev/null 2>&1 && \
-			go env -w GOTOOLCHAIN=auto && \
-			go mod download && \
-			CC=gcc CGO_ENABLED=1 go build -trimpath -ldflags '-s -w' -o ./bin/liaison cmd/manager/main.go"
-	@chmod +x ./bin/liaison
-	@echo "✅ Built: ./bin/liaison"
+	$(call docker-build-cgo,linux/amd64,linux,amd64,liaison,cmd/manager/main.go)
 
 .PHONY: build-edge-linux
 build-edge-linux:
-	@echo "Building liaison-edge for Linux (amd64) using Docker..."
+	$(call docker-build-no-cgo,linux/amd64,linux,amd64,liaison-edge,cmd/edge/main.go)
+
+.PHONY: build-frontier-linux
+build-frontier-linux:
+	@echo "Downloading frontier-linux-amd64 from GitHub releases..."
 	@mkdir -p ./bin
-	@docker run --rm \
-		--platform linux/amd64 \
-		-v "$(shell pwd):/build" \
-		-w /build \
-		-e GOOS=linux \
-		-e GOARCH=amd64 \
-		-e GOTOOLCHAIN=auto \
-		golang:latest sh -c "\
-			go env -w GOTOOLCHAIN=auto && \
-			go mod download && \
-			CGO_ENABLED=0 go build -trimpath -ldflags '-s -w' -o ./bin/liaison-edge cmd/edge/main.go"
-	@chmod +x ./bin/liaison-edge
-	@echo "✅ Built: ./bin/liaison-edge"
+	@curl -L -o ./bin/frontier https://pub-d6e1f937c991486386cd9d9ca8ac9f0c.r2.dev/frontier-linux-amd64
+	@chmod +x ./bin/frontier
+	@echo "✅ Downloaded: ./bin/frontier"
 
 # Legacy aliases
 .PHONY: liaison-linux liaison-edge-linux
@@ -194,52 +238,22 @@ build-tools: build-password-verifier build-password-generator
 
 .PHONY: build-password-verifier
 build-password-verifier:
-	CGO_ENABLED=1 go build -trimpath -ldflags "-s -w" -o ./bin/password-verifier ./tools/password-verifier
+	CGO_ENABLED=1 go build $(GO_BUILD_FLAGS) -o ./bin/password-verifier ./tools/password-verifier
 
 .PHONY: build-password-generator
 build-password-generator:
-	CGO_ENABLED=1 go build -trimpath -ldflags "-s -w" -o ./bin/password-generator ./tools/password-generator
+	CGO_ENABLED=1 go build $(GO_BUILD_FLAGS) -o ./bin/password-generator ./tools/password-generator
 
 .PHONY: build-tools-linux
 build-tools-linux: build-password-verifier-linux build-password-generator-linux
 
 .PHONY: build-password-verifier-linux
 build-password-verifier-linux:
-	@echo "Building password-verifier for Linux..."
-	@mkdir -p ./bin
-	@docker run --rm \
-		--platform linux/amd64 \
-		-v "$(shell pwd):/build" \
-		-w /build \
-		-e CGO_ENABLED=1 \
-		-e GOOS=linux \
-		-e GOARCH=amd64 \
-		-e GOTOOLCHAIN=auto \
-		golang:latest sh -c "\
-			apt-get update -qq && \
-			DEBIAN_FRONTEND=noninteractive apt-get install -y -qq gcc libc6-dev libsqlite3-dev >/dev/null 2>&1 && \
-			go env -w GOTOOLCHAIN=auto && \
-			go mod download && \
-			CC=gcc CGO_ENABLED=1 go build -trimpath -ldflags '-s -w' -o ./bin/password-verifier ./tools/password-verifier"
+	$(call docker-build-cgo,linux/amd64,linux,amd64,password-verifier,./tools/password-verifier)
 
 .PHONY: build-password-generator-linux
 build-password-generator-linux:
-	@echo "Building password-generator for Linux..."
-	@mkdir -p ./bin
-	@docker run --rm \
-		--platform linux/amd64 \
-		-v "$(shell pwd):/build" \
-		-w /build \
-		-e CGO_ENABLED=1 \
-		-e GOOS=linux \
-		-e GOARCH=amd64 \
-		-e GOTOOLCHAIN=auto \
-		golang:latest sh -c "\
-			apt-get update -qq && \
-			DEBIAN_FRONTEND=noninteractive apt-get install -y -qq gcc libc6-dev libsqlite3-dev >/dev/null 2>&1 && \
-			go env -w GOTOOLCHAIN=auto && \
-			go mod download && \
-			CC=gcc CGO_ENABLED=1 go build -trimpath -ldflags '-s -w' -o ./bin/password-generator ./tools/password-generator"
+	$(call docker-build-cgo,linux/amd64,linux,amd64,password-generator,./tools/password-generator)
 
 # Legacy aliases
 .PHONY: tools tools-linux password-verifier password-generator password-verifier-linux password-generator-linux
@@ -259,73 +273,40 @@ build-edge-all: build-edge-linux-amd64 build-edge-linux-arm64 build-edge-darwin-
 
 .PHONY: build-edge-linux-amd64
 build-edge-linux-amd64:
-	@echo "Building liaison-edge for linux-amd64..."
-	@mkdir -p ./bin
-	@docker run --rm \
-		--platform linux/amd64 \
-		-v "$(shell pwd):/build" \
-		-w /build \
-		-e GOOS=linux \
-		-e GOARCH=amd64 \
-		-e GOTOOLCHAIN=auto \
-		golang:latest sh -c "\
-			go env -w GOTOOLCHAIN=auto && \
-			go mod download && \
-			CGO_ENABLED=0 go build -trimpath -ldflags '-s -w' -o ./bin/liaison-edge-linux-amd64 cmd/edge/main.go"
-	@chmod +x ./bin/liaison-edge-linux-amd64
-	@echo "✅ Built: ./bin/liaison-edge-linux-amd64"
+	$(call docker-build-no-cgo,linux/amd64,linux,amd64,liaison-edge-linux-amd64,cmd/edge/main.go)
 
 .PHONY: build-edge-linux-arm64
 build-edge-linux-arm64:
-	@echo "Building liaison-edge for linux-arm64..."
-	@mkdir -p ./bin
-	@docker run --rm \
-		--platform linux/arm64 \
-		-v "$(shell pwd):/build" \
-		-w /build \
-		-e GOOS=linux \
-		-e GOARCH=arm64 \
-		-e GOTOOLCHAIN=auto \
-		golang:latest sh -c "\
-			go env -w GOTOOLCHAIN=auto && \
-			go mod download && \
-			CGO_ENABLED=0 go build -trimpath -ldflags '-s -w' -o ./bin/liaison-edge-linux-arm64 cmd/edge/main.go"
-	@chmod +x ./bin/liaison-edge-linux-arm64
-	@echo "✅ Built: ./bin/liaison-edge-linux-arm64"
+	$(call docker-build-no-cgo,linux/arm64,linux,arm64,liaison-edge-linux-arm64,cmd/edge/main.go)
 
 .PHONY: build-edge-darwin-amd64
 build-edge-darwin-amd64:
-	@echo "Building liaison-edge for darwin-amd64..."
-	@mkdir -p ./bin
-	@CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o ./bin/liaison-edge-darwin-amd64 cmd/edge/main.go
-	@chmod +x ./bin/liaison-edge-darwin-amd64
-	@echo "✅ Built: ./bin/liaison-edge-darwin-amd64"
+	$(call local-build-darwin,amd64,liaison-edge-darwin-amd64,cmd/edge/main.go)
 
 .PHONY: build-edge-darwin-arm64
 build-edge-darwin-arm64:
-	@echo "Building liaison-edge for darwin-arm64..."
-	@mkdir -p ./bin
-	@CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags "-s -w" -o ./bin/liaison-edge-darwin-arm64 cmd/edge/main.go
-	@chmod +x ./bin/liaison-edge-darwin-arm64
-	@echo "✅ Built: ./bin/liaison-edge-darwin-arm64"
+	$(call local-build-darwin,arm64,liaison-edge-darwin-arm64,cmd/edge/main.go)
 
 .PHONY: build-edge-windows-amd64
 build-edge-windows-amd64:
 	@echo "Building liaison-edge for windows-amd64..."
 	@mkdir -p ./bin
-	@docker run --rm \
+	@$(DOCKER_BASE) \
 		--platform linux/amd64 \
-		-v "$(shell pwd):/build" \
-		-w /build \
 		-e CGO_ENABLED=1 \
 		-e GOOS=windows \
 		-e GOARCH=amd64 \
 		-e GOTOOLCHAIN=auto \
-		golang:latest sh -c "\
+		$(DOCKER_IMAGE) sh -c "\
 			go env -w GOTOOLCHAIN=auto && \
 			go mod download && \
-			CGO_ENABLED=1 go build -trimpath -ldflags '-s -w' -o ./bin/liaison-edge-windows-amd64.exe cmd/edge/main.go"
+			CGO_ENABLED=1 go build $(GO_BUILD_FLAGS) -o ./bin/liaison-edge-windows-amd64.exe cmd/edge/main.go"
 	@echo "✅ Built: ./bin/liaison-edge-windows-amd64.exe"
+
+# ============================================================================
+# Tar command detection: prefer gtar (GNU tar) if available
+# ============================================================================
+TAR_CMD := $(shell command -v gtar 2>/dev/null || command -v tar 2>/dev/null || echo tar)
 
 # ============================================================================
 # Edge package creation (tar.gz with binary and config template)
@@ -339,10 +320,11 @@ package-edge-linux-amd64: build-edge-linux-amd64
 	@echo "Packaging liaison-edge-linux-amd64..."
 	@mkdir -p ./packages/edge
 	@TMP_DIR=$$(mktemp -d) && \
-		cp ./bin/liaison-edge-linux-amd64 $$TMP_DIR/liaison-edge && \
-		cp ./dist/edge/liaison-edge.yaml.template $$TMP_DIR/liaison-edge.yaml.template && \
+		PACKAGE_PATH="$$(pwd)/packages/edge/liaison-edge-linux-amd64.tar.gz" && \
+		COPYFILE_DISABLE=1 cp ./bin/liaison-edge-linux-amd64 $$TMP_DIR/liaison-edge && \
+		COPYFILE_DISABLE=1 cp ./dist/edge/liaison-edge.yaml.template $$TMP_DIR/liaison-edge.yaml.template && \
 		cd $$TMP_DIR && \
-		tar -czf ../../packages/edge/liaison-edge-linux-amd64.tar.gz liaison-edge liaison-edge.yaml.template && \
+		COPYFILE_DISABLE=1 $(TAR_CMD) --exclude='._*' --exclude='.DS_Store' -czf $$PACKAGE_PATH liaison-edge liaison-edge.yaml.template && \
 		rm -rf $$TMP_DIR && \
 		echo "✅ Package created: ./packages/edge/liaison-edge-linux-amd64.tar.gz"
 
@@ -351,10 +333,11 @@ package-edge-linux-arm64: build-edge-linux-arm64
 	@echo "Packaging liaison-edge-linux-arm64..."
 	@mkdir -p ./packages/edge
 	@TMP_DIR=$$(mktemp -d) && \
-		cp ./bin/liaison-edge-linux-arm64 $$TMP_DIR/liaison-edge && \
-		cp ./dist/edge/liaison-edge.yaml.template $$TMP_DIR/liaison-edge.yaml.template && \
+		PACKAGE_PATH="$$(pwd)/packages/edge/liaison-edge-linux-arm64.tar.gz" && \
+		COPYFILE_DISABLE=1 cp ./bin/liaison-edge-linux-arm64 $$TMP_DIR/liaison-edge && \
+		COPYFILE_DISABLE=1 cp ./dist/edge/liaison-edge.yaml.template $$TMP_DIR/liaison-edge.yaml.template && \
 		cd $$TMP_DIR && \
-		tar -czf ../../packages/edge/liaison-edge-linux-arm64.tar.gz liaison-edge liaison-edge.yaml.template && \
+		COPYFILE_DISABLE=1 $(TAR_CMD) --exclude='._*' --exclude='.DS_Store' -czf $$PACKAGE_PATH liaison-edge liaison-edge.yaml.template && \
 		rm -rf $$TMP_DIR && \
 		echo "✅ Package created: ./packages/edge/liaison-edge-linux-arm64.tar.gz"
 
@@ -363,10 +346,11 @@ package-edge-darwin-amd64: build-edge-darwin-amd64
 	@echo "Packaging liaison-edge-darwin-amd64..."
 	@mkdir -p ./packages/edge
 	@TMP_DIR=$$(mktemp -d) && \
-		cp ./bin/liaison-edge-darwin-amd64 $$TMP_DIR/liaison-edge && \
-		cp ./dist/edge/liaison-edge.yaml.template $$TMP_DIR/liaison-edge.yaml.template && \
+		PACKAGE_PATH="$$(pwd)/packages/edge/liaison-edge-darwin-amd64.tar.gz" && \
+		COPYFILE_DISABLE=1 cp -X ./bin/liaison-edge-darwin-amd64 $$TMP_DIR/liaison-edge && \
+		COPYFILE_DISABLE=1 cp -X ./dist/edge/liaison-edge.yaml.template $$TMP_DIR/liaison-edge.yaml.template && \
 		cd $$TMP_DIR && \
-		tar -czf ../../packages/edge/liaison-edge-darwin-amd64.tar.gz liaison-edge liaison-edge.yaml.template && \
+		COPYFILE_DISABLE=1 $(TAR_CMD) --exclude='._*' --exclude='.DS_Store' -czf $$PACKAGE_PATH liaison-edge liaison-edge.yaml.template && \
 		rm -rf $$TMP_DIR && \
 		echo "✅ Package created: ./packages/edge/liaison-edge-darwin-amd64.tar.gz"
 
@@ -375,10 +359,11 @@ package-edge-darwin-arm64: build-edge-darwin-arm64
 	@echo "Packaging liaison-edge-darwin-arm64..."
 	@mkdir -p ./packages/edge
 	@TMP_DIR=$$(mktemp -d) && \
-		cp ./bin/liaison-edge-darwin-arm64 $$TMP_DIR/liaison-edge && \
-		cp ./dist/edge/liaison-edge.yaml.template $$TMP_DIR/liaison-edge.yaml.template && \
+		PACKAGE_PATH="$$(pwd)/packages/edge/liaison-edge-darwin-arm64.tar.gz" && \
+		COPYFILE_DISABLE=1 cp -X ./bin/liaison-edge-darwin-arm64 $$TMP_DIR/liaison-edge && \
+		COPYFILE_DISABLE=1 cp -X ./dist/edge/liaison-edge.yaml.template $$TMP_DIR/liaison-edge.yaml.template && \
 		cd $$TMP_DIR && \
-		tar -czf ../../packages/edge/liaison-edge-darwin-arm64.tar.gz liaison-edge liaison-edge.yaml.template && \
+		COPYFILE_DISABLE=1 $(TAR_CMD) --exclude='._*' --exclude='.DS_Store' -czf $$PACKAGE_PATH liaison-edge liaison-edge.yaml.template && \
 		rm -rf $$TMP_DIR && \
 		echo "✅ Package created: ./packages/edge/liaison-edge-darwin-arm64.tar.gz"
 
@@ -387,10 +372,11 @@ package-edge-windows-amd64: build-edge-windows-amd64
 	@echo "Packaging liaison-edge-windows-amd64..."
 	@mkdir -p ./packages/edge
 	@TMP_DIR=$$(mktemp -d) && \
-		cp ./bin/liaison-edge-windows-amd64.exe $$TMP_DIR/liaison-edge.exe && \
-		cp ./dist/edge/liaison-edge.yaml.template $$TMP_DIR/liaison-edge.yaml.template && \
+		PACKAGE_PATH="$$(pwd)/packages/edge/liaison-edge-windows-amd64.tar.gz" && \
+		COPYFILE_DISABLE=1 cp ./bin/liaison-edge-windows-amd64.exe $$TMP_DIR/liaison-edge.exe && \
+		COPYFILE_DISABLE=1 cp ./dist/edge/liaison-edge.yaml.template $$TMP_DIR/liaison-edge.yaml.template && \
 		cd $$TMP_DIR && \
-		tar -czf ../../packages/edge/liaison-edge-windows-amd64.tar.gz liaison-edge.exe liaison-edge.yaml.template && \
+		COPYFILE_DISABLE=1 $(TAR_CMD) --exclude='._*' --exclude='.DS_Store' -czf $$PACKAGE_PATH liaison-edge.exe liaison-edge.yaml.template && \
 		rm -rf $$TMP_DIR && \
 		echo "✅ Package created: ./packages/edge/liaison-edge-windows-amd64.tar.gz"
 
@@ -404,29 +390,37 @@ edge-package-darwin-arm64: package-edge-darwin-arm64
 edge-package-windows-amd64: package-edge-windows-amd64
 
 # ============================================================================
-# Full package (liaison + edge + systemd files)
+# Frontend build
+# ============================================================================
+.PHONY: build-web
+build-web:
+	@echo "Building frontend..."
+	@if [ ! -d "web" ]; then \
+		echo "⚠️  web directory not found, skipping frontend build"; \
+		exit 0; \
+	fi
+	@cd web && \
+	if [ ! -f "package.json" ]; then \
+		echo "⚠️  package.json not found, skipping frontend build"; \
+		exit 0; \
+	fi && \
+	export PNPM_HOME="$$HOME/.local/share/pnpm" 2>/dev/null || true && \
+	export PATH="$$PNPM_HOME:$$PATH" 2>/dev/null || true && \
+	pnpm install && \
+	pnpm run build
+	@if [ -d "web/dist" ]; then \
+		echo "✅ Frontend built in web/dist/"; \
+	else \
+		echo "⚠️  web/dist not found after build"; \
+	fi
+
+# ============================================================================
+# Full package (liaison + edge binaries for all platforms + frontend + systemd files)
 # ============================================================================
 .PHONY: package
-package: build-linux
-	@echo "Packaging Liaison for Linux installation..."
-	@PACK_DIR=liaison-$(VERSION)-linux-amd64 && \
-	rm -rf $$PACK_DIR && \
-	mkdir -p $$PACK_DIR/bin $$PACK_DIR/etc $$PACK_DIR/systemd && \
-	cp bin/liaison $$PACK_DIR/bin/ && \
-	cp bin/liaison-edge $$PACK_DIR/bin/ && \
-	cp etc/liaison.yaml $$PACK_DIR/etc/ && \
-	cp etc/liaison-edge.yaml $$PACK_DIR/etc/ && \
-	cp dist/systemd/liaison.service $$PACK_DIR/systemd/ && \
-	cp dist/systemd/install.sh $$PACK_DIR/ && \
-	cp dist/systemd/uninstall.sh $$PACK_DIR/ && \
-	cp dist/systemd/README.md $$PACK_DIR/systemd/ 2>/dev/null || true && \
-	cp VERSION $$PACK_DIR/ && \
-	chmod +x $$PACK_DIR/bin/* && \
-	chmod +x $$PACK_DIR/install.sh && \
-	chmod +x $$PACK_DIR/uninstall.sh && \
-	tar -czf $$PACK_DIR.tar.gz $$PACK_DIR && \
-	rm -rf $$PACK_DIR && \
-	echo "✅ Package created: $$PACK_DIR.tar.gz"
+package: build-linux build-edge-all package-edge-all build-web build-tools-linux
+	@chmod +x dist/package.sh
+	@./dist/package.sh
 
 # Legacy alias
 .PHONY: pack
