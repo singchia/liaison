@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"net"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/singchia/geminio"
@@ -62,9 +63,15 @@ func (fb *frontierBound) reportTaskScanApplication(ctx context.Context, req gemi
 		return
 	}
 
-	// 转换为model
+	// 转换为model，过滤 IPv6 地址
 	applications := []model.ScannedApplication{}
 	for _, application := range task.ScannedApplications {
+		// 忽略 IPv6 地址
+		ip := net.ParseIP(application.IP)
+		if ip != nil && ip.To4() == nil {
+			// IPv6 地址，跳过
+			continue
+		}
 		applications = append(applications, model.ScannedApplication{
 			IP:       application.IP,
 			Port:     application.Port,

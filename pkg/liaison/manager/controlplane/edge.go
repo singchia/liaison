@@ -56,7 +56,9 @@ func (cp *controlPlane) CreateEdge(_ context.Context, req *v1.CreateEdgeRequest)
 
 	// 生成安装命令
 	serverURL := cp.conf.Manager.ServerURL
-	serverAddr := ""
+	httpAddr := "" // HTTP下载地址（host:port）
+	edgeAddr := "" // Edge连接地址（host:port）
+
 	if serverURL == "" {
 		// 如果没有配置，从 Listen 地址生成
 		listen := cp.conf.Manager.Listen
@@ -65,19 +67,32 @@ func (cp *controlPlane) CreateEdge(_ context.Context, req *v1.CreateEdgeRequest)
 		} else {
 			serverURL = fmt.Sprintf("http://%s", listen.Addr)
 		}
-		serverAddr = listen.Addr
+		httpAddr = listen.Addr
 	} else {
 		// 从 serverURL 中提取地址（移除 http:// 或 https:// 前缀）
 		if strings.HasPrefix(serverURL, "https://") {
-			serverAddr = strings.TrimPrefix(serverURL, "https://")
+			httpAddr = strings.TrimPrefix(serverURL, "https://")
 		} else if strings.HasPrefix(serverURL, "http://") {
-			serverAddr = strings.TrimPrefix(serverURL, "http://")
+			httpAddr = strings.TrimPrefix(serverURL, "http://")
 		} else {
-			serverAddr = serverURL
+			httpAddr = serverURL
 		}
 	}
-	installCommand := fmt.Sprintf("curl -sSL %s/install.sh | bash -s -- --access-key=%s --secret-key=%s --server-addr=%s",
-		serverURL, accessKey, secretKey, serverAddr)
+
+	// Edge连接地址（使用FrontierEdgePort端口）
+	edgePort := cp.conf.Manager.FrontierEdgePort
+	if edgePort == 0 {
+		edgePort = 30012
+	}
+	// 从httpAddr中提取host（如果包含端口，去掉端口）
+	httpHost := httpAddr
+	if strings.Contains(httpAddr, ":") {
+		httpHost = strings.Split(httpAddr, ":")[0]
+	}
+	edgeAddr = fmt.Sprintf("%s:%d", httpHost, edgePort)
+
+	installCommand := fmt.Sprintf("curl -k -sSL %s/install.sh | bash -s -- --access-key=%s --secret-key=%s --server-http-addr=%s --server-edge-addr=%s",
+		serverURL, accessKey, secretKey, httpAddr, edgeAddr)
 
 	// 返回响应
 	return &v1.CreateEdgeResponse{

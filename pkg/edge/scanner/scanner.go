@@ -257,6 +257,12 @@ func (s *scanner) scanWithGo(ctx context.Context, task *proto.ScanApplicationTas
 					}
 
 					if open {
+						// 忽略 IPv6 地址
+						ip := net.ParseIP(scanTask.IP)
+						if ip != nil && ip.To4() == nil {
+							// IPv6 地址，跳过
+							continue
+						}
 						mu.Lock()
 						result.ScannedApplications = append(result.ScannedApplications, proto.ScannedApplication{
 							IP:       scanTask.IP,

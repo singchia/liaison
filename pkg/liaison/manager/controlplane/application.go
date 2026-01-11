@@ -10,8 +10,15 @@ import (
 )
 
 func (cp *controlPlane) CreateApplication(_ context.Context, req *v1.CreateApplicationRequest) (*v1.CreateApplicationResponse, error) {
-	deviceID := uint(0)
-	if req.DeviceId != nil {
+	// 查找相关的 edge
+	edge, err := cp.repo.GetEdge(req.EdgeId)
+	if err != nil {
+		return nil, err
+	}
+
+	// 确定 device_id：优先使用请求中的 device_id，否则使用 edge 关联的 device_id
+	deviceID := edge.DeviceID
+	if req.DeviceId != nil && *req.DeviceId > 0 {
 		deviceID = uint(*req.DeviceId)
 	}
 
@@ -25,7 +32,7 @@ func (cp *controlPlane) CreateApplication(_ context.Context, req *v1.CreateAppli
 		EdgeIDs:         model.UintSlice{uint(req.EdgeId)},
 		DeviceID:        deviceID,
 	}
-	err := cp.repo.CreateApplication(application)
+	err = cp.repo.CreateApplication(application)
 	if err != nil {
 		return nil, err
 	}

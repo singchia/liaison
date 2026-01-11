@@ -1,7 +1,7 @@
 manager:
   dial:
     addrs:
-      - 82.156.45.8:30012
+      - 127.0.0.1:30012
     network: tcp
     tls:
       enable: false

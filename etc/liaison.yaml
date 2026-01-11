@@ -5,6 +5,7 @@ manager:
     tls:
       enable: false
   db: /opt/liaison/data/liaison.db
+  jwt_secret: "YJEVmDSDk1FCTzUCJVFsugywxcEUQ4vh"
 frontier:
   dial:
     addrs:

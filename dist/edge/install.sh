@@ -12,9 +12,13 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # 默认配置
-SERVER_ADDR="${SERVER_ADDR:-localhost:8080}"
+SERVER_HTTP_ADDR=""  # HTTP下载地址（host:port，用于下载安装包）
+SERVER_EDGE_ADDR=""  # Edge连接地址（host:port，用于建立长连接）
 PACKAGES_DIR="/opt/liaison/packages"
-INSTALL_DIR="/opt/liaison/edge"
+INSTALL_DIR="/opt/liaison"
+BIN_DIR="/opt/liaison/bin"
+CONFIG_DIR="/opt/liaison/conf"
+LOG_DIR="/opt/liaison/logs"
 
 # 解析参数
 ACCESS_KEY=""
@@ -24,13 +28,14 @@ show_help() {
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options:"
-    echo "  --access-key=KEY     Access key (required)"
-    echo "  --secret-key=KEY     Secret key (required)"
-    echo "  --server-addr=ADDR   Server address (default: localhost:8080)"
-    echo "  -h, --help           Show this help message"
+    echo "  --access-key=KEY        Access key (required)"
+    echo "  --secret-key=KEY        Secret key (required)"
+    echo "  --server-http-addr=ADDR HTTP download address (host:port, for downloading packages)"
+    echo "  --server-edge-addr=ADDR Edge connection address (host:port, for establishing connection)"
+    echo "  -h, --help              Show this help message"
     echo ""
     echo "Example:"
-    echo "  $0 --access-key=xxx --secret-key=yyy --server-addr=example.com:8080"
+    echo "  $0 --access-key=xxx --secret-key=yyy --server-http-addr=example.com:443 --server-edge-addr=example.com:30012"
     exit 0
 }
 
@@ -44,8 +49,12 @@ while [[ $# -gt 0 ]]; do
             SECRET_KEY="${1#*=}"
             shift
             ;;
-        --server-addr=*)
-            SERVER_ADDR="${1#*=}"
+        --server-http-addr=*)
+            SERVER_HTTP_ADDR="${1#*=}"
+            shift
+            ;;
+        --server-edge-addr=*)
+            SERVER_EDGE_ADDR="${1#*=}"
             shift
             ;;
         -h|--help)
@@ -58,6 +67,13 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# 验证必需参数
+if [[ -z "$SERVER_HTTP_ADDR" ]] || [[ -z "$SERVER_EDGE_ADDR" ]]; then
+    echo -e "${RED}Error: --server-http-addr and --server-edge-addr are required${NC}"
+    echo "Use --help for usage information"
+    exit 1
+fi
 
 if [ -z "$ACCESS_KEY" ] || [ -z "$SECRET_KEY" ]; then
     echo -e "${RED}Error: --access-key and --secret-key are required${NC}"
@@ -109,13 +125,27 @@ trap "rm -rf $TMP_DIR" EXIT
 
 # 下载安装包
 echo -e "${YELLOW}Downloading installation package...${NC}"
-# 构建下载 URL（使用 http:// 前缀，因为下载需要协议）
-PACKAGE_URL="http://${SERVER_ADDR}/packages/edge/${PACKAGE_NAME}"
-echo -e "${YELLOW}Server address: ${SERVER_ADDR}${NC}"
+# 从HTTP地址中提取host和port，构建下载URL
+HTTP_HOST="${SERVER_HTTP_ADDR%%:*}"
+HTTP_PORT="${SERVER_HTTP_ADDR##*:}"
+if [[ "$HTTP_PORT" == "$SERVER_HTTP_ADDR" ]]; then
+    # 如果没有端口，使用默认端口443
+    HTTP_HOST="$SERVER_HTTP_ADDR"
+    HTTP_PORT="443"
+fi
+
+# 根据端口选择协议
+if [[ "$HTTP_PORT" == "443" ]]; then
+    PACKAGE_URL="https://${SERVER_HTTP_ADDR}/packages/edge/${PACKAGE_NAME}"
+else
+    PACKAGE_URL="http://${SERVER_HTTP_ADDR}/packages/edge/${PACKAGE_NAME}"
+fi
+echo -e "${YELLOW}HTTP download address: ${SERVER_HTTP_ADDR}${NC}"
+echo -e "${YELLOW}Edge connection address: ${SERVER_EDGE_ADDR}${NC}"
 echo -e "${YELLOW}Package URL: ${PACKAGE_URL}${NC}"
 
 if command -v curl >/dev/null 2>&1; then
-    HTTP_CODE=$(curl -sSL -o "${TMP_DIR}/${PACKAGE_NAME}" -w "%{http_code}" "${PACKAGE_URL}")
+    HTTP_CODE=$(curl -k -sSL -o "${TMP_DIR}/${PACKAGE_NAME}" -w "%{http_code}" "${PACKAGE_URL}")
 elif command -v wget >/dev/null 2>&1; then
     wget -q -O "${TMP_DIR}/${PACKAGE_NAME}" "${PACKAGE_URL}" || HTTP_CODE="404"
     if [ $? -eq 0 ]; then
@@ -157,35 +187,63 @@ if [ ! -f "${TMP_DIR}/${BINARY_NAME}" ]; then
 fi
 
 # Linux/macOS/Windows 安装
-mkdir -p "$INSTALL_DIR"
-cp "${TMP_DIR}/${BINARY_NAME}" "${INSTALL_DIR}/liaison-edge"
-chmod +x "${INSTALL_DIR}/liaison-edge"
+# 创建必要的目录
+mkdir -p "$BIN_DIR"
+mkdir -p "$CONFIG_DIR"
+mkdir -p "$LOG_DIR"
 
-# 创建配置文件和日志目录
-mkdir -p "${INSTALL_DIR}/etc"
-mkdir -p "${INSTALL_DIR}/logs"
+# 复制二进制文件
+cp "${TMP_DIR}/${BINARY_NAME}" "${BIN_DIR}/liaison-edge"
+chmod +x "${BIN_DIR}/liaison-edge"
 
-cat > "${INSTALL_DIR}/etc/liaison-edge.yaml" <<EOF
+# 从模板渲染配置文件
+echo -e "${YELLOW}Rendering configuration file from template...${NC}"
+# 尝试从多个位置查找模板文件：
+# 1. 从解压的安装包中（TMP_DIR）
+# 2. 从脚本所在目录（如果脚本是从文件系统运行的）
+TEMPLATE_FILE=""
+if [[ -f "${TMP_DIR}/liaison-edge.yaml.template" ]]; then
+    TEMPLATE_FILE="${TMP_DIR}/liaison-edge.yaml.template"
+elif [[ -f "$(dirname "${BASH_SOURCE[0]}")/liaison-edge.yaml.template" ]]; then
+    TEMPLATE_FILE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/liaison-edge.yaml.template"
+fi
+
+if [[ -n "$TEMPLATE_FILE" && -f "$TEMPLATE_FILE" ]]; then
+    # 替换模板中的变量（使用Edge连接地址）
+    sed -e "s|\${SERVER_ADDR}|${SERVER_EDGE_ADDR}|g" \
+        -e "s|\${ACCESS_KEY}|${ACCESS_KEY}|g" \
+        -e "s|\${SECRET_KEY}|${SECRET_KEY}|g" \
+        -e "s|\${LOG_DIR}|${LOG_DIR}|g" \
+        "$TEMPLATE_FILE" > "${CONFIG_DIR}/liaison-edge.yaml"
+    echo -e "${GREEN}Configuration file rendered from template${NC}"
+    echo -e "${GREEN}Edge will connect to: ${SERVER_EDGE_ADDR}${NC}"
+else
+    echo -e "${YELLOW}Template file not found, creating default configuration...${NC}"
+    # 如果模板文件不存在，使用默认配置
+    cat > "${CONFIG_DIR}/liaison-edge.yaml" <<EOF
 manager:
   dial:
     addrs:
-      - ${SERVER_ADDR}
+      - ${SERVER_EDGE_ADDR}
     network: tcp
     tls:
-      enable: false
+      enable: true
+      insecure_skip_verify: true
   auth:
     access_key: "${ACCESS_KEY}"
     secret_key: "${SECRET_KEY}"
 log:
   level: info
-  file: ./logs/liaison-edge.log
+  file: ${LOG_DIR}/liaison-edge.log
   maxsize: 100
   maxrolls: 10
 EOF
+    echo -e "${GREEN}Edge will connect to: ${SERVER_EDGE_ADDR}${NC}"
+fi
 
 echo -e "${GREEN}Installation completed!${NC}"
-echo -e "${GREEN}Edge binary: ${INSTALL_DIR}/liaison-edge${NC}"
-echo -e "${GREEN}Config file: ${INSTALL_DIR}/etc/liaison-edge.yaml${NC}"
+echo -e "${GREEN}Edge binary: ${BIN_DIR}/liaison-edge${NC}"
+echo -e "${GREEN}Config file: ${CONFIG_DIR}/liaison-edge.yaml${NC}"
 echo ""
 
 # 根据操作系统提供不同的后台运行方式选择
@@ -198,8 +256,15 @@ setup_service() {
         echo "3) screen 会话（适合调试）"
         echo "4) 跳过，稍后手动启动"
         echo ""
-        read -p "请输入选项 [1-4] (默认: 1): " choice
-        choice=${choice:-1}
+        if [ -t 0 ]; then
+            # 交互式运行，可以读取用户输入
+            read -p "请输入选项 [1-4] (默认: 1): " choice
+            choice=${choice:-1}
+        else
+            # 非交互式运行，使用默认值（systemd 服务）
+            echo -e "${YELLOW}非交互式运行，使用默认选项: systemd 服务${NC}"
+            choice=1
+        fi
         
         case $choice in
             1)
@@ -210,7 +275,8 @@ setup_service() {
                 # 检查是否有 sudo 权限
                 if ! sudo -n true 2>/dev/null; then
                     echo -e "${YELLOW}需要 sudo 权限来创建 systemd 服务，请输入密码:${NC}"
-                    sudo tee "${SERVICE_FILE}" > /dev/null <<EOF
+                fi
+                sudo tee "${SERVICE_FILE}" > /dev/null <<EOF
 [Unit]
 Description=Liaison Edge Service
 After=network.target
@@ -219,7 +285,7 @@ After=network.target
 Type=simple
 User=${CURRENT_USER}
 WorkingDirectory=${INSTALL_DIR}
-ExecStart=${INSTALL_DIR}/liaison-edge -c ${INSTALL_DIR}/etc/liaison-edge.yaml
+ExecStart=${BIN_DIR}/liaison-edge -c ${CONFIG_DIR}/liaison-edge.yaml
 Restart=always
 RestartSec=5s
 
@@ -235,14 +301,14 @@ EOF
                 ;;
             2)
                 echo -e "${YELLOW}使用 nohup 后台运行...${NC}"
-                nohup "${INSTALL_DIR}/liaison-edge" -c "${INSTALL_DIR}/etc/liaison-edge.yaml" > "${INSTALL_DIR}/logs/liaison-edge.log" 2>&1 &
+                nohup "${BIN_DIR}/liaison-edge" -c "${CONFIG_DIR}/liaison-edge.yaml" > "${LOG_DIR}/liaison-edge.log" 2>&1 &
                 PID=$!
                 echo -e "${GREEN}Edge 已在后台启动 (PID: $PID)${NC}"
                 ;;
             3)
                 echo -e "${YELLOW}使用 screen 会话运行...${NC}"
                 if command -v screen >/dev/null 2>&1; then
-                    screen -dmS liaison-edge "${INSTALL_DIR}/liaison-edge" -c "${INSTALL_DIR}/etc/liaison-edge.yaml"
+                    screen -dmS liaison-edge "${BIN_DIR}/liaison-edge" -c "${CONFIG_DIR}/liaison-edge.yaml"
                     echo -e "${GREEN}Edge 已在 screen 会话中启动${NC}"
                     echo -e "${YELLOW}查看会话: screen -r liaison-edge${NC}"
                 else
@@ -267,8 +333,15 @@ EOF
         echo "3) screen 会话（适合调试）"
         echo "4) 跳过，稍后手动启动"
         echo ""
-        read -p "请输入选项 [1-4] (默认: 1): " choice
-        choice=${choice:-1}
+        if [ -t 0 ]; then
+            # 交互式运行，可以读取用户输入
+            read -p "请输入选项 [1-4] (默认: 1): " choice
+            choice=${choice:-1}
+        else
+            # 非交互式运行，使用默认值（systemd 服务）
+            echo -e "${YELLOW}非交互式运行，使用默认选项: systemd 服务${NC}"
+            choice=1
+        fi
         
         case $choice in
             1)
@@ -285,9 +358,9 @@ EOF
     <string>com.liaison.edge</string>
     <key>ProgramArguments</key>
     <array>
-        <string>${INSTALL_DIR}/liaison-edge</string>
+        <string>${BIN_DIR}/liaison-edge</string>
         <string>-c</string>
-        <string>${INSTALL_DIR}/etc/liaison-edge.yaml</string>
+        <string>${CONFIG_DIR}/liaison-edge.yaml</string>
     </array>
     <key>WorkingDirectory</key>
     <string>${INSTALL_DIR}</string>
@@ -296,27 +369,39 @@ EOF
     <key>KeepAlive</key>
     <true/>
     <key>StandardOutPath</key>
-    <string>${INSTALL_DIR}/logs/liaison-edge.log</string>
+    <string>${LOG_DIR}/liaison-edge.log</string>
     <key>StandardErrorPath</key>
-    <string>${INSTALL_DIR}/logs/liaison-edge.error.log</string>
+    <string>${LOG_DIR}/liaison-edge.error.log</string>
 </dict>
 </plist>
 EOF
-                launchctl load "${PLIST_FILE}" 2>/dev/null || launchctl unload "${PLIST_FILE}" 2>/dev/null; launchctl load "${PLIST_FILE}"
-                launchctl start com.liaison.edge
+                # 使用新的 launchctl bootstrap API (macOS 10.11+)
+                # 先尝试卸载（如果已存在）
+                launchctl bootout "gui/$(id -u)/com.liaison.edge" 2>/dev/null || \
+                launchctl unload "${PLIST_FILE}" 2>/dev/null || true
+                # 使用 bootstrap 加载服务
+                launchctl bootstrap "gui/$(id -u)" "${PLIST_FILE}" 2>/dev/null || \
+                launchctl load -w "${PLIST_FILE}" 2>/dev/null || {
+                    echo -e "${YELLOW}警告: 无法自动加载 launchd 服务，请手动运行:${NC}"
+                    echo -e "${YELLOW}  launchctl bootstrap gui/$(id -u) ${PLIST_FILE}${NC}"
+                    echo -e "${YELLOW}  launchctl start gui/$(id -u)/com.liaison.edge${NC}"
+                }
+                # 启动服务
+                launchctl kickstart "gui/$(id -u)/com.liaison.edge" 2>/dev/null || \
+                launchctl start com.liaison.edge 2>/dev/null || true
                 echo -e "${GREEN}launchd 服务已创建并启动${NC}"
                 echo -e "${YELLOW}查看状态: launchctl list | grep liaison${NC}"
                 ;;
             2)
                 echo -e "${YELLOW}使用 nohup 后台运行...${NC}"
-                nohup "${INSTALL_DIR}/liaison-edge" -c "${INSTALL_DIR}/etc/liaison-edge.yaml" > "${INSTALL_DIR}/logs/liaison-edge.log" 2>&1 &
+                nohup "${BIN_DIR}/liaison-edge" -c "${CONFIG_DIR}/liaison-edge.yaml" > "${LOG_DIR}/liaison-edge.log" 2>&1 &
                 PID=$!
                 echo -e "${GREEN}Edge 已在后台启动 (PID: $PID)${NC}"
                 ;;
             3)
                 echo -e "${YELLOW}使用 screen 会话运行...${NC}"
                 if command -v screen >/dev/null 2>&1; then
-                    screen -dmS liaison-edge "${INSTALL_DIR}/liaison-edge" -c "${INSTALL_DIR}/etc/liaison-edge.yaml"
+                    screen -dmS liaison-edge "${BIN_DIR}/liaison-edge" -c "${CONFIG_DIR}/liaison-edge.yaml"
                     echo -e "${GREEN}Edge 已在 screen 会话中启动${NC}"
                     echo -e "${YELLOW}查看会话: screen -r liaison-edge${NC}"
                 else
@@ -338,13 +423,20 @@ EOF
         echo "1) nohup 后台运行（Git Bash/Cygwin）"
         echo "2) 跳过，稍后手动启动"
         echo ""
-        read -p "请输入选项 [1-2] (默认: 1): " choice
-        choice=${choice:-1}
+        if [ -t 0 ]; then
+            # 交互式运行，可以读取用户输入
+            read -p "请输入选项 [1-2] (默认: 1): " choice
+            choice=${choice:-1}
+        else
+            # 非交互式运行，使用默认值（nohup）
+            echo -e "${YELLOW}非交互式运行，使用默认选项: nohup 后台运行${NC}"
+            choice=1
+        fi
         
         case $choice in
             1)
                 echo -e "${YELLOW}使用 nohup 后台运行...${NC}"
-                nohup "${INSTALL_DIR}/liaison-edge.exe" -c "${INSTALL_DIR}/etc/liaison-edge.yaml" > "${INSTALL_DIR}/logs/liaison-edge.log" 2>&1 &
+                nohup "${BIN_DIR}/liaison-edge.exe" -c "${CONFIG_DIR}/liaison-edge.yaml" > "${LOG_DIR}/liaison-edge.log" 2>&1 &
                 PID=$!
                 echo -e "${GREEN}Edge 已在后台启动 (PID: $PID)${NC}"
                 ;;
@@ -358,16 +450,24 @@ EOF
     else
         # 其他系统
         echo -e "${YELLOW}使用 nohup 后台运行...${NC}"
-        nohup "${INSTALL_DIR}/liaison-edge" -c "${INSTALL_DIR}/etc/liaison-edge.yaml" > "${INSTALL_DIR}/logs/liaison-edge.log" 2>&1 &
+        nohup "${BIN_DIR}/liaison-edge" -c "${CONFIG_DIR}/liaison-edge.yaml" > "${LOG_DIR}/liaison-edge.log" 2>&1 &
         PID=$!
         echo -e "${GREEN}Edge 已在后台启动 (PID: $PID)${NC}"
     fi
 }
 
 # 询问是否设置后台运行
-echo -e "${YELLOW}是否现在设置后台运行？${NC}"
-read -p "请输入 [y/N] (默认: y): " setup
-setup=${setup:-y}
+# 检查标准输入是否是终端（交互式运行）
+if [ -t 0 ]; then
+    # 交互式运行，可以读取用户输入
+    echo -e "${YELLOW}是否现在设置后台运行？${NC}"
+    read -p "请输入 [y/N] (默认: y): " setup
+    setup=${setup:-y}
+else
+    # 非交互式运行（通过管道），使用默认值
+    echo -e "${YELLOW}非交互式运行模式，使用默认设置（自动设置后台运行）${NC}"
+    setup="y"
+fi
 
 if [[ "$setup" =~ ^[Yy]$ ]]; then
     setup_service

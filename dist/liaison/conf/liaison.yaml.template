@@ -1,0 +1,26 @@
+manager:
+  listen:
+    addr: 0.0.0.0:443
+    network: tcp
+    tls:
+      enable: true
+      certs:
+      - cert: /opt/liaison/certs/server.crt
+        key: /opt/liaison/certs/server.key
+  db: /opt/liaison/data/liaison.db
+  packages_dir: /opt/liaison/edge
+  web_dir: /opt/liaison/web
+  server_url: https://${PUBLIC_ADDR}
+  jwt_secret: ${JWT_SECRET}  # JWT密钥（必需，至少32字符，安装时自动生成）
+frontier:
+  dial:
+    addrs:
+      - 127.0.0.1:30011
+    network: tcp
+    tls:
+      enable: false
+log:
+  level: info
+  file: /opt/liaison/logs/liaison.log
+  maxsize: 100
+  maxrolls: 10

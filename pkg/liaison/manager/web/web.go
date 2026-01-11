@@ -73,29 +73,34 @@ func NewWebServer(conf *config.Configuration, controlPlane controlplane.ControlP
 }
 
 func (web *web) serveFiles(conf *config.Configuration, srv *kratoshttp.Server) error {
-	// 安装脚本服务
-	installScriptPath := filepath.Join("dist", "edge", "install.sh")
+	// 安装包服务 - edge 文件在 /opt/liaison/edge 目录
+	edgeDir := "/opt/liaison/edge"
+	// 确保 edgeDir 是绝对路径
+	edgeDirAbs, err := filepath.Abs(edgeDir)
+	if err != nil {
+		return err
+	}
+
+	// 安装脚本服务 - 从 /opt/liaison/edge/install.sh 提供服务
+	installScriptPath := filepath.Join(edgeDirAbs, "install.sh")
 	if _, err := os.Stat(installScriptPath); err == nil {
 		srv.HandleFunc("/install.sh", func(w http.ResponseWriter, r *http.Request) {
 			http.ServeFile(w, r, installScriptPath)
 		})
 	}
 
-	// 安装包服务
-	packagesDir := conf.Manager.PackagesDir
-	if packagesDir == "" {
-		packagesDir = "/opt/liaison/packages"
+	// 卸载脚本服务 - 从 /opt/liaison/edge/uninstall.sh 提供服务
+	uninstallScriptPath := filepath.Join(edgeDirAbs, "uninstall.sh")
+	if _, err := os.Stat(uninstallScriptPath); err == nil {
+		srv.HandleFunc("/uninstall.sh", func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, uninstallScriptPath)
+		})
 	}
-	// 确保 packagesDir 是绝对路径
-	packagesDirAbs, err := filepath.Abs(packagesDir)
-	if err != nil {
-		return err
-	}
-	packagesPath := filepath.Join(packagesDirAbs, "edge")
 
-	if _, err := os.Stat(packagesPath); err == nil {
+	// Edge 安装包文件服务
+	if _, err := os.Stat(edgeDirAbs); err == nil {
 		// http.FileServer 使用绝对路径时，内置了路径穿越保护（会拒绝包含 .. 的路径）
-		fileServer := http.FileServer(http.Dir(packagesPath))
+		fileServer := http.FileServer(http.Dir(edgeDirAbs))
 		srv.HandlePrefix("/packages/edge/", http.StripPrefix("/packages/edge/", fileServer))
 	}
 
@@ -110,12 +115,13 @@ func (web *web) serveFiles(conf *config.Configuration, srv *kratoshttp.Server) e
 		return err
 	}
 	fileServer := http.FileServer(http.Dir(webDirAbs))
-	// 前端文件服务：作为 fallback，处理所有非 API、非 install.sh、非 packages 的路径
+	// 前端文件服务：作为 fallback，处理所有非 API、非 install.sh、非 uninstall.sh、非 packages 的路径
 	srv.HandlePrefix("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
-		// 如果不是 API、install.sh 和 packages 路径，就走 web 服务
+		// 如果不是 API、install.sh、uninstall.sh 和 packages 路径，就走 web 服务
 		if !strings.HasPrefix(path, "/api/") &&
 			path != "/install.sh" &&
+			path != "/uninstall.sh" &&
 			!strings.HasPrefix(path, "/packages/") {
 			// 检查文件是否存在
 

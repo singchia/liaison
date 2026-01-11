@@ -1,10 +1,11 @@
 package liaison
 
 import (
+	"fmt"
 	"net/http"
 	"runtime"
 
-	"github.com/singchia/frontier/pkg/utils"
+	frontierutils "github.com/singchia/frontier/pkg/utils"
 	"github.com/singchia/liaison/pkg/entry"
 	"github.com/singchia/liaison/pkg/liaison/config"
 	"github.com/singchia/liaison/pkg/liaison/manager/controlplane"
@@ -12,6 +13,7 @@ import (
 	"github.com/singchia/liaison/pkg/liaison/manager/iam"
 	"github.com/singchia/liaison/pkg/liaison/manager/web"
 	"github.com/singchia/liaison/pkg/liaison/repo"
+	"github.com/singchia/liaison/pkg/utils"
 	"k8s.io/klog/v2"
 )
 
@@ -37,7 +39,7 @@ func NewLiaison() (*Liaison, error) {
 	}
 	// rlimit
 	if config.Conf.Daemon.RLimit.Enable {
-		err = utils.SetRLimit(uint64(config.Conf.Daemon.RLimit.NumFile))
+		err = frontierutils.SetRLimit(uint64(config.Conf.Daemon.RLimit.NumFile))
 		if err != nil {
 			klog.Errorf("set rlimit err: %s", err)
 			return nil, err
@@ -60,6 +62,13 @@ func NewLiaison() (*Liaison, error) {
 	}
 	// IAM service
 	iamService := iam.NewIAMService(repo)
+	// 设置JWT密钥（必须从配置文件读取）
+	if config.Conf.Manager.JWTSecret == "" {
+		return nil, fmt.Errorf("JWT secret key is required in configuration file. Please set 'manager.jwt_secret' in your configuration")
+	}
+	if err := utils.SetJWTSecret(config.Conf.Manager.JWTSecret); err != nil {
+		return nil, fmt.Errorf("failed to set JWT secret: %w", err)
+	}
 	// web layer
 	web, err := web.NewWebServer(config.Conf, controlPlane, iamService)
 	if err != nil {

@@ -1,71 +1,97 @@
-import { login } from '@/services/iam';
-import { Button, Card, Form, Input, message } from 'antd';
-import React, { useState } from 'react';
+import { LockOutlined, UserOutlined } from '@ant-design/icons';
+import { LoginForm, ProFormText } from '@ant-design/pro-components';
+import { history, useModel } from '@umijs/max';
+import { App } from 'antd';
+import { login } from '@/services/api';
+import { APP_NAME } from '@/constants';
+import './index.less';
 
 const Login: React.FC = () => {
-  const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
+  const { message } = App.useApp();
+  const { setInitialState } = useModel('@@initialState');
 
-  const onFinish = async (values: { username: string; password: string }) => {
-    const { username, password } = values || ({} as any);
-    if (!username || !password) {
-      message.error('请输入用户名和密码');
-      return;
-    }
-
+  const handleSubmit = async (values: { email: string; password: string }) => {
     try {
-      setLoading(true);
-      const data = await login({ username, password });
+      const result = await login(values);
+      if (result.code === 200 && result.data?.token) {
+        localStorage.setItem('token', result.data.token);
+        message.success('登录成功！');
 
-      // 保存 token 和用户信息
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('username', data.user.username);
-      localStorage.setItem('currentUser', JSON.stringify(data.user));
+        setInitialState((s) => ({
+          ...s,
+          currentUser: result.data?.user,
+        }));
 
-      message.success('登录成功');
-      window.location.href = '/home';
-    } catch (error) {
-      // 错误已在 request 封装中处理
-      console.error('登录失败', error);
-    } finally {
-      setLoading(false);
+        const urlParams = new URL(window.location.href).searchParams;
+        history.push(urlParams.get('redirect') || '/');
+        return;
+      }
+      message.error(result.message || '登录失败');
+    } catch (error: any) {
+      message.error(error?.message || '登录失败，请重试！');
     }
   };
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: '#f5f5f5',
-        padding: 24,
-      }}
-    >
-      <Card title="登录" style={{ width: 360 }}>
-        <Form form={form} layout="vertical" onFinish={onFinish}>
-          <Form.Item
-            label="用户名"
-            name="username"
-            rules={[{ required: true, message: '请输入用户名' }]}
-          >
-            <Input placeholder="用户名" allowClear />
-          </Form.Item>
-          <Form.Item
-            label="密码"
+    <div className="login-container">
+      <div className="login-content">
+        <div className="login-header">
+          <span className="login-title">{APP_NAME}</span>
+        </div>
+        <div className="login-desc">网络马上通达</div>
+        
+        <LoginForm
+          style={{
+            minWidth: 280,
+            maxWidth: '75vw',
+          }}
+          submitter={{
+            searchConfig: {
+              submitText: '登录',
+            },
+          }}
+          onFinish={handleSubmit}
+        >
+          <ProFormText
+            name="email"
+            fieldProps={{
+              size: 'large',
+              prefix: <UserOutlined className="prefixIcon" />,
+            }}
+            placeholder="邮箱"
+            initialValue=""
+            rules={[
+              {
+                required: true,
+                message: '请输入邮箱!',
+              },
+              {
+                type: 'email',
+                message: '请输入有效的邮箱地址!',
+              },
+            ]}
+          />
+          <ProFormText.Password
             name="password"
-            rules={[{ required: true, message: '请输入密码' }]}
-          >
-            <Input.Password placeholder="密码" />
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit" block loading={loading}>
-              登录
-            </Button>
-          </Form.Item>
-        </Form>
-      </Card>
+            fieldProps={{
+              size: 'large',
+              prefix: <LockOutlined className="prefixIcon" />,
+            }}
+            placeholder="密码"
+            initialValue=""
+            rules={[
+              {
+                required: true,
+                message: '请输入密码！',
+              },
+            ]}
+          />
+        </LoginForm>
+        
+        <div className="login-footer">
+          <p>© 2026 {APP_NAME}. All rights reserved.</p>
+        </div>
+      </div>
     </div>
   );
 };
