@@ -4,6 +4,7 @@ edgebound:
     addr: 0.0.0.0:30012
     tls:
       enable: true
+      insecure_skip_verify: true
       certs:
       - cert: /opt/liaison/certs/server.crt
         key: /opt/liaison/certs/server.key

@@ -107,16 +107,34 @@ else
     echo -e "${YELLOW}⚠️  If this IP is incorrect, you can edit $CONFIG_DIR/liaison.yaml later${NC}"
 fi
 
+# Generate random JWT secret (32 characters minimum for security)
+echo -e "${YELLOW}Generating JWT secret key...${NC}"
+JWT_SECRET=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-32 2>/dev/null)
+if [[ -z "$JWT_SECRET" ]]; then
+    JWT_SECRET=$(head -c 32 /dev/urandom | base64 | tr -d "=+/" | cut -c1-32 2>/dev/null)
+fi
+if [[ -z "$JWT_SECRET" ]]; then
+    JWT_SECRET=$(date +%s | sha256sum | base64 | tr -d "=+/" | cut -c1-32)
+fi
+if [[ ${#JWT_SECRET} -lt 32 ]]; then
+    # Pad to 32 characters if needed
+    JWT_SECRET="${JWT_SECRET}$(openssl rand -hex 16 | head -c $((32 - ${#JWT_SECRET})))"
+fi
+echo -e "${GREEN}JWT secret key generated${NC}"
+
 # Render configuration templates
 echo -e "${YELLOW}Rendering configuration files from templates...${NC}"
 if [[ -d "$SCRIPT_DIR/conf" ]]; then
     # Render liaison.yaml from template
     if [[ -f "$SCRIPT_DIR/conf/liaison.yaml.template" ]]; then
-        # Replace ${PUBLIC_ADDR} in the template
-        sed "s|\${PUBLIC_ADDR}|${PUBLIC_ADDR}|g" "$SCRIPT_DIR/conf/liaison.yaml.template" > "$CONFIG_DIR/liaison.yaml"
+        # Replace ${PUBLIC_ADDR} and ${JWT_SECRET} in the template
+        sed -e "s|\${PUBLIC_ADDR}|${PUBLIC_ADDR}|g" \
+            -e "s|\${JWT_SECRET}|${JWT_SECRET}|g" \
+            "$SCRIPT_DIR/conf/liaison.yaml.template" > "$CONFIG_DIR/liaison.yaml"
         chown "$SERVICE_USER:$SERVICE_GROUP" "$CONFIG_DIR/liaison.yaml"
         chmod 644 "$CONFIG_DIR/liaison.yaml"
         echo -e "${GREEN}liaison.yaml rendered with public IP: ${BOLD}${CYAN}$PUBLIC_ADDR${NC}${GREEN}${NC}"
+        echo -e "${GREEN}JWT secret key saved to configuration${NC}"
     fi
     
     # Render frontier.yaml from template (if it has PUBLIC_ADDR variable)
@@ -158,15 +176,18 @@ else
     echo -e "${YELLOW}Warning: web directory not found, skipping web files copy${NC}"
 fi
 
-# Copy edge binaries for all platforms
-echo -e "${YELLOW}Copying edge binaries for all platforms...${NC}"
+# Copy edge binaries and scripts for all platforms
+echo -e "${YELLOW}Copying edge binaries and scripts for all platforms...${NC}"
 if [[ -d "$SCRIPT_DIR/edge" ]]; then
     cp -f "$SCRIPT_DIR/edge/"* "$EDGE_DIR/" 2>/dev/null || true
     chown "$SERVICE_USER:$SERVICE_GROUP" "$EDGE_DIR"/* 2>/dev/null || true
-    chmod 755 "$EDGE_DIR"/* 2>/dev/null || true
-    echo -e "${GREEN}Edge binaries copied${NC}"
+    # Set executable permission for scripts, read-only for tar.gz files
+    chmod 755 "$EDGE_DIR"/install.sh 2>/dev/null || true
+    chmod 755 "$EDGE_DIR"/uninstall.sh 2>/dev/null || true
+    chmod 644 "$EDGE_DIR"/*.tar.gz 2>/dev/null || true
+    echo -e "${GREEN}Edge files copied${NC}"
 else
-    echo -e "${YELLOW}Warning: edge directory not found, skipping edge binaries copy${NC}"
+    echo -e "${YELLOW}Warning: edge directory not found, skipping edge files copy${NC}"
 fi
 
 # Generate TLS certificates

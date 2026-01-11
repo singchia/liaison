@@ -100,12 +100,30 @@ if [[ "$(uname)" == "Darwin" ]]; then
     cp -X packages/edge/liaison-edge-darwin-amd64.tar.gz "$PACK_DIR/edge/" 2>/dev/null && echo -e "${GREEN}  - liaison-edge-darwin-amd64.tar.gz${NC}" || true
     cp -X packages/edge/liaison-edge-darwin-arm64.tar.gz "$PACK_DIR/edge/" 2>/dev/null && echo -e "${GREEN}  - liaison-edge-darwin-arm64.tar.gz${NC}" || true
     cp -X packages/edge/liaison-edge-windows-amd64.tar.gz "$PACK_DIR/edge/" 2>/dev/null && echo -e "${GREEN}  - liaison-edge-windows-amd64.tar.gz${NC}" || true
+    # Copy edge install and uninstall scripts
+    if [ -f "dist/edge/install.sh" ]; then
+        cp -X dist/edge/install.sh "$PACK_DIR/edge/" 2>/dev/null || cp dist/edge/install.sh "$PACK_DIR/edge/"
+        echo -e "${GREEN}  - install.sh${NC}"
+    fi
+    if [ -f "dist/edge/uninstall.sh" ]; then
+        cp -X dist/edge/uninstall.sh "$PACK_DIR/edge/" 2>/dev/null || cp dist/edge/uninstall.sh "$PACK_DIR/edge/"
+        echo -e "${GREEN}  - uninstall.sh${NC}"
+    fi
 else
     cp packages/edge/liaison-edge-linux-amd64.tar.gz "$PACK_DIR/edge/" 2>/dev/null && echo -e "${GREEN}  - liaison-edge-linux-amd64.tar.gz${NC}" || true
     cp packages/edge/liaison-edge-linux-arm64.tar.gz "$PACK_DIR/edge/" 2>/dev/null && echo -e "${GREEN}  - liaison-edge-linux-arm64.tar.gz${NC}" || true
     cp packages/edge/liaison-edge-darwin-amd64.tar.gz "$PACK_DIR/edge/" 2>/dev/null && echo -e "${GREEN}  - liaison-edge-darwin-amd64.tar.gz${NC}" || true
     cp packages/edge/liaison-edge-darwin-arm64.tar.gz "$PACK_DIR/edge/" 2>/dev/null && echo -e "${GREEN}  - liaison-edge-darwin-arm64.tar.gz${NC}" || true
     cp packages/edge/liaison-edge-windows-amd64.tar.gz "$PACK_DIR/edge/" 2>/dev/null && echo -e "${GREEN}  - liaison-edge-windows-amd64.tar.gz${NC}" || true
+    # Copy edge install and uninstall scripts
+    if [ -f "dist/edge/install.sh" ]; then
+        cp dist/edge/install.sh "$PACK_DIR/edge/"
+        echo -e "${GREEN}  - install.sh${NC}"
+    fi
+    if [ -f "dist/edge/uninstall.sh" ]; then
+        cp dist/edge/uninstall.sh "$PACK_DIR/edge/"
+        echo -e "${GREEN}  - uninstall.sh${NC}"
+    fi
 fi
 
 # Copy frontend files

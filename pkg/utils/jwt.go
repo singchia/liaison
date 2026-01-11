@@ -15,8 +15,21 @@ type JWTConfig struct {
 
 // DefaultJWTConfig 默认JWT配置
 var DefaultJWTConfig = &JWTConfig{
-	SecretKey:      "liaison-secret-key-change-in-production",
+	SecretKey:      "",             // 必须从配置文件设置，不允许使用默认值
 	ExpirationTime: 24 * time.Hour, // 24小时过期
+}
+
+// SetJWTSecret 设置JWT密钥（用于从配置文件读取）
+// 如果secret为空，将返回错误
+func SetJWTSecret(secret string) error {
+	if secret == "" {
+		return errors.New("JWT secret key is required and cannot be empty")
+	}
+	if len(secret) < 32 {
+		return errors.New("JWT secret key must be at least 32 characters long for security")
+	}
+	DefaultJWTConfig.SecretKey = secret
+	return nil
 }
 
 // Claims JWT声明
@@ -28,6 +41,9 @@ type Claims struct {
 
 // GenerateToken 生成JWT token
 func GenerateToken(userID uint, email string) (string, error) {
+	if DefaultJWTConfig.SecretKey == "" {
+		return "", errors.New("JWT secret key is not configured")
+	}
 	expirationTime := time.Now().Add(DefaultJWTConfig.ExpirationTime)
 
 	claims := &Claims{
@@ -53,6 +69,9 @@ func GenerateToken(userID uint, email string) (string, error) {
 
 // ValidateToken 验证JWT token
 func ValidateToken(tokenString string) (*Claims, error) {
+	if DefaultJWTConfig.SecretKey == "" {
+		return nil, errors.New("JWT secret key is not configured")
+	}
 	claims := &Claims{}
 
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {

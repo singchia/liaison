@@ -51,10 +51,18 @@ func (cp *controlPlane) GetDevice(_ context.Context, req *v1.GetDeviceRequest) (
 	if err != nil {
 		return nil, err
 	}
+	// 获取网卡
+	interfaces, err := cp.repo.GetEthernetInterfacesByDeviceID(uint(device.ID))
+	if err != nil {
+		return nil, err
+	}
+	device.Interfaces = interfaces
+	deviceV1 := transformDevice(device)
+	deviceV1.Interfaces = transformEthernetInterfaces(device.Interfaces)
 	return &v1.GetDeviceResponse{
 		Code:    200,
 		Message: "success",
-		Data:    transformDevice(device),
+		Data:    deviceV1,
 	}, nil
 }
 
@@ -89,6 +97,10 @@ func transformEthernetInterfaces(interfaces []*model.EthernetInterface) []*v1.Et
 	// 每个网卡可能有多个IP地址
 	v1ifaces := map[string]*v1.EthernetInterface{}
 	for _, iface := range interfaces {
+		// 过滤 lo 网卡
+		if iface.Name == "lo" {
+			continue
+		}
 		v1iface, ok := v1ifaces[iface.Name+iface.MAC]
 		if !ok {
 			v1ifaces[iface.Name+iface.MAC] = &v1.EthernetInterface{

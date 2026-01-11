@@ -5,12 +5,13 @@ manager:
     network: tcp
     tls:
       enable: true  # 是否启用 TLS
+      insecure_skip_verify: true
   auth:
     access_key: "${ACCESS_KEY}"  # Access Key（必需）
     secret_key: "${SECRET_KEY}"  # Secret Key（必需）
 log:
   level: info  # 日志级别: debug, info, warn, error
-  file: ./logs/liaison-edge.log  # 日志文件路径
+  file: ${LOG_DIR}/liaison-edge.log  # 日志文件路径
   maxsize: 100  # 日志文件最大大小（MB）
   maxrolls: 10  # 保留的日志文件数量
 

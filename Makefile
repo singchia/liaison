@@ -180,11 +180,15 @@ build-edge-linux:
 
 .PHONY: build-frontier-linux
 build-frontier-linux:
-	@echo "Downloading frontier-linux-amd64 from GitHub releases..."
 	@mkdir -p ./bin
-	@curl -L -o ./bin/frontier https://pub-d6e1f937c991486386cd9d9ca8ac9f0c.r2.dev/frontier-linux-amd64
-	@chmod +x ./bin/frontier
-	@echo "✅ Downloaded: ./bin/frontier"
+	@if [ -f "./bin/frontier" ]; then \
+		echo "✅ frontier binary already exists, skipping download"; \
+	else \
+		echo "Downloading frontier-linux-amd64 from GitHub releases..."; \
+		curl -L -o ./bin/frontier https://pub-d6e1f937c991486386cd9d9ca8ac9f0c.r2.dev/frontier-linux-amd64 && \
+		chmod +x ./bin/frontier && \
+		echo "✅ Downloaded: ./bin/frontier"; \
+	fi
 
 # Legacy aliases
 .PHONY: liaison-linux liaison-edge-linux
