@@ -1,5 +1,5 @@
 <p align=center>
-    <strong style="font-size: 28px;">Liaison</strong>
+    <strong style="font-size: 50px;">Liaison</strong>
 </p>
 
 <div align="center">
