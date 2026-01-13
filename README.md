@@ -1,4 +1,15 @@
-# Liaison
+<p align=center>
+    <h1 align="center">Liaison</h1>
+</p>
+
+
+<div align="center">
+
+[![Go](https://github.com/singchia/liaison/actions/workflows/go.yml/badge.svg)](https://github.com/singchia/liaison/actions/workflows/go.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/singchia/liaison)](https://goreportcard.com/report/github.com/singchia/liaison)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+</div>
 
 网络马上通达，Liaison 让你可以轻松连接分布在不同位置的设备与应用。无论你的设备在哪里（家、办公室或机房），都能通过 Liaison 建立稳定、安全的网络连接。
 
