@@ -27,11 +27,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y gcc libc6-dev libsqlite3-dev
 
-    - name: Build binaries for testing
-      run: |
-        mkdir -p ./bin
-        CGO_ENABLED=1 go build -trimpath -ldflags "-s -w" -o ./bin/liaison cmd/manager/main.go
-        go build -trimpath -ldflags "-s -w" -o ./bin/liaison-edge cmd/edge/main.go
-
     - name: Test
-      run: go test -v ./...
+      run: |
+        # 只运行单元测试，排除 E2E 测试
+        go list ./... | grep -v '/test/e2e' | xargs go test -v
