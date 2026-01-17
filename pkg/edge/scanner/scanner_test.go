@@ -10,8 +10,16 @@ func TestGetTopPorts(t *testing.T) {
 	if len(ports) != 10 {
 		t.Fatalf("expected 10 ports, got %d", len(ports))
 	}
-	if ports[0] != 22 {
-		t.Fatalf("expected first port to be 22, got %d", ports[0])
+	// 根据 Nmap top ports 顺序，第一个端口应该是 7
+	if ports[0] != 7 {
+		t.Fatalf("expected first port to be 7, got %d", ports[0])
+	}
+	// 验证包含常见端口
+	expectedPorts := []int{7, 9, 13, 21, 22, 23, 25, 26, 37, 53}
+	for i, port := range ports {
+		if port != expectedPorts[i] {
+			t.Fatalf("expected port[%d] to be %d, got %d", i, expectedPorts[i], port)
+		}
 	}
 }
 
