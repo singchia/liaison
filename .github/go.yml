@@ -30,4 +30,9 @@ jobs:
     - name: Test
       run: |
         # 只运行单元测试，排除 E2E 测试
-        go list ./... | grep -v '/test/e2e' | xargs go test -v
+        # 明确指定要测试的目录，排除 test/e2e
+        for pkg in $(go list ./...); do
+          if [[ ! "$pkg" =~ test/e2e ]]; then
+            go test -v "$pkg"
+          fi
+        done
