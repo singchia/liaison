@@ -1,12 +1,18 @@
 package edge
 
 import (
-	"github.com/go-kratos/kratos/v2/log"
+	"net/http"
+	_ "net/http/pprof"
+	"runtime"
+
+	"github.com/jumboframes/armorigo/log"
 	"github.com/singchia/liaison/pkg/edge/config"
 	"github.com/singchia/liaison/pkg/edge/frontierbound"
 	"github.com/singchia/liaison/pkg/edge/proxy"
 	"github.com/singchia/liaison/pkg/edge/reporter"
 	"github.com/singchia/liaison/pkg/edge/scanner"
+	"github.com/singchia/liaison/pkg/utils"
+	"k8s.io/klog/v2"
 )
 
 type Edge struct {
@@ -19,6 +25,32 @@ func NewEdge() (*Edge, error) {
 	if err != nil {
 		log.Errorf("init config error: %v", err)
 		return nil, err
+	}
+	// pprof & rlimit
+	log.Infof("pprof config: enable=%v, addr=%s", config.Conf.Daemon.PProf.Enable, config.Conf.Daemon.PProf.Addr)
+	if config.Conf.Daemon.PProf.Enable {
+		// 如果 CPUProfileRate 为 0，使用默认值 100
+		cpuProfileRate := config.Conf.Daemon.PProf.CPUProfileRate
+		if cpuProfileRate == 0 {
+			cpuProfileRate = 100
+		}
+		runtime.SetCPUProfileRate(cpuProfileRate)
+		go func() {
+			klog.Infof("starting pprof server on %s", config.Conf.Daemon.PProf.Addr)
+			log.Infof("starting pprof server on %s", config.Conf.Daemon.PProf.Addr)
+			if err := http.ListenAndServe(config.Conf.Daemon.PProf.Addr, nil); err != nil {
+				klog.Errorf("pprof server error: %v", err)
+				log.Errorf("pprof server error: %v", err)
+			}
+		}()
+	}
+	// rlimit
+	if config.Conf.Daemon.RLimit.Enable {
+		err = utils.SetRLimit(uint64(config.Conf.Daemon.RLimit.NumFile))
+		if err != nil {
+			klog.Errorf("set rlimit err: %s", err)
+			return nil, err
+		}
 	}
 
 	frontierBound, err := frontierbound.NewFrontierBound(config.Conf)

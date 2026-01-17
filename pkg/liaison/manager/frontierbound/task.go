@@ -6,7 +6,7 @@ import (
 	"errors"
 	"net"
 
-	"github.com/go-kratos/kratos/v2/log"
+	"github.com/jumboframes/armorigo/log"
 	"github.com/singchia/geminio"
 	"github.com/singchia/liaison/pkg/liaison/repo/model"
 	"github.com/singchia/liaison/pkg/proto"

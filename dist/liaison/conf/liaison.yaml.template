@@ -1,3 +1,7 @@
+daemon:
+  pprof:
+    addr: 127.0.0.1:6060
+    enable: true
 manager:
   listen:
     addr: 0.0.0.0:443

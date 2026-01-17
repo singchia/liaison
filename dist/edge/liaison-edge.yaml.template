@@ -9,6 +9,11 @@ manager:
   auth:
     access_key: "${ACCESS_KEY}"  # Access Key（必需）
     secret_key: "${SECRET_KEY}"  # Secret Key（必需）
+daemon:
+  pprof:
+    enable: false  # 是否启用 pprof
+    addr: "127.0.0.1:6062"  # pprof 监听地址
+    cpu_profile_rate: 100  # CPU profile 采样率
 log:
   level: info  # 日志级别: debug, info, warn, error
   file: ${LOG_DIR}/liaison-edge.log  # 日志文件路径

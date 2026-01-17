@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"runtime"
 
-	frontierutils "github.com/singchia/frontier/pkg/utils"
 	"github.com/singchia/liaison/pkg/entry"
 	"github.com/singchia/liaison/pkg/liaison/config"
 	"github.com/singchia/liaison/pkg/liaison/manager/controlplane"
@@ -39,7 +38,7 @@ func NewLiaison() (*Liaison, error) {
 	}
 	// rlimit
 	if config.Conf.Daemon.RLimit.Enable {
-		err = frontierutils.SetRLimit(uint64(config.Conf.Daemon.RLimit.NumFile))
+		err = utils.SetRLimit(uint64(config.Conf.Daemon.RLimit.NumFile))
 		if err != nil {
 			klog.Errorf("set rlimit err: %s", err)
 			return nil, err

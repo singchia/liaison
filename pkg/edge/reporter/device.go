@@ -23,14 +23,19 @@ func (r *reporter) loopReportDevice(ctx context.Context) {
 		device, err := getDevice()
 		if err != nil {
 			log.Errorf("get device error: %v", err)
+			// 失败后等待 5 分钟再重试
+			time.Sleep(5 * time.Minute)
 			continue
 		}
 		device.EdgeID, _ = r.frontierBound.EdgeID()
 		err = r.reportDevice(ctx, device)
 		if err != nil {
 			log.Errorf("report device error: %v", err)
+			// 失败后等待 5 分钟再重试
+			time.Sleep(5 * time.Minute)
 			continue
 		}
+		// 成功后等待 1 小时
 		time.Sleep(time.Hour)
 	}
 }
@@ -40,13 +45,18 @@ func (r *reporter) loopReportDeviceUsage(ctx context.Context) {
 		deviceUsage, err := getDeviceUsage()
 		if err != nil {
 			log.Errorf("get device usage error: %v", err)
+			// 失败后等待 1 分钟再重试
+			time.Sleep(time.Minute)
 			continue
 		}
 		err = r.reportDeviceUsage(ctx, deviceUsage)
 		if err != nil {
 			log.Errorf("report device usage error: %v", err)
+			// 失败后等待 1 分钟再重试
+			time.Sleep(time.Minute)
 			continue
 		}
+		// 成功后等待 1 分钟
 		time.Sleep(time.Minute)
 	}
 }
@@ -91,25 +101,27 @@ func (r *reporter) reportDeviceUsage(ctx context.Context, deviceUsage *proto.Dev
 func getDevice() (*proto.Device, error) {
 	hostname, err := os.Hostname()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get hostname: %w", err)
 	}
 
 	// 基础信息
 	cpuCount, err := cpu.Counts(true)
 	if err != nil {
-		return nil, err
+		// 如果无法获取 CPU 数量，使用默认值 1
+		cpuCount = 1
+		log.Warnf("failed to get CPU count, using default: 1, error: %v", err)
 	}
 
 	memory, err := mem.VirtualMemory()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get memory info: %w", err)
 	}
 	memMB := memory.Total / 1024 / 1024
 
 	// OS
 	info, err := host.Info()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get host info: %w", err)
 	}
 	os := info.OS
 	osVersion := info.KernelVersion
@@ -117,19 +129,21 @@ func getDevice() (*proto.Device, error) {
 	// 根磁盘大小
 	diskUsage, err := disk.Usage("/")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get disk usage: %w", err)
 	}
 	diskMB := diskUsage.Total / 1024 / 1024
 
 	// 网络接口
 	interfaces, err := getDeviceEthernetInterface()
 	if err != nil {
-		return nil, err
+		// 如果无法获取网络接口，使用空列表
+		interfaces = []*proto.DeviceEthernetInterface{}
+		log.Warnf("failed to get network interfaces, using empty list, error: %v", err)
 	}
 	// 指纹
 	fingerprint, err := getFingerprint()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get fingerprint: %w", err)
 	}
 
 	return &proto.Device{
@@ -198,6 +212,12 @@ func getDeviceEthernetInterface() ([]*proto.DeviceEthernetInterface, error) {
 }
 
 func getDeviceUsage() (*proto.DeviceUsage, error) {
+	// 获取指纹
+	fingerprint, err := getFingerprint()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get fingerprint: %w", err)
+	}
+
 	memory, err := mem.VirtualMemory()
 	if err != nil {
 		return nil, err
@@ -212,6 +232,7 @@ func getDeviceUsage() (*proto.DeviceUsage, error) {
 		return nil, err
 	}
 	deviceUsage := &proto.DeviceUsage{
+		Fingerprint: fingerprint,
 		CPUUsage:    float32(cpuUsage[0]),
 		MemoryUsage: float32(memory.UsedPercent),
 		DiskUsage:   float32(diskUsage.UsedPercent),
@@ -224,7 +245,7 @@ func getFingerprint() (string, error) {
 	// 获取主网卡 MAC
 	interfaces, err := net.Interfaces()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to get network interfaces: %w", err)
 	}
 	mac := ""
 	for _, iface := range interfaces {
@@ -233,27 +254,37 @@ func getFingerprint() (string, error) {
 			break
 		}
 	}
+	if mac == "" {
+		return "", fmt.Errorf("failed to get MAC address")
+	}
 
 	// CPU 信息
+	cpuID := ""
 	cpuInfo, err := cpu.Info()
 	if err != nil {
-		return "", err
-	}
-	cpuID := ""
-	if len(cpuInfo) > 0 {
+		// 如果无法获取 CPU 信息，使用 hostname 作为备用
+		hostname, _ := os.Hostname()
+		cpuID = hostname
+	} else if len(cpuInfo) > 0 {
 		cpuID = cpuInfo[0].ModelName + cpuInfo[0].VendorID + cpuInfo[0].Family
 	}
 
 	// 磁盘序列号（取根分区对应的磁盘）
+	// 在 macOS 上可能无法获取，使用空字符串作为备用
 	diskID := ""
-	counts, _ := disk.IOCounters()
-	if len(counts) > 0 {
+	counts, err := disk.IOCounters()
+	if err == nil && len(counts) > 0 {
 		for _, stats := range counts {
 			if stats.SerialNumber != "" {
 				diskID = stats.SerialNumber
 				break
 			}
 		}
+	}
+	// 如果无法获取磁盘序列号，使用 hostname 作为备用
+	if diskID == "" {
+		hostname, _ := os.Hostname()
+		diskID = hostname
 	}
 
 	raw := fmt.Sprintf("%s|%s|%s", mac, cpuID, diskID)

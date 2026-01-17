@@ -18,8 +18,25 @@ var (
 
 	h           bool
 	file        string
-	defaultFile string = "./edge.yaml"
+	defaultFile string = "./liaison-edge.yaml"
 )
+
+// daemon related
+type RLimit struct {
+	Enable  bool `yaml:"enable" json:"enable"`
+	NumFile int  `yaml:"nofile" json:"nofile"`
+}
+
+type PProf struct {
+	Enable         bool   `yaml:"enable" json:"enable"`
+	Addr           string `yaml:"addr" json:"addr"`
+	CPUProfileRate int    `yaml:"cpu_profile_rate" json:"cpu_profile_rate"`
+}
+
+type Daemon struct {
+	RLimit RLimit `yaml:"rlimit,omitempty" json:"rlimit"`
+	PProf  PProf  `yaml:"pprof,omitempty" json:"pprof"`
+}
 
 type Auth struct {
 	AccessKey string `yaml:"access_key,omitempty" json:"access_key"`
@@ -39,6 +56,7 @@ type Log struct {
 }
 
 type Configuration struct {
+	Daemon  Daemon  `yaml:"daemon,omitempty" json:"daemon"`
 	Manager Manager `yaml:"manager,omitempty" json:"manager"`
 	Log     Log     `yaml:"log,omitempty" json:"log"`
 }
