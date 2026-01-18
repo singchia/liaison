@@ -93,3 +93,21 @@ type PullTaskScanApplicationResponse struct {
 	Port     int      `json:"port"`
 	Protocol string   `json:"protocol"`
 }
+
+// ping device
+type GetEdgeDiscoveredDevicesRequest struct {
+	EdgeID uint64 `json:"edge_id"`
+}
+
+type DiscoveredDevice struct {
+	DeviceID uint64 `json:"device_id"`
+	IP       string `json:"ip"` // 设备的 IP 地址（用于 ping）
+}
+
+type GetEdgeDiscoveredDevicesResponse struct {
+	Devices []DiscoveredDevice `json:"devices"`
+}
+
+type UpdateDeviceHeartbeatRequest struct {
+	DeviceID uint64 `json:"device_id"`
+}

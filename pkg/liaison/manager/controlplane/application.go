@@ -10,16 +10,34 @@ import (
 )
 
 func (cp *controlPlane) CreateApplication(_ context.Context, req *v1.CreateApplicationRequest) (*v1.CreateApplicationResponse, error) {
-	// 查找相关的 edge
-	edge, err := cp.repo.GetEdge(req.EdgeId)
+	// 验证 edge 是否存在
+	_, err := cp.repo.GetEdge(req.EdgeId)
 	if err != nil {
 		return nil, err
 	}
 
-	// 确定 device_id：优先使用请求中的 device_id，否则使用 edge 关联的 device_id
-	deviceID := edge.DeviceID
+	// 根据应用的 IP 地址查找对应的 Device
+	var deviceID uint
 	if req.DeviceId != nil && *req.DeviceId > 0 {
+		// 如果请求中指定了 device_id，优先使用
 		deviceID = uint(*req.DeviceId)
+	} else if req.Ip != "" {
+		// 如果 IP 是 127.0.0.1，使用 edge 所在的 device
+		if req.Ip == "127.0.0.1" || req.Ip == "::1" || req.Ip == "localhost" {
+			// 获取 edge 所在的 device（通过 EdgeDevice 关系表，类型为 Host）
+			hostType := model.EdgeDeviceRelationHost
+			edgeDevices, err := cp.repo.GetEdgeDevicesByEdgeID(req.EdgeId, &hostType)
+			if err == nil && len(edgeDevices) > 0 {
+				deviceID = edgeDevices[0].DeviceID
+			}
+		} else {
+			// 根据 IP 查找 Device
+			device, err := cp.repo.GetDeviceByIP(req.Ip)
+			if err == nil && device != nil {
+				deviceID = uint(device.ID)
+			}
+			// 如果根据 IP 找不到 Device，deviceID 保持为 0
+		}
 	}
 
 	// 注意如果edge id不在线，应用可能无法访问

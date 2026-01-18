@@ -42,6 +42,7 @@ type ListProxiesQuery struct {
 
 type ListEdgesQuery struct {
 	Query
-	DeviceIDs []uint
+	DeviceIDs []uint  // 已废弃，保留以兼容
+	EdgeIDs   []uint64 // 通过 EdgeDevice 关系表查询的 Edge IDs
 	Name      string
 }

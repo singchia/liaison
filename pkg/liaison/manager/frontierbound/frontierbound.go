@@ -82,6 +82,16 @@ func NewFrontierBound(conf *config.Configuration, repo repo.Repo) (FrontierBound
 		log.Errorf("register pull task scan application error: %s", err)
 		return nil, err
 	}
+	err = svc.Register(context.Background(), "get_edge_discovered_devices", fb.getEdgeDiscoveredDevices)
+	if err != nil {
+		log.Errorf("register get edge discovered devices error: %s", err)
+		return nil, err
+	}
+	err = svc.Register(context.Background(), "update_device_heartbeat", fb.updateDeviceHeartbeat)
+	if err != nil {
+		log.Errorf("register update device heartbeat error: %s", err)
+		return nil, err
+	}
 
 	fb.svc = svc
 	return fb, nil

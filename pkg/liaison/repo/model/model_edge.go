@@ -27,8 +27,7 @@ type Edge struct {
 	Online      EdgeOnlineStatus `gorm:"column:online;type:int;not null"`
 	HeartbeatAt time.Time        `gorm:"column:heartbeat_at;type:datetime;not null"`
 	Description string           `gorm:"column:description;type:varchar(255);not null"`
-	DeviceID    uint             `gorm:"column:device_id;type:int;not null"` // 关联设备
-	Device      *Device          `gorm:"-"`
+	Device      *Device          `gorm:"-"` // 通过 EdgeDevice 关系表关联的设备（Host 类型）
 }
 
 func (Edge) TableName() string {

@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/jumboframes/armorigo/log"
@@ -167,6 +169,10 @@ func getDeviceEthernetInterface() ([]*proto.DeviceEthernetInterface, error) {
 	ethernetInterfaces := make([]*proto.DeviceEthernetInterface, 0)
 
 	for _, iface := range interfaces {
+		// 跳过 lo 网卡
+		if iface.Name == "lo" || iface.Name == "lo0" {
+			continue
+		}
 		// 跳过没有MAC或未启用的接口
 		if iface.Flags&net.FlagUp == 0 {
 			continue
@@ -178,11 +184,20 @@ func getDeviceEthernetInterface() ([]*proto.DeviceEthernetInterface, error) {
 		}
 
 		ipMasks := make([]*proto.IPMask, 0)
+		hasIPv4 := false
 
 		for _, addr := range addrs {
 			switch v := addr.(type) {
 			case *net.IPNet: // 带掩码的情况
 				ip := v.IP.String()
+				// 跳过 loopback 和 link-local 地址
+				if v.IP.IsLoopback() || v.IP.IsLinkLocalUnicast() {
+					continue
+				}
+				// 检查是否为 IPv4
+				if v.IP.To4() != nil {
+					hasIPv4 = true
+				}
 				mask := ""
 				if v.Mask != nil {
 					// 统一使用前缀长度（CIDR notation）
@@ -195,6 +210,14 @@ func getDeviceEthernetInterface() ([]*proto.DeviceEthernetInterface, error) {
 				})
 
 			case *net.IPAddr: // 只有IP没有掩码
+				// 跳过 loopback 和 link-local 地址
+				if v.IP.IsLoopback() || v.IP.IsLinkLocalUnicast() {
+					continue
+				}
+				// 检查是否为 IPv4
+				if v.IP.To4() != nil {
+					hasIPv4 = true
+				}
 				ipMasks = append(ipMasks, &proto.IPMask{
 					IP:      v.IP.String(),
 					Netmask: "",
@@ -202,11 +225,14 @@ func getDeviceEthernetInterface() ([]*proto.DeviceEthernetInterface, error) {
 			}
 		}
 
-		ethernetInterfaces = append(ethernetInterfaces, &proto.DeviceEthernetInterface{
-			Name:    iface.Name,
-			MAC:     iface.HardwareAddr.String(),
-			IPMasks: ipMasks,
-		})
+		// 只添加有IP地址且至少有一个IPv4地址的网卡（跳过只有IPv6的网卡）
+		if len(ipMasks) > 0 && hasIPv4 {
+			ethernetInterfaces = append(ethernetInterfaces, &proto.DeviceEthernetInterface{
+				Name:    iface.Name,
+				MAC:     iface.HardwareAddr.String(),
+				IPMasks: ipMasks,
+			})
+		}
 	}
 	return ethernetInterfaces, nil
 }
@@ -240,23 +266,31 @@ func getDeviceUsage() (*proto.DeviceUsage, error) {
 	return deviceUsage, nil
 }
 
+// GetFingerprint 获取设备指纹（导出函数，供命令行使用）
+func GetFingerprint() (string, error) {
+	return getFingerprint()
+}
+
 // 基于 MAC、CPU、磁盘序列号生成指纹
+// 所有组件都进行排序，确保指纹稳定性
 func getFingerprint() (string, error) {
-	// 获取主网卡 MAC
+	// 获取所有非 loopback 网卡的 MAC 地址，并排序
 	interfaces, err := net.Interfaces()
 	if err != nil {
 		return "", fmt.Errorf("failed to get network interfaces: %w", err)
 	}
-	mac := ""
+	macs := make([]string, 0)
 	for _, iface := range interfaces {
 		if len(iface.HardwareAddr) > 0 && iface.Flags&net.FlagLoopback == 0 {
-			mac = iface.HardwareAddr.String()
-			break
+			macs = append(macs, iface.HardwareAddr.String())
 		}
 	}
-	if mac == "" {
+	if len(macs) == 0 {
 		return "", fmt.Errorf("failed to get MAC address")
 	}
+	// 对 MAC 地址进行排序，确保顺序稳定
+	sort.Strings(macs)
+	mac := strings.Join(macs, ",") // 使用所有 MAC 地址，用逗号分隔
 
 	// CPU 信息
 	cpuID := ""
@@ -266,26 +300,43 @@ func getFingerprint() (string, error) {
 		hostname, _ := os.Hostname()
 		cpuID = hostname
 	} else if len(cpuInfo) > 0 {
-		cpuID = cpuInfo[0].ModelName + cpuInfo[0].VendorID + cpuInfo[0].Family
+		// 如果有多个 CPU，对 CPU 信息进行排序
+		cpuStrings := make([]string, 0, len(cpuInfo))
+		for _, info := range cpuInfo {
+			cpuStr := info.ModelName + info.VendorID + info.Family
+			cpuStrings = append(cpuStrings, cpuStr)
+		}
+		// 去重并排序
+		cpuMap := make(map[string]bool)
+		uniqueCpus := make([]string, 0)
+		for _, cpuStr := range cpuStrings {
+			if !cpuMap[cpuStr] {
+				cpuMap[cpuStr] = true
+				uniqueCpus = append(uniqueCpus, cpuStr)
+			}
+		}
+		sort.Strings(uniqueCpus)
+		cpuID = strings.Join(uniqueCpus, ",")
 	}
 
-	// 磁盘序列号（取根分区对应的磁盘）
-	// 在 macOS 上可能无法获取，使用空字符串作为备用
-	diskID := ""
+	// 磁盘序列号（收集所有磁盘的序列号，并排序）
+	diskIDs := make([]string, 0)
 	counts, err := disk.IOCounters()
 	if err == nil && len(counts) > 0 {
 		for _, stats := range counts {
 			if stats.SerialNumber != "" {
-				diskID = stats.SerialNumber
-				break
+				diskIDs = append(diskIDs, stats.SerialNumber)
 			}
 		}
 	}
 	// 如果无法获取磁盘序列号，使用 hostname 作为备用
-	if diskID == "" {
+	if len(diskIDs) == 0 {
 		hostname, _ := os.Hostname()
-		diskID = hostname
+		diskIDs = []string{hostname}
 	}
+	// 对磁盘序列号进行排序，确保顺序稳定
+	sort.Strings(diskIDs)
+	diskID := strings.Join(diskIDs, ",") // 使用所有磁盘序列号，用逗号分隔
 
 	raw := fmt.Sprintf("%s|%s|%s", mac, cpuID, diskID)
 	sum := sha256.Sum256([]byte(raw))

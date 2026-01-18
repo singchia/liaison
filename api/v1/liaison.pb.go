@@ -820,6 +820,7 @@ type Device struct {
 	Disk          int32                  `protobuf:"varint,6,opt,name=disk,proto3" json:"disk,omitempty"`             // 磁盘，MB
 	Os            string                 `protobuf:"bytes,7,opt,name=os,proto3" json:"os,omitempty"`                  // 操作系统
 	Version       string                 `protobuf:"bytes,8,opt,name=version,proto3" json:"version,omitempty"`        // 系统版本
+	Online        int32                  `protobuf:"varint,12,opt,name=online,proto3" json:"online,omitempty"`        // 在线状态: 1: 在线, 2: 离线
 	Interfaces    []*EthernetInterface   `protobuf:"bytes,9,rep,name=interfaces,proto3" json:"interfaces,omitempty"`  // 网卡
 	CreatedAt     string                 `protobuf:"bytes,10,opt,name=created_at,proto3" json:"created_at,omitempty"` // 创建时间
 	UpdatedAt     string                 `protobuf:"bytes,11,opt,name=updated_at,proto3" json:"updated_at,omitempty"` // 更新时间
@@ -911,6 +912,13 @@ func (x *Device) GetVersion() string {
 		return x.Version
 	}
 	return ""
+}
+
+func (x *Device) GetOnline() int32 {
+	if x != nil {
+		return x.Online
+	}
+	return 0
 }
 
 func (x *Device) GetInterfaces() []*EthernetInterface {
@@ -3710,7 +3718,7 @@ const file_liaison_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\"B\n" +
 	"\x12DeleteEdgeResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\"\xaa\x02\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"\xc2\x02\n" +
 	"\x06Device\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
@@ -3719,7 +3727,8 @@ const file_liaison_proto_rawDesc = "" +
 	"\x06memory\x18\x05 \x01(\x05R\x06memory\x12\x12\n" +
 	"\x04disk\x18\x06 \x01(\x05R\x04disk\x12\x0e\n" +
 	"\x02os\x18\a \x01(\tR\x02os\x12\x18\n" +
-	"\aversion\x18\b \x01(\tR\aversion\x122\n" +
+	"\aversion\x18\b \x01(\tR\aversion\x12\x16\n" +
+	"\x06online\x18\f \x01(\x05R\x06online\x122\n" +
 	"\n" +
 	"interfaces\x18\t \x03(\v2\x12.EthernetInterfaceR\n" +
 	"interfaces\x12\x1e\n" +

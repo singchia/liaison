@@ -111,6 +111,15 @@ func (cp *controlPlane) GetEdge(_ context.Context, req *v1.GetEdgeRequest) (*v1.
 	if err != nil {
 		return nil, err
 	}
+	// 通过 EdgeDevice 关系表获取关联的 Device（Host 类型）
+	hostType := model.EdgeDeviceRelationHost
+	edgeDevices, err := cp.repo.GetEdgeDevicesByEdgeID(req.Id, &hostType)
+	if err == nil && len(edgeDevices) > 0 {
+		device, err := cp.repo.GetDeviceByID(edgeDevices[0].DeviceID)
+		if err == nil && device != nil {
+			edge.Device = device
+		}
+	}
 	return &v1.GetEdgeResponse{
 		Code:    200,
 		Message: "success",
@@ -128,13 +137,12 @@ func (cp *controlPlane) GetEdge(_ context.Context, req *v1.GetEdgeRequest) (*v1.
 
 func (cp *controlPlane) ListEdges(_ context.Context, req *v1.ListEdgesRequest) (*v1.ListEdgesResponse, error) {
 	var (
-		deviceIDs       []uint
-		devices         []*model.Device
-		err             error
-		preDeviceSearch bool
+		edgeIDs []uint64
+		err     error
 	)
+	// 如果指定了设备名，先查找设备，然后通过 EdgeDevice 关系表查找关联的 Edge
 	if req.DeviceName != "" {
-		devices, err = cp.repo.ListDevices(&dao.ListDevicesQuery{
+		devices, err := cp.repo.ListDevices(&dao.ListDevicesQuery{
 			Query: dao.Query{
 				Order: "id",
 				Desc:  true,
@@ -144,12 +152,30 @@ func (cp *controlPlane) ListEdges(_ context.Context, req *v1.ListEdgesRequest) (
 		if err != nil {
 			return nil, err
 		}
-		for _, device := range devices {
-			deviceIDs = append(deviceIDs, device.ID)
-		}
-		preDeviceSearch = true
 		// 如果指定了设备名但搜不到设备，直接返回空结果
-		if len(deviceIDs) == 0 {
+		if len(devices) == 0 {
+			return &v1.ListEdgesResponse{
+				Code:    200,
+				Message: "success",
+				Data: &v1.Edges{
+					Total: 0,
+					Edges: []*v1.Edge{},
+				},
+			}, nil
+		}
+		// 通过 EdgeDevice 关系表查找关联的 Edge（Host 类型）
+		hostType := model.EdgeDeviceRelationHost
+		for _, device := range devices {
+			edgeDevices, err := cp.repo.GetEdgeDevicesByDeviceID(device.ID, &hostType)
+			if err != nil {
+				return nil, err
+			}
+			for _, edgeDevice := range edgeDevices {
+				edgeIDs = append(edgeIDs, edgeDevice.EdgeID)
+			}
+		}
+		// 如果没有找到关联的 Edge，直接返回空结果
+		if len(edgeIDs) == 0 {
 			return &v1.ListEdgesResponse{
 				Code:    200,
 				Message: "success",
@@ -169,8 +195,9 @@ func (cp *controlPlane) ListEdges(_ context.Context, req *v1.ListEdgesRequest) (
 			Desc:     true,
 		},
 	}
-	if len(deviceIDs) > 0 {
-		query.DeviceIDs = deviceIDs
+	// 如果通过设备名找到了 Edge IDs，使用这些 IDs 过滤
+	if len(edgeIDs) > 0 {
+		query.EdgeIDs = edgeIDs
 	}
 	if req.Name != "" {
 		query.Name = req.Name
@@ -180,29 +207,49 @@ func (cp *controlPlane) ListEdges(_ context.Context, req *v1.ListEdgesRequest) (
 	if err != nil {
 		return nil, err
 	}
-	if !preDeviceSearch {
-		// 如果没有提前搜索设备， 则后置关联devices
-		deviceIDs := []uint{}
-		for _, edge := range edges {
-			// 只收集非零的 DeviceID，避免查询无效的设备
-			if edge.DeviceID > 0 {
-				deviceIDs = append(deviceIDs, edge.DeviceID)
-			}
+
+	// 通过 EdgeDevice 关系表获取所有 Edge 关联的 Device（Host 类型）
+	edgeIDList := make([]uint64, 0, len(edges))
+	for _, edge := range edges {
+		edgeIDList = append(edgeIDList, uint64(edge.ID))
+	}
+	
+	// 批量查询 EdgeDevice 关系
+	hostType := model.EdgeDeviceRelationHost
+	deviceIDSet := make(map[uint]bool)
+	edgeDeviceMap := make(map[uint64]uint) // edgeID -> deviceID
+	for _, edgeID := range edgeIDList {
+		edgeDevices, err := cp.repo.GetEdgeDevicesByEdgeID(edgeID, &hostType)
+		if err != nil {
+			return nil, err
 		}
-		// 只有当存在有效的 deviceIDs 时才查询设备
-		if len(deviceIDs) > 0 {
-			devices, err = cp.repo.ListDevices(&dao.ListDevicesQuery{
-				Query: dao.Query{
-					Order: "id",
-					Desc:  true,
-				},
-				IDs: deviceIDs,
-			})
-			if err != nil {
-				return nil, err
+		for _, edgeDevice := range edgeDevices {
+			edgeDeviceMap[edgeID] = edgeDevice.DeviceID
+			if !deviceIDSet[edgeDevice.DeviceID] {
+				deviceIDSet[edgeDevice.DeviceID] = true
 			}
 		}
 	}
+
+	// 查询所有相关的 Device
+	var devices []*model.Device
+	if len(deviceIDSet) > 0 {
+		deviceIDs := make([]uint, 0, len(deviceIDSet))
+		for deviceID := range deviceIDSet {
+			deviceIDs = append(deviceIDs, deviceID)
+		}
+		devices, err = cp.repo.ListDevices(&dao.ListDevicesQuery{
+			Query: dao.Query{
+				Order: "id",
+				Desc:  true,
+			},
+			IDs: deviceIDs,
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	// 创建设备映射，通过 ID 匹配
 	deviceMap := make(map[uint]*model.Device)
 	for _, device := range devices {
@@ -210,8 +257,10 @@ func (cp *controlPlane) ListEdges(_ context.Context, req *v1.ListEdgesRequest) (
 	}
 	// 关联设备到 edge
 	for _, edge := range edges {
-		if device, ok := deviceMap[edge.DeviceID]; ok {
-			edge.Device = device
+		if deviceID, ok := edgeDeviceMap[uint64(edge.ID)]; ok {
+			if device, ok := deviceMap[deviceID]; ok {
+				edge.Device = device
+			}
 		}
 	}
 
@@ -282,8 +331,14 @@ func (cp *controlPlane) CreateEdgeScanApplicationTask(_ context.Context, req *v1
 		return nil, errors.New("edge is not online")
 	}
 
-	// 获取设备
-	device, err := cp.repo.GetDeviceByID(uint(edge.DeviceID))
+	// 获取设备（通过 EdgeDevice 关系表，Host 类型）
+	hostType := model.EdgeDeviceRelationHost
+	edgeDevices, err := cp.repo.GetEdgeDevicesByEdgeID(req.EdgeId, &hostType)
+	if err != nil || len(edgeDevices) == 0 {
+		log.Errorf("get edge device relation error: %s", err)
+		return nil, errors.New("edge has no associated device")
+	}
+	device, err := cp.repo.GetDeviceByID(edgeDevices[0].DeviceID)
 	if err != nil {
 		log.Errorf("get device error: %s", err)
 		return nil, err

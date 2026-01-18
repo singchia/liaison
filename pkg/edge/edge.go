@@ -8,6 +8,7 @@ import (
 	"github.com/jumboframes/armorigo/log"
 	"github.com/singchia/liaison/pkg/edge/config"
 	"github.com/singchia/liaison/pkg/edge/frontierbound"
+	"github.com/singchia/liaison/pkg/edge/pinger"
 	"github.com/singchia/liaison/pkg/edge/proxy"
 	"github.com/singchia/liaison/pkg/edge/reporter"
 	"github.com/singchia/liaison/pkg/edge/scanner"
@@ -74,6 +75,12 @@ func NewEdge() (*Edge, error) {
 	_, err = scanner.NewScanner(frontierBound)
 	if err != nil {
 		log.Errorf("init scanner error: %v", err)
+		return nil, err
+	}
+
+	_, err = pinger.NewPinger(frontierBound)
+	if err != nil {
+		log.Errorf("init pinger error: %v", err)
 		return nil, err
 	}
 

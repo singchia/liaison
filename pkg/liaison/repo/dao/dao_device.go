@@ -52,12 +52,28 @@ func (d *dao) GetDeviceByID(id uint) (*model.Device, error) {
 	if err := d.getDB().Where("device_id = ?", id).Find(&device.Interfaces).Error; err != nil {
 		return nil, err
 	}
+	// 根据 heartbeat_at 更新在线状态
+	d.updateDeviceOnlineStatusByHeartbeat([]*model.Device{&device})
 	return &device, nil
 }
 
 func (d *dao) GetDeviceByFingerprint(fingerprint string) (*model.Device, error) {
 	var device model.Device
 	if err := d.getDB().Where("fingerprint = ?", fingerprint).First(&device).Error; err != nil {
+		return nil, err
+	}
+	return &device, nil
+}
+
+// GetDeviceByIP 根据 IP 地址查找 Device（通过 ethernet_interfaces 表）
+func (d *dao) GetDeviceByIP(ip string) (*model.Device, error) {
+	var device model.Device
+	// 通过 JOIN ethernet_interfaces 表来查找包含该 IP 的 Device
+	err := d.getDB().
+		Joins("JOIN ethernet_interfaces ON ethernet_interfaces.device_id = devices.id").
+		Where("ethernet_interfaces.ip = ?", ip).
+		First(&device).Error
+	if err != nil {
 		return nil, err
 	}
 	return &device, nil
@@ -115,7 +131,38 @@ func (d *dao) ListDevices(query *ListDevicesQuery) ([]*model.Device, error) {
 	if err := db.Distinct("devices.*").Find(&devices).Error; err != nil {
 		return nil, err
 	}
+	// 根据 heartbeat_at 更新在线状态
+	d.updateDeviceOnlineStatusByHeartbeat(devices)
 	return devices, nil
+}
+
+// updateDeviceOnlineStatusByHeartbeat 根据 heartbeat_at 更新设备的在线状态
+// 如果 heartbeat_at 在最近1分钟内，则在线，否则离线
+func (d *dao) updateDeviceOnlineStatusByHeartbeat(devices []*model.Device) {
+	now := time.Now()
+	oneMinuteAgo := now.Add(-1 * time.Minute)
+
+	for _, device := range devices {
+		// 如果 heartbeat_at 在最近1分钟内，设置为在线
+		if device.HeartbeatAt.After(oneMinuteAgo) {
+			if device.Online != model.DeviceOnlineStatusOnline {
+				device.Online = model.DeviceOnlineStatusOnline
+				// 异步更新数据库中的状态
+				go func(deviceID uint) {
+					d.getDB().Model(&model.Device{}).Where("id = ?", deviceID).Update("online", model.DeviceOnlineStatusOnline)
+				}(device.ID)
+			}
+		} else {
+			// 如果 heartbeat_at 超过1分钟，设置为离线
+			if device.Online != model.DeviceOnlineStatusOffline {
+				device.Online = model.DeviceOnlineStatusOffline
+				// 异步更新数据库中的状态
+				go func(deviceID uint) {
+					d.getDB().Model(&model.Device{}).Where("id = ?", deviceID).Update("online", model.DeviceOnlineStatusOffline)
+				}(device.ID)
+			}
+		}
+	}
 }
 
 func (d *dao) UpdateDevice(device *model.Device) error {
@@ -165,5 +212,14 @@ func (d *dao) UpdateDeviceUsage(deviceID uint, cpuUsage, memoryUsage, diskUsage 
 		"memory_usage": memoryUsage,
 		"disk_usage":   diskUsage,
 		"heartbeat_at": time.Now(),
+	}).Error
+}
+
+// UpdateDeviceHeartbeat 更新设备心跳时间，并设置设备为在线状态
+func (d *dao) UpdateDeviceHeartbeat(deviceID uint) error {
+	now := time.Now()
+	return d.getDB().Model(&model.Device{}).Where("id = ?", deviceID).Updates(map[string]interface{}{
+		"heartbeat_at": now,
+		"online":       model.DeviceOnlineStatusOnline,
 	}).Error
 }

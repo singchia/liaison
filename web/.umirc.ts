@@ -21,8 +21,9 @@ export default defineConfig({
   tailwindcss: {},
   proxy: {
     '/api': {
-      target: 'https://49.232.250.11',
+      target: 'https://49.232.250.11:443',
       changeOrigin: true,
+      secure: false, // 如果是 HTTP，设置为 false
     },
   },
   routes: [

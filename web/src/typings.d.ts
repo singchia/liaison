@@ -89,6 +89,7 @@ declare namespace API {
     cpu: number;
     memory: number;
     disk: number;
+    online?: number; // 0: offline, 1: online
     interfaces?: Array<{
       name: string;
       mac: string;
@@ -122,7 +123,7 @@ declare namespace API {
     description?: string;
     status: number; // 1: running, 2: stopped
     online: number; // 0: offline, 1: online
-    device?: Device; // 所属设备
+    device?: Device; // 所在设备
     created_at: string;
     updated_at: string;
   }

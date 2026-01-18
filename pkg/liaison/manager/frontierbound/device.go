@@ -177,9 +177,24 @@ func (fb *frontierBound) reportDevice(ctx context.Context, req geminio.Request, 
 		}
 	}
 
-	// 如果关联到edge，那么更新edge的device id
+	// 如果关联到edge，创建 EdgeDevice 关系（Host 类型）
+	// 注意：一个 Edge 只能有一个 Host 类型的 Device，所以需要先删除旧的关系
 	if device.EdgeID > 0 {
-		if err := tx.UpdateEdgeDeviceID(device.EdgeID, deviceModel.ID); err != nil {
+		hostType := model.EdgeDeviceRelationHost
+		// 先删除该 Edge 的所有旧的 Host 类型关系（因为指纹可能变化，导致设备 ID 变化）
+		if err := tx.DeleteEdgeDevicesByEdgeID(device.EdgeID, &hostType); err != nil {
+			log.Errorf("delete old edge device relations error: %s", err)
+			rsp.SetError(err)
+			return
+		}
+		// 创建新的关系
+		edgeDevice := &model.EdgeDevice{
+			EdgeID:   device.EdgeID,
+			DeviceID: deviceModel.ID,
+			Type:     hostType,
+		}
+		if err := tx.CreateEdgeDevice(edgeDevice); err != nil {
+			log.Errorf("create edge device relation error: %s", err)
 			rsp.SetError(err)
 			return
 		}

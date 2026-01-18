@@ -31,6 +31,15 @@ type Dao interface {
 	UpdateEdgeDeviceID(edgeID uint64, deviceID uint) error
 	DeleteEdge(id uint64) error
 
+	// EdgeDevice 相关方法
+	CreateEdgeDevice(edgeDevice *model.EdgeDevice) error
+	GetEdgeDevice(edgeID uint64, deviceID uint, relationType model.EdgeDeviceRelationType) (*model.EdgeDevice, error)
+	GetEdgeDevicesByEdgeID(edgeID uint64, relationType *model.EdgeDeviceRelationType) ([]*model.EdgeDevice, error)
+	GetEdgeDevicesByDeviceID(deviceID uint, relationType *model.EdgeDeviceRelationType) ([]*model.EdgeDevice, error)
+	DeleteEdgeDevice(edgeID uint64, deviceID uint, relationType model.EdgeDeviceRelationType) error
+	DeleteEdgeDevicesByEdgeID(edgeID uint64, relationType *model.EdgeDeviceRelationType) error
+	DeleteEdgeDevicesByDeviceID(deviceID uint, relationType *model.EdgeDeviceRelationType) error
+
 	// AccessKey 相关方法
 	CreateAccessKey(accessKey *model.AccessKey) error
 	GetAccessKeyByID(id uint) (*model.AccessKey, error)
@@ -44,6 +53,8 @@ type Dao interface {
 	DeleteEthernetInterface(id uint) error
 	GetDeviceByID(id uint) (*model.Device, error)
 	GetDeviceByFingerprint(fingerprint string) (*model.Device, error)
+	GetDeviceByIP(ip string) (*model.Device, error)
+	UpdateDeviceHeartbeat(deviceID uint) error
 	ListDevices(query *ListDevicesQuery) ([]*model.Device, error)
 	CountDevices(query *ListDevicesQuery) (int64, error)
 	UpdateDevice(device *model.Device) error
@@ -134,6 +145,7 @@ func (d *dao) initDB() error {
 		&model.AccessKey{},
 		&model.Device{},
 		&model.EthernetInterface{},
+		&model.EdgeDevice{},
 		&model.Application{},
 		&model.Proxy{},
 		&model.Task{},

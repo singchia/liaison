@@ -141,7 +141,7 @@ const AppPage: React.FC = () => {
       render: (port) => <Tag>{port}</Tag>,
     },
     {
-      title: '所属设备',
+      title: '所在设备',
       dataIndex: 'device_name',
       ellipsis: true,
       width: 150,

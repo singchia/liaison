@@ -31,23 +31,33 @@ func (d *dao) CreateEdge(edge *model.Edge) error {
 }
 
 func (d *dao) GetEdgeByDeviceID(deviceID uint) (*model.Edge, error) {
-	var edge model.Edge
-	if err := d.getDB().Where("device_id = ?", deviceID).First(&edge).Error; err != nil {
+	// 通过 EdgeDevice 关系表查询（Host 类型）
+	hostType := model.EdgeDeviceRelationHost
+	edgeDevices, err := d.GetEdgeDevicesByDeviceID(deviceID, &hostType)
+	if err != nil {
 		return nil, err
 	}
-	return &edge, nil
+	if len(edgeDevices) == 0 {
+		return nil, nil
+	}
+	// 返回第一个关联的 Edge
+	return d.GetEdge(edgeDevices[0].EdgeID)
 }
 
 func (d *dao) CountEdges(query *ListEdgesQuery) (int64, error) {
 	var count int64
 	db := d.getDB()
-	if len(query.DeviceIDs) > 0 {
-		db = db.Where("device_id IN ?", query.DeviceIDs)
+	if len(query.EdgeIDs) > 0 {
+		db = db.Where("id IN ?", query.EdgeIDs)
+	} else if len(query.DeviceIDs) > 0 {
+		// 兼容旧逻辑：通过 EdgeDevice 关系表查询
+		db = db.Joins("JOIN edge_devices ON edge_devices.edge_id = edges.id").
+			Where("edge_devices.device_id IN ? AND edge_devices.type = ?", query.DeviceIDs, model.EdgeDeviceRelationHost)
 	}
 	if query.Name != "" {
 		db = db.Where("name LIKE ?", "%"+query.Name+"%")
 	}
-	if err := db.Model(&model.Edge{}).Count(&count).Error; err != nil {
+	if err := db.Model(&model.Edge{}).Distinct("edges.id").Count(&count).Error; err != nil {
 		return 0, err
 	}
 	return count, nil
@@ -58,8 +68,12 @@ func (d *dao) ListEdges(query *ListEdgesQuery) ([]*model.Edge, error) {
 	if query.Page > 0 && query.PageSize > 0 {
 		db = db.Offset((query.Page - 1) * query.PageSize).Limit(query.PageSize)
 	}
-	if len(query.DeviceIDs) > 0 {
-		db = db.Where("device_id IN ?", query.DeviceIDs)
+	if len(query.EdgeIDs) > 0 {
+		db = db.Where("id IN ?", query.EdgeIDs)
+	} else if len(query.DeviceIDs) > 0 {
+		// 兼容旧逻辑：通过 EdgeDevice 关系表查询
+		db = db.Joins("JOIN edge_devices ON edge_devices.edge_id = edges.id").
+			Where("edge_devices.device_id IN ? AND edge_devices.type = ?", query.DeviceIDs, model.EdgeDeviceRelationHost)
 	}
 	if query.Name != "" {
 		db = db.Where("name LIKE ?", "%"+query.Name+"%")
@@ -73,7 +87,7 @@ func (d *dao) ListEdges(query *ListEdgesQuery) ([]*model.Edge, error) {
 		}
 	}
 	var edges []*model.Edge
-	if err := db.Find(&edges).Error; err != nil {
+	if err := db.Distinct("edges.*").Find(&edges).Error; err != nil {
 		return nil, err
 	}
 	return edges, nil

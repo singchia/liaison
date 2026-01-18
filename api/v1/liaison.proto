@@ -99,6 +99,7 @@ message Device {
     int32 disk = 6 [json_name = "disk"]; // 磁盘，MB
     string os = 7 [json_name = "os"]; // 操作系统
     string version = 8 [json_name = "version"]; // 系统版本
+    int32 online = 12 [json_name = "online"]; // 在线状态: 1: 在线, 2: 离线
     repeated EthernetInterface interfaces = 9 [json_name = "interfaces"]; // 网卡
     string created_at = 10 [json_name = "created_at"]; // 创建时间
     string updated_at = 11 [json_name = "updated_at"]; // 更新时间

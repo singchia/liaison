@@ -17,6 +17,7 @@ var (
 	RotateLog *lumberjack.Logger
 
 	h           bool
+	showFingerprint bool
 	file        string
 	defaultFile string = "./liaison-edge.yaml"
 )
@@ -64,12 +65,18 @@ type Configuration struct {
 func initCmd() error {
 	flag.StringVar(&file, "c", defaultFile, "configuration file")
 	flag.BoolVar(&h, "h", false, "help")
+	flag.BoolVar(&showFingerprint, "fingerprint", false, "show device fingerprint and exit")
 	flag.Parse()
 	if h {
 		flag.Usage()
 		return fmt.Errorf("invalid usage for command line")
 	}
 	return nil
+}
+
+// ShouldShowFingerprint 返回是否需要显示指纹
+func ShouldShowFingerprint() bool {
+	return showFingerprint
 }
 
 func Init() error {
