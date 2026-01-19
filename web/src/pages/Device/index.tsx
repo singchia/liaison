@@ -178,9 +178,10 @@ const DevicePage: React.FC = () => {
     {
       title: '操作',
       valueType: 'option',
-      width: 150,
+      width: 200,
+      fixed: 'right',
       render: (_, record) => (
-        <Space>
+        <Space size="small">
           <a onClick={() => handleViewDetail(record)}>
             <InfoCircleOutlined /> 详情
           </a>

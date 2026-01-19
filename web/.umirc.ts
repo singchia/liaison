@@ -34,7 +34,13 @@ export default defineConfig({
     },
     {
       path: '/',
-      redirect: '/proxy',
+      redirect: '/dashboard',
+    },
+    {
+      name: 'Dashboard',
+      path: '/dashboard',
+      icon: 'DashboardOutlined',
+      component: './Dashboard',
     },
     {
       name: '代理',
