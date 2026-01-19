@@ -22,6 +22,7 @@ import {
   Spin,
   Result,
   Alert,
+  Select,
 } from 'antd';
 import {
   SearchOutlined,
@@ -40,6 +41,7 @@ import {
   getEdgeScanTask,
   createEdgeScanTask,
   createApplication,
+  getDeviceList,
 } from '@/services/api';
 import { executeAction, tableRequest } from '@/utils/request';
 import { CreateButton, DeleteLink } from '@/components/TableButtons';
@@ -51,6 +53,7 @@ const { Text, Paragraph } = Typography;
 const ConnectorPage: React.FC = () => {
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>();
+  const formRef = useRef<any>();
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [discoverDrawerVisible, setDiscoverDrawerVisible] = useState(false);
@@ -58,8 +61,24 @@ const ConnectorPage: React.FC = () => {
   const [accessKeys, setAccessKeys] = useState<API.EdgeCreateResult>();
   const [scanTask, setScanTask] = useState<API.EdgeScanApplicationTask>();
   const [scanning, setScanning] = useState(false);
+  const [deviceOptions, setDeviceOptions] = useState<{ label: string; value: string }[]>([]);
 
   const reload = () => actionRef.current?.reload();
+
+  // 加载设备列表
+  const loadDeviceOptions = async () => {
+    if (deviceOptions.length > 0) return; // 已加载过，不再重复加载
+    try {
+      const res = await getDeviceList({ page_size: 100 });
+      const options = (res.data?.devices || []).map((device: API.Device) => ({
+        label: device.name,
+        value: device.name,
+      }));
+      setDeviceOptions(options);
+    } catch {
+      // 忽略错误
+    }
+  };
 
   const handleOpenCreateModal = () => {
     setCreateModalVisible(true);
@@ -231,6 +250,28 @@ const ConnectorPage: React.FC = () => {
       ellipsis: true,
       width: 150,
       render: (_, record) => record.device?.name || '-',
+      renderFormItem: () => {
+        return (
+          <Select
+            placeholder="请选择设备"
+            showSearch
+            allowClear
+            options={deviceOptions}
+            filterOption={(input: string, option?: { label: string; value: string }) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            onFocus={loadDeviceOptions}
+            onChange={(val) => {
+              // 使用 formRef 获取表单实例并设置值
+              if (formRef.current) {
+                formRef.current.setFieldsValue({ device_name: val });
+                // 触发表单提交
+                formRef.current.submit();
+              }
+            }}
+          />
+        );
+      },
     },
     {
       title: '描述',
@@ -307,11 +348,19 @@ const ConnectorPage: React.FC = () => {
       <ProTable<API.Edge>
         headerTitle="连接器列表"
         actionRef={actionRef}
+        formRef={formRef}
         rowKey="id"
         columns={columns}
         request={async (params) => {
+          console.log('ProTable request params:', params);
           const searchParams = buildSearchParams<API.EdgeListParams>(params, ['name', 'device_name']);
+          console.log('buildSearchParams result:', searchParams);
           return tableRequest(() => getEdgeList(searchParams), 'edges');
+        }}
+        onSubmit={(values) => {
+          console.log('ProTable onSubmit:', values);
+          // 触发表格刷新，此时会使用表单值
+          actionRef.current?.reload();
         }}
         toolBarRender={() => [
           <CreateButton key="create" onClick={handleOpenCreateModal}>

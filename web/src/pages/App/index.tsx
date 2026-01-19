@@ -8,7 +8,7 @@ import {
   ProFormText,
   ProTable,
 } from '@ant-design/pro-components';
-import { Space, Tag, Typography, Input } from 'antd';
+import { Space, Tag, Typography, Select } from 'antd';
 import { LinkOutlined, ApiOutlined, EditOutlined } from '@ant-design/icons';
 import { useRef, useState } from 'react';
 import {
@@ -18,6 +18,7 @@ import {
   deleteApplication,
   getEdgeList,
   createProxy,
+  getDeviceList,
 } from '@/services/api';
 import { executeAction, tableRequest } from '@/utils/request';
 import { CreateButton, DeleteLink } from '@/components/TableButtons';
@@ -27,12 +28,29 @@ const { Text } = Typography;
 
 const AppPage: React.FC = () => {
   const actionRef = useRef<ActionType>();
+  const formRef = useRef<any>();
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [proxyModalVisible, setProxyModalVisible] = useState(false);
   const [currentRow, setCurrentRow] = useState<API.Application>();
+  const [deviceOptions, setDeviceOptions] = useState<{ label: string; value: string }[]>([]);
 
   const reload = () => actionRef.current?.reload();
+
+  // 加载设备列表
+  const loadDeviceOptions = async () => {
+    if (deviceOptions.length > 0) return; // 已加载过，不再重复加载
+    try {
+      const res = await getDeviceList({ page_size: 100 });
+      const options = (res.data?.devices || []).map((device: API.Device) => ({
+        label: device.name,
+        value: device.name,
+      }));
+      setDeviceOptions(options);
+    } catch {
+      // 忽略错误
+    }
+  };
 
   const handleAdd = async (values: any) => {
     return executeAction(
@@ -147,7 +165,26 @@ const AppPage: React.FC = () => {
       width: 150,
       render: (_, record) => record.device?.name || '-',
       renderFormItem: () => {
-        return <Input placeholder="请输入设备名称" />;
+        return (
+          <Select
+            placeholder="请选择设备"
+            showSearch
+            allowClear
+            options={deviceOptions}
+            filterOption={(input: string, option?: { label: string; value: string }) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            onFocus={loadDeviceOptions}
+            onChange={(val) => {
+              // 使用 formRef 获取表单实例并设置值
+              if (formRef.current) {
+                formRef.current.setFieldsValue({ device_name: val });
+                // 触发表单提交
+                formRef.current.submit();
+              }
+            }}
+          />
+        );
       },
     },
     {
@@ -206,11 +243,19 @@ const AppPage: React.FC = () => {
       <ProTable<API.Application>
         headerTitle="应用列表"
         actionRef={actionRef}
+        formRef={formRef}
         rowKey="id"
         columns={columns}
         request={async (params) => {
+          console.log('ProTable request params:', params);
           const searchParams = buildSearchParams<API.ApplicationListParams>(params, ['name', 'device_name']);
+          console.log('buildSearchParams result:', searchParams);
           return tableRequest(() => getApplicationList(searchParams), 'applications');
+        }}
+        onSubmit={(values) => {
+          console.log('ProTable onSubmit:', values);
+          // 触发表格刷新，此时会使用表单值
+          actionRef.current?.reload();
         }}
         toolBarRender={() => [
           <CreateButton key="create" onClick={() => setCreateModalVisible(true)}>
