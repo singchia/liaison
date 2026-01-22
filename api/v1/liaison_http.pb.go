@@ -36,6 +36,7 @@ const OperationLiaisonServiceListApplications = "/LiaisonService/ListApplication
 const OperationLiaisonServiceListDevices = "/LiaisonService/ListDevices"
 const OperationLiaisonServiceListEdges = "/LiaisonService/ListEdges"
 const OperationLiaisonServiceListProxies = "/LiaisonService/ListProxies"
+const OperationLiaisonServiceListTrafficMetrics = "/LiaisonService/ListTrafficMetrics"
 const OperationLiaisonServiceLogin = "/LiaisonService/Login"
 const OperationLiaisonServiceLogout = "/LiaisonService/Logout"
 const OperationLiaisonServiceUpdateApplication = "/LiaisonService/UpdateApplication"
@@ -67,6 +68,8 @@ type LiaisonServiceHTTPServer interface {
 	ListEdges(context.Context, *ListEdgesRequest) (*ListEdgesResponse, error)
 	// ListProxies 代理
 	ListProxies(context.Context, *ListProxiesRequest) (*ListProxiesResponse, error)
+	// ListTrafficMetrics 流量监控
+	ListTrafficMetrics(context.Context, *ListTrafficMetricsRequest) (*ListTrafficMetricsResponse, error)
 	// Login IAM (Identity and Access Management)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
@@ -101,6 +104,7 @@ func RegisterLiaisonServiceHTTPServer(s *http.Server, srv LiaisonServiceHTTPServ
 	r.GET("/api/v1/iam/profile", _LiaisonService_GetProfile0_HTTP_Handler(srv))
 	r.POST("/api/v1/iam/password", _LiaisonService_ChangePassword0_HTTP_Handler(srv))
 	r.GET("/api/health", _LiaisonService_Health0_HTTP_Handler(srv))
+	r.GET("/api/v1/traffic-metrics", _LiaisonService_ListTrafficMetrics0_HTTP_Handler(srv))
 }
 
 func _LiaisonService_CreateEdge0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
@@ -606,6 +610,25 @@ func _LiaisonService_Health0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx
 	}
 }
 
+func _LiaisonService_ListTrafficMetrics0_HTTP_Handler(srv LiaisonServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ListTrafficMetricsRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationLiaisonServiceListTrafficMetrics)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ListTrafficMetrics(ctx, req.(*ListTrafficMetricsRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ListTrafficMetricsResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
 type LiaisonServiceHTTPClient interface {
 	ChangePassword(ctx context.Context, req *ChangePasswordRequest, opts ...http.CallOption) (rsp *ChangePasswordResponse, err error)
 	CreateApplication(ctx context.Context, req *CreateApplicationRequest, opts ...http.CallOption) (rsp *CreateApplicationResponse, err error)
@@ -624,6 +647,7 @@ type LiaisonServiceHTTPClient interface {
 	ListDevices(ctx context.Context, req *ListDevicesRequest, opts ...http.CallOption) (rsp *ListDevicesResponse, err error)
 	ListEdges(ctx context.Context, req *ListEdgesRequest, opts ...http.CallOption) (rsp *ListEdgesResponse, err error)
 	ListProxies(ctx context.Context, req *ListProxiesRequest, opts ...http.CallOption) (rsp *ListProxiesResponse, err error)
+	ListTrafficMetrics(ctx context.Context, req *ListTrafficMetricsRequest, opts ...http.CallOption) (rsp *ListTrafficMetricsResponse, err error)
 	Login(ctx context.Context, req *LoginRequest, opts ...http.CallOption) (rsp *LoginResponse, err error)
 	Logout(ctx context.Context, req *LogoutRequest, opts ...http.CallOption) (rsp *LogoutResponse, err error)
 	UpdateApplication(ctx context.Context, req *UpdateApplicationRequest, opts ...http.CallOption) (rsp *UpdateApplicationResponse, err error)
@@ -853,6 +877,19 @@ func (c *LiaisonServiceHTTPClientImpl) ListProxies(ctx context.Context, in *List
 	pattern := "/api/v1/proxies"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationLiaisonServiceListProxies))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *LiaisonServiceHTTPClientImpl) ListTrafficMetrics(ctx context.Context, in *ListTrafficMetricsRequest, opts ...http.CallOption) (*ListTrafficMetricsResponse, error) {
+	var out ListTrafficMetricsResponse
+	pattern := "/api/v1/traffic-metrics"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationLiaisonServiceListTrafficMetrics))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {

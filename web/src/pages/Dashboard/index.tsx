@@ -1,12 +1,26 @@
 import { PageContainer } from '@ant-design/pro-components';
 import { Card, Row, Col, Spin } from 'antd';
-import { Pie } from '@ant-design/plots';
+import { Pie, Line } from '@ant-design/plots';
 import { useEffect, useState } from 'react';
-import { getDeviceList, getApplicationList, getEdgeList } from '@/services/api';
+import { getDeviceList, getApplicationList, getEdgeList, getTrafficMetricsList } from '@/services/api';
 
 interface PieData {
   type: string;
   value: number;
+}
+
+interface ApplicationTrafficData {
+  application: string; // 应用名称
+  application_id: number;
+  bytes_in: number;
+  bytes_out: number;
+}
+
+interface TimeTrafficData {
+  time: string; // 时间戳
+  application: string; // 应用名称
+  bytes_in: number;
+  bytes_out: number;
 }
 
 const DashboardPage: React.FC = () => {
@@ -14,9 +28,15 @@ const DashboardPage: React.FC = () => {
   const [deviceData, setDeviceData] = useState<PieData[]>([]);
   const [applicationData, setApplicationData] = useState<PieData[]>([]);
   const [edgeData, setEdgeData] = useState<PieData[]>([]);
+  const [timeTrafficData, setTimeTrafficData] = useState<TimeTrafficData[]>([]);
 
   useEffect(() => {
     loadData();
+    // 每30秒刷新一次流量数据
+    const interval = setInterval(() => {
+      loadTrafficData();
+    }, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const loadData = async () => {
@@ -94,6 +114,195 @@ const DashboardPage: React.FC = () => {
       console.error('加载数据失败:', error);
     } finally {
       setLoading(false);
+    }
+    // 加载流量数据
+    loadTrafficData();
+  };
+
+  const loadTrafficData = async () => {
+    try {
+      // 获取应用列表，建立应用ID到名称的映射
+      const applicationsRes = await getApplicationList({ page_size: 1000 });
+      const applications = applicationsRes.data?.applications || [];
+      const appMap: Record<number, string> = {};
+      applications.forEach((app: API.Application) => {
+        appMap[app.id] = app.name;
+      });
+
+      // 获取最近24小时的流量数据
+      const endTime = new Date();
+      const startTime = new Date(endTime.getTime() - 24 * 60 * 60 * 1000); // 24小时前
+      
+      // 格式化为本地时间字符串（不带时区）：YYYY-MM-DDTHH:mm:ss
+      const formatLocalTime = (date: Date): string => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+      };
+      
+      const res = await getTrafficMetricsList({
+        start_time: formatLocalTime(startTime),
+        end_time: formatLocalTime(endTime),
+        limit: 10000, // 增加限制以获取更多数据
+      });
+
+      const metrics = res.data?.metrics || [];
+      console.log('获取到的流量数据:', metrics.length, '条');
+      if (metrics.length > 0) {
+        console.log('第一条数据示例:', metrics[0]);
+      }
+      
+      // 生成完整的时间序列（最近24小时，每10分钟一个点）
+      const sortedTimes: string[] = [];
+      const now = new Date();
+      // 对齐到最近的10分钟
+      const alignedMinutes = Math.floor(now.getMinutes() / 10) * 10;
+      const alignedNow = new Date(now);
+      alignedNow.setMinutes(alignedMinutes, 0, 0);
+      
+      // 从当前时间往前推24小时，生成144个10分钟间隔的数据点
+      for (let i = 143; i >= 0; i--) {
+        const time = new Date(alignedNow.getTime() - i * 10 * 60 * 1000);
+        // 存储完整时间（包含分钟，用于数据聚合）
+        const timeKey = `${String(time.getMonth() + 1).padStart(2, '0')}-${String(time.getDate()).padStart(2, '0')} ${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`;
+        sortedTimes.push(timeKey);
+      }
+      
+      // 按时间和应用分组流量数据
+      const timeAppMap: Record<string, Record<number, { bytes_in: number; bytes_out: number }>> = {};
+      
+      // 初始化所有时间点的数据结构
+      sortedTimes.forEach((timeKey) => {
+        timeAppMap[timeKey] = {};
+        applications.forEach((app: API.Application) => {
+          timeAppMap[timeKey][app.id] = { bytes_in: 0, bytes_out: 0 };
+        });
+      });
+      
+      // 填充实际流量数据（将数据聚合到10分钟间隔，并计算平均值）
+      const timeAppCount: Record<string, Record<number, number>> = {}; // 记录每个时间点每个应用的数据条数
+      
+      metrics.forEach((metric: API.TrafficMetric) => {
+        // 解析时间戳（本地时间格式：YYYY-MM-DDTHH:mm:ss）
+        // 如果时间戳不包含时区信息，将其视为本地时间
+        let date: Date;
+        if (metric.timestamp.includes('+') || metric.timestamp.includes('Z') || metric.timestamp.includes('T') && metric.timestamp.length > 19) {
+          // 包含时区信息，使用标准解析
+          date = new Date(metric.timestamp);
+        } else {
+          // 本地时间格式，手动解析为本地时间
+          const [datePart, timePart] = metric.timestamp.split('T');
+          const [year, month, day] = datePart.split('-').map(Number);
+          const [hour, minute, second = 0] = (timePart || '').split(':').map(Number);
+          date = new Date(year, month - 1, day, hour, minute, second);
+        }
+        // 对齐到10分钟间隔
+        const alignedMinutes = Math.floor(date.getMinutes() / 10) * 10;
+        const alignedDate = new Date(date);
+        alignedDate.setMinutes(alignedMinutes, 0, 0);
+        // 存储完整时间（包含分钟）
+        const timeKey = `${String(alignedDate.getMonth() + 1).padStart(2, '0')}-${String(alignedDate.getDate()).padStart(2, '0')} ${String(alignedDate.getHours()).padStart(2, '0')}:${String(alignedDate.getMinutes()).padStart(2, '0')}`;
+        
+        if (timeAppMap[timeKey]) {
+          const appId = metric.application_id;
+          // 确保 timeAppCount[timeKey] 已初始化
+          if (!timeAppCount[timeKey]) {
+            timeAppCount[timeKey] = {};
+          }
+          if (!timeAppMap[timeKey][appId]) {
+            timeAppMap[timeKey][appId] = { bytes_in: 0, bytes_out: 0 };
+            timeAppCount[timeKey][appId] = 0;
+          }
+          // 确保转换为数字类型，累加流量
+          const bytesIn = typeof metric.bytes_in === 'string' ? parseInt(metric.bytes_in, 10) : metric.bytes_in;
+          const bytesOut = typeof metric.bytes_out === 'string' ? parseInt(metric.bytes_out, 10) : metric.bytes_out;
+          timeAppMap[timeKey][appId].bytes_in += Number.isNaN(bytesIn) ? 0 : bytesIn;
+          timeAppMap[timeKey][appId].bytes_out += Number.isNaN(bytesOut) ? 0 : bytesOut;
+          // 记录数据条数
+          timeAppCount[timeKey][appId] = (timeAppCount[timeKey][appId] || 0) + 1;
+        }
+      });
+      
+      // 计算平均值（每个10分钟间隔内的平均每分钟流量）
+      Object.keys(timeAppMap).forEach((timeKey) => {
+        Object.keys(timeAppMap[timeKey]).forEach((appIdStr) => {
+          const appId = parseInt(appIdStr);
+          const count = timeAppCount[timeKey]?.[appId] || 1; // 至少为1，避免除0
+          // 计算平均值：总流量 / 数据条数（即平均每分钟流量）
+          const bytesIn = timeAppMap[timeKey][appId].bytes_in;
+          const bytesOut = timeAppMap[timeKey][appId].bytes_out;
+          timeAppMap[timeKey][appId].bytes_in = count > 0 ? Math.round(bytesIn / count) : 0;
+          timeAppMap[timeKey][appId].bytes_out = count > 0 ? Math.round(bytesOut / count) : 0;
+        });
+      });
+
+      // 转换为图表数据格式：按时间排序，每个时间点包含所有应用的流量
+      const timeTrafficDataList: TimeTrafficData[] = [];
+      
+      sortedTimes.forEach((time) => {
+        const appData = timeAppMap[time] || {};
+        // 确保所有应用在每个时间点都有数据（即使为0）
+        applications.forEach((app: API.Application) => {
+          const appId = app.id;
+          const traffic = appData[appId] || { bytes_in: 0, bytes_out: 0 };
+          // 将时间字符串转换为 Date 对象，用于图表库识别时间类型
+          try {
+            const timeParts = time.split(' ');
+            if (timeParts.length < 2) {
+              console.warn('时间格式错误:', time);
+              return; // 跳过当前迭代
+            }
+            const datePart = timeParts[0];
+            const timePart = timeParts[1];
+            const dateParts = datePart.split('-');
+            const timeParts2 = timePart.split(':');
+            if (dateParts.length < 2 || timeParts2.length < 2) {
+              console.warn('时间格式错误:', time, 'dateParts:', dateParts, 'timeParts2:', timeParts2);
+              return; // 跳过当前迭代
+            }
+            const month = dateParts[0];
+            const day = dateParts[1];
+            const hour = timeParts2[0];
+            const minute = timeParts2[1];
+            // 使用当前年份，创建 Date 对象
+            const currentYear = new Date().getFullYear();
+            const dateObj = new Date(currentYear, parseInt(month) - 1, parseInt(day), parseInt(hour), parseInt(minute), 0);
+            
+            // 确保值为数字类型
+            const bytesIn = typeof traffic.bytes_in === 'number' ? traffic.bytes_in : parseInt(String(traffic.bytes_in || 0), 10);
+            const bytesOut = typeof traffic.bytes_out === 'number' ? traffic.bytes_out : parseInt(String(traffic.bytes_out || 0), 10);
+            
+            // 格式化为本地时间格式（YYYY-MM-DDTHH:mm:ss）
+            const formatLocalTime = (d: Date): string => {
+              const year = d.getFullYear();
+              const month = String(d.getMonth() + 1).padStart(2, '0');
+              const day = String(d.getDate()).padStart(2, '0');
+              const hours = String(d.getHours()).padStart(2, '0');
+              const minutes = String(d.getMinutes()).padStart(2, '0');
+              const seconds = String(d.getSeconds()).padStart(2, '0');
+              return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+            };
+            
+            timeTrafficDataList.push({
+              time: formatLocalTime(dateObj), // 存储本地时间格式
+              application: app.name,
+              bytes_in: Number.isNaN(bytesIn) ? 0 : bytesIn,
+              bytes_out: Number.isNaN(bytesOut) ? 0 : bytesOut,
+            });
+          } catch (error) {
+            console.error('处理时间数据时出错:', time, error);
+            // 跳过当前迭代，继续处理下一个
+          }
+        });
+      });
+
+      setTimeTrafficData(timeTrafficDataList);
+    } catch (error) {
+      console.error('加载流量数据失败:', error);
     }
   };
 
@@ -231,6 +440,109 @@ const DashboardPage: React.FC = () => {
                   </div>
                 )}
               </div>
+            </Card>
+          </Col>
+        </Row>
+        {/* 第二排：应用流量监控图表 */}
+        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+          <Col xs={24}>
+            <Card title="应用流量监控" variant="outlined">
+              {timeTrafficData.length > 0 ? (
+                <Line
+                  data={timeTrafficData.map((d) => {
+                    // 确保值为数字类型
+                    const bytesIn = typeof d.bytes_in === 'number' ? d.bytes_in : parseInt(String(d.bytes_in || 0), 10);
+                    const bytesOut = typeof d.bytes_out === 'number' ? d.bytes_out : parseInt(String(d.bytes_out || 0), 10);
+                    // 转换为bps（bits per second）：字节/分钟 * 8 bits/byte / 60 seconds = bits/second
+                    // 数据是每分钟的平均值，需要转换为每秒的比特数
+                    const totalBytes = (Number.isNaN(bytesIn) ? 0 : bytesIn) + (Number.isNaN(bytesOut) ? 0 : bytesOut);
+                    const bps = (totalBytes * 8) / 60; // 字节/分钟 * 8 / 60 = 比特/秒
+                    return {
+                      date: d.time, // 使用 date 字段名，与示例保持一致
+                      type: d.application, // 使用 type 字段名，对应 colorField
+                      value: bps, // 转换为bps
+                    };
+                  })}
+                  xField={(d: any) => {
+                    // 解析本地时间格式（YYYY-MM-DDTHH:mm:ss）
+                    const dateStr = d.date;
+                    if (dateStr.includes('+') || dateStr.includes('Z') || (dateStr.includes('T') && dateStr.length > 19)) {
+                      // 包含时区信息，使用标准解析
+                      return new Date(dateStr);
+                    } else {
+                      // 本地时间格式，手动解析为本地时间
+                      const [datePart, timePart] = dateStr.split('T');
+                      const [year, month, day] = datePart.split('-').map(Number);
+                      const [hour, minute, second = 0] = (timePart || '').split(':').map(Number);
+                      return new Date(year, month - 1, day, hour, minute, second);
+                    }
+                  }}
+                  yField="value"
+                  colorField="type"
+                  height={350}
+                  point={false}
+                  smooth={true}
+                  legend={{
+                    position: 'top-right',
+                    itemHeight: 14,
+                    maxWidth: 300,
+                  }}
+                  axis={{
+                    x: {
+                      labelAutoHide: 'greedy',
+                      labelTransform: 'rotate(-45)',
+                      labelFill: '#999',
+                      lineStroke: '#e8e8e8',
+                      tickStroke: '#e8e8e8',
+                    },
+                    y: {
+                      labelFill: '#666',
+                      labelFormatter: (datum: any) => {
+                        // 确保值是数字类型（单位：bps）
+                        const value = typeof datum === 'number' ? datum : parseFloat(String(datum || 0));
+                        if (isNaN(value) || value === 0) return '0 bps';
+                        // 转换为合适的单位：bps, Kbps, Mbps, Gbps
+                        if (value >= 1000 * 1000 * 1000) {
+                          return `${(value / (1000 * 1000 * 1000)).toFixed(2)} Gbps`;
+                        } else if (value >= 1000 * 1000) {
+                          return `${(value / (1000 * 1000)).toFixed(2)} Mbps`;
+                        } else if (value >= 1000) {
+                          return `${(value / 1000).toFixed(2)} Kbps`;
+                        }
+                        return `${Math.round(value)} bps`;
+                      },
+                      lineStroke: '#e8e8e8',
+                      tickStroke: '#e8e8e8',
+                      nice: true, // 自动优化刻度
+                    },
+                  }}
+                  label={false}
+                  tooltip={{
+                    formatter: (datum: any) => {
+                      const value = datum.value || 0; // 单位：bps
+                      let formattedValue = '';
+                      // 转换为合适的单位：bps, Kbps, Mbps, Gbps
+                      if (value === 0) {
+                        formattedValue = '0 bps';
+                      } else if (value >= 1000 * 1000 * 1000) {
+                        formattedValue = `${(value / (1000 * 1000 * 1000)).toFixed(2)} Gbps`;
+                      } else if (value >= 1000 * 1000) {
+                        formattedValue = `${(value / (1000 * 1000)).toFixed(2)} Mbps`;
+                      } else if (value >= 1000) {
+                        formattedValue = `${(value / 1000).toFixed(2)} Kbps`;
+                      } else {
+                        formattedValue = `${Math.round(value)} bps`;
+                      }
+                      return {
+                        name: datum.type,
+                        value: formattedValue,
+                      };
+                    },
+                  }}
+                />
+              ) : (
+                <div style={{ textAlign: 'center', padding: '40px 0' }}>暂无数据</div>
+              )}
             </Card>
           </Col>
         </Row>

@@ -41,11 +41,12 @@ func (cp *controlPlane) CreateProxy(_ context.Context, req *v1.CreateProxyReques
 
 	// 创建Proxy
 	cp.proxyManager.CreateProxy(context.Background(), &proto.Proxy{
-		ID:        int(proxy.ID),
-		Name:      proxy.Name,
-		ProxyPort: int(proxy.Port),
-		EdgeID:    uint64(application.EdgeIDs[0]),
-		Dst:       fmt.Sprintf("%s:%d", application.IP, application.Port),
+		ID:            int(proxy.ID),
+		Name:          proxy.Name,
+		ProxyPort:     int(proxy.Port),
+		EdgeID:        uint64(application.EdgeIDs[0]),
+		ApplicationID: application.ID,
+		Dst:           fmt.Sprintf("%s:%d", application.IP, application.Port),
 	})
 	return &v1.CreateProxyResponse{
 		Code:    200,

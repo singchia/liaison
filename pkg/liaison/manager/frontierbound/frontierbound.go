@@ -19,17 +19,23 @@ type FrontierBound interface {
 }
 
 type frontierBound struct {
-	repo repo.Repo
-	svc  service.Service
+	repo            repo.Repo
+	svc             service.Service
+	trafficCollector interface {
+		RecordTraffic(proxyID, applicationID uint, bytesIn, bytesOut int64)
+	}
 }
 
-func NewFrontierBound(conf *config.Configuration, repo repo.Repo) (FrontierBound, error) {
+func NewFrontierBound(conf *config.Configuration, repo repo.Repo, trafficCollector interface {
+	RecordTraffic(proxyID, applicationID uint, bytesIn, bytesOut int64)
+}) (FrontierBound, error) {
 	dial := conf.Frontier.Dial
 	if len(dial.Addrs) == 0 {
 		return nil, errors.New("dial addr is empty")
 	}
 	fb := &frontierBound{
-		repo: repo,
+		repo:            repo,
+		trafficCollector: trafficCollector,
 	}
 
 	dialer := func() (net.Conn, error) {
@@ -90,6 +96,11 @@ func NewFrontierBound(conf *config.Configuration, repo repo.Repo) (FrontierBound
 	err = svc.Register(context.Background(), "update_device_heartbeat", fb.updateDeviceHeartbeat)
 	if err != nil {
 		log.Errorf("register update device heartbeat error: %s", err)
+		return nil, err
+	}
+	err = svc.Register(context.Background(), "report_traffic_metric", fb.reportTrafficMetric)
+	if err != nil {
+		log.Errorf("register report traffic metric error: %s", err)
 		return nil, err
 	}
 

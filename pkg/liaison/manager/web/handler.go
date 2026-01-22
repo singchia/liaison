@@ -170,6 +170,17 @@ func (web *web) DeleteProxy(ctx context.Context, req *v1.DeleteProxyRequest) (*v
 	return web.controlPlane.DeleteProxy(ctx, req)
 }
 
+//-- Traffic Metric --//
+
+// @Summary ListTrafficMetrics
+// @Tags 1.0
+// @Param params query v1.ListTrafficMetricsRequest true "queries"
+// @Success 200 {object} v1.ListTrafficMetricsResponse
+// @Router /api/v1/traffic-metrics [get]
+func (web *web) ListTrafficMetrics(ctx context.Context, req *v1.ListTrafficMetricsRequest) (*v1.ListTrafficMetricsResponse, error) {
+	return web.controlPlane.ListTrafficMetrics(ctx, req)
+}
+
 //-- Task --//
 
 // @Summary CreateEdgeScanApplicationTask

@@ -96,6 +96,11 @@ type Dao interface {
 	DeleteUser(id uint) error
 	CheckUserExists(email string) (bool, error)
 
+	// TrafficMetric 相关方法
+	CreateTrafficMetric(metric *model.TrafficMetric) error
+	ListTrafficMetrics(query *ListTrafficMetricsQuery) ([]*model.TrafficMetric, error)
+	GetTrafficMetricsByTimeRange(startTime, endTime time.Time, applicationIDs []uint) ([]*model.TrafficMetric, error)
+
 	// 资源清理
 	Close() error
 }
@@ -150,6 +155,7 @@ func (d *dao) initDB() error {
 		&model.Proxy{},
 		&model.Task{},
 		&model.User{},
+		&model.TrafficMetric{},
 	)
 }
 

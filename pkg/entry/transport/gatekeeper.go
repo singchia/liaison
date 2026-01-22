@@ -21,17 +21,31 @@ type Gatekeeper struct {
 	mu             sync.RWMutex
 	proxies        map[int]*proxy // id -> listener
 	proxiesIdxPort map[int]int    // port -> id
+	// proxy ID -> application ID 映射（用于流量统计）
+	proxyAppMap map[int]uint
 
 	// frontier
 	frontierBound frontierbound.FrontierBound
+	// 流量统计器（可选，如果设置了则统计流量）
+	trafficCollector interface {
+		RecordTraffic(proxyID, applicationID uint, bytesIn, bytesOut int64)
+	}
 }
 
 func NewGatekeeper(frontierBound frontierbound.FrontierBound) *Gatekeeper {
 	return &Gatekeeper{
 		proxies:        make(map[int]*proxy),
 		proxiesIdxPort: make(map[int]int),
+		proxyAppMap:    make(map[int]uint),
 		frontierBound:  frontierBound,
 	}
+}
+
+// SetTrafficCollector 设置流量统计器
+func (m *Gatekeeper) SetTrafficCollector(collector interface {
+	RecordTraffic(proxyID, applicationID uint, bytesIn, bytesOut int64)
+}) {
+	m.trafficCollector = collector
 }
 
 func (m *Gatekeeper) CreateProxy(ctx context.Context, protoproxy *proto.Proxy) error {
@@ -60,8 +74,10 @@ func (m *Gatekeeper) CreateProxy(ctx context.Context, protoproxy *proto.Proxy) e
 	// hook 函数
 	postAccept := func(_ net.Addr, _ net.Addr) (custom interface{}, err error) {
 		pc := proxyContext{
-			edgeID: protoproxy.EdgeID,
-			dst:    protoproxy.Dst,
+			edgeID:        protoproxy.EdgeID,
+			dst:           protoproxy.Dst,
+			applicationID: protoproxy.ApplicationID,
+			proxyID:       uint(protoproxy.ID),
 		}
 		return &pc, nil
 	}
@@ -72,7 +88,9 @@ func (m *Gatekeeper) CreateProxy(ctx context.Context, protoproxy *proto.Proxy) e
 	preWrite := func(writer io.Writer, custom interface{}) error {
 		pc := custom.(*proxyContext)
 		dst := proto.Dst{
-			Addr: pc.dst,
+			Addr:          pc.dst,
+			ApplicationID: pc.applicationID,
+			ProxyID:       pc.proxyID,
 		}
 		data, err := json.Marshal(dst)
 		if err != nil {
@@ -111,6 +129,10 @@ func (m *Gatekeeper) CreateProxy(ctx context.Context, protoproxy *proto.Proxy) e
 	}
 	m.proxies[protoproxy.ID] = p
 	m.proxiesIdxPort[protoproxy.ProxyPort] = protoproxy.ID
+	// 保存 proxy ID 和 application ID 的映射
+	if protoproxy.ApplicationID > 0 {
+		m.proxyAppMap[protoproxy.ID] = protoproxy.ApplicationID
+	}
 
 	return nil
 }
@@ -132,6 +154,7 @@ func (m *Gatekeeper) DeleteProxy(ctx context.Context, id int) error {
 	// 删除映射
 	delete(m.proxies, id)
 	delete(m.proxiesIdxPort, p.port)
+	delete(m.proxyAppMap, id)
 
 	return nil
 }
@@ -149,8 +172,10 @@ func (m *Gatekeeper) Close() {
 }
 
 type proxyContext struct {
-	edgeID uint64
-	dst    string
+	edgeID        uint64
+	dst           string
+	applicationID uint
+	proxyID       uint
 }
 
 type proxy struct {

@@ -200,3 +200,11 @@ export async function deleteProxy(id: number) {
     method: 'DELETE',
   });
 }
+
+/** 获取流量监控列表 GET /v1/traffic-metrics */
+export async function getTrafficMetricsList(params?: API.TrafficMetricsListParams) {
+  return request<API.Response<API.TrafficMetricsListResult>>('/api/v1/traffic-metrics', {
+    method: 'GET',
+    params,
+  });
+}

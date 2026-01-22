@@ -42,6 +42,7 @@ const (
 	LiaisonService_GetProfile_FullMethodName                    = "/LiaisonService/GetProfile"
 	LiaisonService_ChangePassword_FullMethodName                = "/LiaisonService/ChangePassword"
 	LiaisonService_Health_FullMethodName                        = "/LiaisonService/Health"
+	LiaisonService_ListTrafficMetrics_FullMethodName            = "/LiaisonService/ListTrafficMetrics"
 )
 
 // LiaisonServiceClient is the client API for LiaisonService service.
@@ -78,6 +79,8 @@ type LiaisonServiceClient interface {
 	ChangePassword(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*ChangePasswordResponse, error)
 	// 健康检查
 	Health(ctx context.Context, in *HealthRequest, opts ...grpc.CallOption) (*HealthResponse, error)
+	// 流量监控
+	ListTrafficMetrics(ctx context.Context, in *ListTrafficMetricsRequest, opts ...grpc.CallOption) (*ListTrafficMetricsResponse, error)
 }
 
 type liaisonServiceClient struct {
@@ -295,6 +298,15 @@ func (c *liaisonServiceClient) Health(ctx context.Context, in *HealthRequest, op
 	return out, nil
 }
 
+func (c *liaisonServiceClient) ListTrafficMetrics(ctx context.Context, in *ListTrafficMetricsRequest, opts ...grpc.CallOption) (*ListTrafficMetricsResponse, error) {
+	out := new(ListTrafficMetricsResponse)
+	err := c.cc.Invoke(ctx, LiaisonService_ListTrafficMetrics_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // LiaisonServiceServer is the server API for LiaisonService service.
 // All implementations must embed UnimplementedLiaisonServiceServer
 // for forward compatibility
@@ -329,6 +341,8 @@ type LiaisonServiceServer interface {
 	ChangePassword(context.Context, *ChangePasswordRequest) (*ChangePasswordResponse, error)
 	// 健康检查
 	Health(context.Context, *HealthRequest) (*HealthResponse, error)
+	// 流量监控
+	ListTrafficMetrics(context.Context, *ListTrafficMetricsRequest) (*ListTrafficMetricsResponse, error)
 	mustEmbedUnimplementedLiaisonServiceServer()
 }
 
@@ -404,6 +418,9 @@ func (UnimplementedLiaisonServiceServer) ChangePassword(context.Context, *Change
 }
 func (UnimplementedLiaisonServiceServer) Health(context.Context, *HealthRequest) (*HealthResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Health not implemented")
+}
+func (UnimplementedLiaisonServiceServer) ListTrafficMetrics(context.Context, *ListTrafficMetricsRequest) (*ListTrafficMetricsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListTrafficMetrics not implemented")
 }
 func (UnimplementedLiaisonServiceServer) mustEmbedUnimplementedLiaisonServiceServer() {}
 
@@ -832,6 +849,24 @@ func _LiaisonService_Health_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _LiaisonService_ListTrafficMetrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListTrafficMetricsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LiaisonServiceServer).ListTrafficMetrics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LiaisonService_ListTrafficMetrics_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LiaisonServiceServer).ListTrafficMetrics(ctx, req.(*ListTrafficMetricsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // LiaisonService_ServiceDesc is the grpc.ServiceDesc for LiaisonService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -930,6 +965,10 @@ var LiaisonService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Health",
 			Handler:    _LiaisonService_Health_Handler,
+		},
+		{
+			MethodName: "ListTrafficMetrics",
+			Handler:    _LiaisonService_ListTrafficMetrics_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

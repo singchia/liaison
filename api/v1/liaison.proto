@@ -470,6 +470,13 @@ service LiaisonService {
             get: "/api/health"
         };
     };
+
+    // 流量监控
+    rpc ListTrafficMetrics(ListTrafficMetricsRequest) returns (ListTrafficMetricsResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/traffic-metrics"
+        };
+    };
 }
 
 // 用户信息
@@ -539,5 +546,35 @@ message HealthRequest {
 
 // 健康检查响应
 message HealthResponse {
-    string status = 1 [json_name = "status"];
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
+    string status = 3 [json_name = "status"];
+}
+
+// 流量监控
+message TrafficMetric {
+    uint64 id = 1 [json_name = "id"];
+    uint64 application_id = 2 [json_name = "application_id"];
+    uint64 proxy_id = 3 [json_name = "proxy_id"];
+    string timestamp = 4 [json_name = "timestamp"]; // 时间戳（分钟级别）
+    int32 bytes_in = 5 [json_name = "bytes_in"]; // 入站流量（字节，平均每分钟）
+    int32 bytes_out = 6 [json_name = "bytes_out"]; // 出站流量（字节，平均每分钟）
+}
+
+message TrafficMetrics {
+    repeated TrafficMetric metrics = 1 [json_name = "metrics"];
+}
+
+message ListTrafficMetricsRequest {
+    repeated uint64 application_ids = 1 [json_name = "application_ids"]; // 应用ID列表（可选）
+    repeated uint64 proxy_ids = 2 [json_name = "proxy_ids"]; // 代理ID列表（可选）
+    string start_time = 3 [json_name = "start_time"]; // 开始时间（ISO 8601格式，可选）
+    string end_time = 4 [json_name = "end_time"]; // 结束时间（ISO 8601格式，可选）
+    int32 limit = 5 [json_name = "limit"]; // 限制返回数量（可选，默认100）
+}
+
+message ListTrafficMetricsResponse {
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
+    TrafficMetrics data = 3 [json_name = "data"];
 }

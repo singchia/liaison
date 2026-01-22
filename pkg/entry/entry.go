@@ -68,11 +68,12 @@ func (e *Entry) pullProxyConfigs() error {
 		}
 		dst := fmt.Sprintf("%s:%d", application.Ip, application.Port)
 		e.gatekeeper.CreateProxy(context.Background(), &proto.Proxy{
-			ID:        int(proxy.Id),
-			Name:      proxy.Name,
-			ProxyPort: int(proxy.Port),
-			EdgeID:    application.EdgeId,
-			Dst:       dst,
+			ID:            int(proxy.Id),
+			Name:          proxy.Name,
+			ProxyPort:     int(proxy.Port),
+			EdgeID:        application.EdgeId,
+			ApplicationID: uint(application.Id),
+			Dst:           dst,
 		})
 	}
 
