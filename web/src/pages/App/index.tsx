@@ -8,7 +8,7 @@ import {
   ProFormText,
   ProTable,
 } from '@ant-design/pro-components';
-import { Space, Tag, Typography, Select } from 'antd';
+import { Space, Tag, Typography, Select, Form } from 'antd';
 import { LinkOutlined, ApiOutlined, EditOutlined } from '@ant-design/icons';
 import { useRef, useState } from 'react';
 import {
@@ -29,6 +29,7 @@ const { Text } = Typography;
 const AppPage: React.FC = () => {
   const actionRef = useRef<ActionType>();
   const formRef = useRef<any>();
+  const [createForm] = Form.useForm();
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [proxyModalVisible, setProxyModalVisible] = useState(false);
@@ -99,23 +100,35 @@ const AppPage: React.FC = () => {
 
   const handleCreateProxy = async (values: any) => {
     if (!currentRow?.id) return false;
-    return executeAction(
+    const createPort = values.port || undefined;
+    let createdProxy: API.Proxy | null = null;
+    
+    const result = await executeAction(
       () =>
         createProxy({
           name: values.name || currentRow.name,
           description: values.description,
-          port: values.port,
+          port: createPort,
           application_id: currentRow.id,
         }),
       {
         successMessage: '代理创建成功',
         errorMessage: '代理创建失败',
-        onSuccess: () => {
-          setProxyModalVisible(false);
-          reload();
+        onSuccess: (data) => {
+          // 保存创建的代理信息
+          if (data) {
+            createdProxy = data as API.Proxy;
+          }
         },
       },
     );
+    
+    // 如果创建时端口为空，创建后获取动态分配的端口
+    // 端口已经在响应中返回，刷新列表即可显示动态分配的端口
+    setProxyModalVisible(false);
+    reload();
+    
+    return result;
   };
 
   const columns: ProColumns<API.Application>[] = [
@@ -123,6 +136,10 @@ const AppPage: React.FC = () => {
       title: '应用名称',
       dataIndex: 'name',
       ellipsis: true,
+      fieldProps: {
+        placeholder: '请输入应用名称',
+        style: { width: 200 },
+      },
       render: (_, record) => (
         <Space>
           <ApiOutlined />
@@ -170,6 +187,7 @@ const AppPage: React.FC = () => {
             placeholder="请选择设备"
             showSearch
             allowClear
+            style={{ width: 200 }}
             options={deviceOptions}
             filterOption={(input: string, option?: { label: string; value: string }) =>
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
@@ -215,6 +233,7 @@ const AppPage: React.FC = () => {
       title: '操作',
       valueType: 'option',
       width: 200,
+      fixed: 'right',
       render: (_, record) => (
         <Space>
           <a onClick={() => {
@@ -273,6 +292,7 @@ const AppPage: React.FC = () => {
         onOpenChange={setCreateModalVisible}
         onFinish={handleAdd}
         modalProps={{ destroyOnClose: true }}
+        form={createForm}
         width={500}
       >
         <ProFormText
@@ -284,16 +304,37 @@ const AppPage: React.FC = () => {
         <ProFormSelect
           name="application_type"
           label="应用类型"
-          placeholder="请选择应用类型"
+          placeholder="请选择应用类型（不填默认为TCP）"
           options={[
             { label: 'Web', value: 'web' },
             { label: 'TCP', value: 'tcp' },
-            { label: 'UDP', value: 'udp' },
             { label: 'SSH', value: 'ssh' },
             { label: 'RDP', value: 'rdp' },
-            { label: '数据库', value: 'database' },
+            { label: 'MySQL', value: 'mysql' },
+            { label: 'PostgreSQL', value: 'postgresql' },
+            { label: 'Redis', value: 'redis' },
+            { label: 'MongoDB', value: 'mongodb' },
           ]}
-          rules={[{ required: true, message: '请选择应用类型' }]}
+          extra="不填默认为TCP"
+          fieldProps={{
+            onChange: (value: string) => {
+              // 根据应用类型设置默认端口
+              const defaultPorts: Record<string, number> = {
+                web: 80,
+                ssh: 22,
+                rdp: 3389,
+                mysql: 3306,
+                postgresql: 5432,
+                redis: 6379,
+                mongodb: 27017,
+                database: 3306,
+              };
+              const defaultPort = defaultPorts[value as string];
+              if (defaultPort) {
+                createForm.setFieldsValue({ port: defaultPort });
+              }
+            },
+          }}
         />
         <ProFormText
           name="ip"
@@ -307,7 +348,20 @@ const AppPage: React.FC = () => {
           placeholder="请输入端口号"
           min={1}
           max={65535}
-          rules={[{ required: true, message: '请输入端口号' }]}
+          rules={[
+            { required: true, message: '请输入端口号' },
+            {
+              validator: (_: any, value: number) => {
+                if (!value || value === 0) {
+                  return Promise.reject(new Error('端口号不能为0，请输入1-65535之间的端口号'));
+                }
+                if (value < 1 || value > 65535) {
+                  return Promise.reject(new Error('端口号必须在1-65535之间'));
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
         />
         <ProFormSelect
           name="edge_id"

@@ -98,11 +98,7 @@ func NewFrontierBound(conf *config.Configuration, repo repo.Repo, trafficCollect
 		log.Errorf("register update device heartbeat error: %s", err)
 		return nil, err
 	}
-	err = svc.Register(context.Background(), "report_traffic_metric", fb.reportTrafficMetric)
-	if err != nil {
-		log.Errorf("register report traffic metric error: %s", err)
-		return nil, err
-	}
+	// 流量统计已移到entry端，不再需要edge端上报
 
 	fb.svc = svc
 	return fb, nil

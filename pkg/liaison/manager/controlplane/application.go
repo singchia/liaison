@@ -9,6 +9,42 @@ import (
 	"github.com/singchia/liaison/pkg/liaison/repo/model"
 )
 
+// getDefaultPortByApplicationType 根据应用类型返回默认端口
+func getDefaultPortByApplicationType(appType string) int {
+	defaultPorts := map[string]int{
+		"web":        80,
+		"ssh":        22,
+		"rdp":        3389,
+		"mysql":      3306,
+		"postgresql": 5432,
+		"redis":      6379,
+		"mongodb":    27017,
+		"database":   3306,
+	}
+	if port, ok := defaultPorts[appType]; ok {
+		return port
+	}
+	return 0
+}
+
+// detectApplicationTypeByPort 根据端口号推断应用类型
+func detectApplicationTypeByPort(port int) string {
+	portToType := map[int]string{
+		22:    "ssh",
+		80:    "web",
+		443:   "web",
+		3389:  "rdp",
+		3306:  "mysql",
+		5432:  "postgresql",
+		6379:  "redis",
+		27017: "mongodb",
+	}
+	if appType, ok := portToType[port]; ok {
+		return appType
+	}
+	return "tcp" // 默认返回 tcp
+}
+
 func (cp *controlPlane) CreateApplication(_ context.Context, req *v1.CreateApplicationRequest) (*v1.CreateApplicationResponse, error) {
 	// 验证 edge 是否存在
 	_, err := cp.repo.GetEdge(req.EdgeId)
@@ -40,13 +76,36 @@ func (cp *controlPlane) CreateApplication(_ context.Context, req *v1.CreateAppli
 		}
 	}
 
+	// 处理应用类型和端口
+	appType := req.ApplicationType
+	port := int(req.Port)
+
+	// 如果用户已经指定了应用类型，保持用户的选择，不根据端口推断
+	// 只有当应用类型为空（未指定）时，才根据端口号推断应用类型
+	if appType == "" && port > 0 {
+		detectedType := detectApplicationTypeByPort(port)
+		if detectedType != "" {
+			appType = detectedType
+		}
+	}
+
+	// 如果端口为空或0，根据应用类型设置默认端口
+	if port == 0 && appType != "" {
+		port = getDefaultPortByApplicationType(appType)
+	}
+
+	// 如果应用类型仍然为空，设置为 tcp
+	if appType == "" {
+		appType = "tcp"
+	}
+
 	// 注意如果edge id不在线，应用可能无法访问
 	application := &model.Application{
 		Name:            req.Name,
 		Description:     req.Description,
 		IP:              req.Ip,
-		Port:            int(req.Port),
-		ApplicationType: model.ApplicationType(req.ApplicationType),
+		Port:            port,
+		ApplicationType: model.ApplicationType(appType),
 		EdgeIDs:         model.UintSlice{uint(req.EdgeId)},
 		DeviceID:        deviceID,
 	}

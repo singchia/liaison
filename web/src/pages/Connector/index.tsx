@@ -210,14 +210,30 @@ const ConnectorPage: React.FC = () => {
 
   const handleAddDiscoveredApp = async (appStr: string) => {
     if (!currentRow?.id) return;
-    const [ip, portStr] = appStr.split(':');
-    const port = parseInt(portStr, 10);
+    // 解析应用字符串，格式是 "ip:port:type"
+    const parts = appStr.split(':');
+    const ip = parts[0];
+    const port = parseInt(parts[1], 10);
+    // 如果后端已经提供了类型，使用后端的类型；否则根据端口推断
+    const appType = parts[2] || (() => {
+      const portToType: Record<number, string> = {
+        22: 'ssh',
+        80: 'web',
+        443: 'web',
+        3389: 'rdp',
+        3306: 'mysql',
+        5432: 'postgresql',
+        6379: 'redis',
+        27017: 'mongodb',
+      };
+      return portToType[port] || 'tcp';
+    })();
 
     await executeAction(
       () =>
         createApplication({
           name: `App-${ip}:${port}`,
-          application_type: 'tcp',
+          application_type: appType,
           ip,
           port,
           edge_id: currentRow.id,
@@ -243,6 +259,10 @@ const ConnectorPage: React.FC = () => {
       dataIndex: 'name',
       ellipsis: true,
       width: 150,
+      fieldProps: {
+        placeholder: '请输入连接器名称',
+        style: { width: 200 },
+      },
     },
     {
       title: '所在设备',
@@ -256,6 +276,7 @@ const ConnectorPage: React.FC = () => {
             placeholder="请选择设备"
             showSearch
             allowClear
+            style={{ width: 200 }}
             options={deviceOptions}
             filterOption={(input: string, option?: { label: string; value: string }) =>
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
@@ -322,6 +343,7 @@ const ConnectorPage: React.FC = () => {
       title: '操作',
       valueType: 'option',
       width: 220,
+      fixed: 'right',
       render: (_, record) => (
         <Space>
           <a onClick={() => handleDiscoverApps(record)}>
@@ -605,17 +627,51 @@ const ConnectorPage: React.FC = () => {
             {scanTask.applications && scanTask.applications.length > 0 ? (
               <List
                 dataSource={scanTask.applications}
-                renderItem={(app) => (
-                  <List.Item
-                    actions={[
-                      <Button key="add" type="link" onClick={() => handleAddDiscoveredApp(app)}>
-                        添加
-                      </Button>,
-                    ]}
-                  >
-                    <List.Item.Meta title={app} description="扫描到的内网服务" />
-                  </List.Item>
-                )}
+                renderItem={(app) => {
+                  // 解析应用字符串，格式可能是 "ip:port" 或 "ip:port:protocol"
+                  const parts = app.split(':');
+                  const ip = parts[0];
+                  const port = parseInt(parts[1], 10);
+                  const protocol = parts[2] || 'tcp';
+                  
+                  // 根据端口推断应用类型
+                  const detectApplicationTypeByPort = (port: number): string => {
+                    const portToType: Record<number, string> = {
+                      22: 'SSH',
+                      80: 'Web',
+                      443: 'Web',
+                      3389: 'RDP',
+                      3306: 'MySQL',
+                      5432: 'PostgreSQL',
+                      6379: 'Redis',
+                      27017: 'MongoDB',
+                    };
+                    return portToType[port] || protocol.toUpperCase();
+                  };
+                  
+                  const appType = detectApplicationTypeByPort(port);
+                  const displayText = `${ip}:${port}`;
+                  
+                  return (
+                    <List.Item
+                      actions={[
+                        <Button key="add" type="link" onClick={() => handleAddDiscoveredApp(app)}>
+                          添加
+                        </Button>,
+                      ]}
+                    >
+                      <List.Item.Meta 
+                        title={displayText} 
+                        description={
+                          <Space>
+                            <Tag color="blue">{appType}</Tag>
+                            <span>扫描到的内网服务</span>
+                          </Space>
+                        } 
+                      />
+                    </List.Item>
+                  );
+                }}
               />
             ) : (scanTask.task_status === 'pending' || scanTask.task_status === 'running') ? (
               <div className="text-center py-12 text-gray-400">扫描中...</div>

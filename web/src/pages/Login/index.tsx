@@ -38,7 +38,6 @@ const Login: React.FC = () => {
         <div className="login-header">
           <span className="login-title">{APP_NAME}</span>
         </div>
-        <div className="login-desc">网络马上通达</div>
         
         <LoginForm
           style={{

@@ -2,6 +2,7 @@ import { PageContainer } from '@ant-design/pro-components';
 import { Card, Row, Col, Spin } from 'antd';
 import { Pie, Line } from '@ant-design/plots';
 import { useEffect, useState } from 'react';
+import { BarChartOutlined, PieChartOutlined, LineChartOutlined } from '@ant-design/icons';
 import { getDeviceList, getApplicationList, getEdgeList, getTrafficMetricsList } from '@/services/api';
 
 interface PieData {
@@ -103,7 +104,11 @@ const DashboardPage: React.FC = () => {
           edgeStats['离线']++;
         }
       });
-      const edgeDataList = Object.entries(edgeStats).map(([type, value]) => ({ type, value }));
+      // 只有当有连接器数据时才显示，否则显示空状态
+      const totalEdges = edgeStats['在线'] + edgeStats['离线'];
+      const edgeDataList = totalEdges > 0 
+        ? Object.entries(edgeStats).map(([type, value]) => ({ type, value }))
+        : [];
       setEdgeData(edgeDataList);
 
       // 调试信息
@@ -311,16 +316,29 @@ const DashboardPage: React.FC = () => {
       data,
       angleField: 'value',
       colorField: 'type',
-      // 标签显示在外部，显示类型名称
+      // 标签显示在外部，显示类型名称和数值
       label: {
-        text: 'type',
+        text: (d: any) => `${d.type}: ${d.value}`,
         position: 'outside',
+        style: {
+          fontSize: 12,
+          fill: '#666',
+        },
       },
       legend: false, // 隐藏默认图例，我们手动添加
       // @ant-design/plots 默认有 tooltip，显示类型和数值
       // 使用更丰富的颜色方案
       color: ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1', '#13c2c2', '#eb2f96', '#fa8c16'],
       height: 250,
+      tooltip: {
+        fields: ['type', 'value'],
+        formatter: (datum: any) => {
+          return {
+            name: datum.type,
+            value: `${datum.value}`,
+          };
+        },
+      },
     };
   };
 
@@ -359,8 +377,18 @@ const DashboardPage: React.FC = () => {
                     </div>
                   </>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                    暂无数据
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '60px 20px',
+                    color: '#999',
+                    fontSize: '14px'
+                  }}>
+                  <PieChartOutlined style={{ 
+                    fontSize: '48px', 
+                    marginBottom: '16px',
+                    color: '#d9d9d9'
+                  }} />
+                  <div>暂无数据</div>
                   </div>
                 )}
               </div>
@@ -397,8 +425,18 @@ const DashboardPage: React.FC = () => {
                     </div>
                   </>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                    暂无数据
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '60px 20px',
+                    color: '#999',
+                    fontSize: '14px'
+                  }}>
+                  <PieChartOutlined style={{ 
+                    fontSize: '48px', 
+                    marginBottom: '16px',
+                    color: '#d9d9d9'
+                  }} />
+                  <div>暂无数据</div>
                   </div>
                 )}
               </div>
@@ -414,8 +452,8 @@ const DashboardPage: React.FC = () => {
                     </div>
                     <div style={{ marginTop: 16, textAlign: 'center' }}>
                       {edgeData.map((item, index) => {
-                        const colors = ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1', '#13c2c2'];
-                        const color = colors[index % colors.length];
+                        // 连接器统计使用特定颜色：在线=蓝色，离线=灰色
+                        const colors = item.type === '在线' ? '#1890ff' : '#d9d9d9';
                         return (
                           <span key={item.type} style={{ margin: '0 8px', fontSize: '12px' }}>
                             <span
@@ -423,7 +461,8 @@ const DashboardPage: React.FC = () => {
                                 display: 'inline-block',
                                 width: 12,
                                 height: 12,
-                                backgroundColor: color,
+                                backgroundColor: colors,
+                                borderRadius: '2px',
                                 marginRight: 4,
                                 verticalAlign: 'middle',
                               }}
@@ -435,8 +474,18 @@ const DashboardPage: React.FC = () => {
                     </div>
                   </>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                    暂无数据
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '60px 20px',
+                    color: '#999',
+                    fontSize: '14px'
+                  }}>
+                  <PieChartOutlined style={{ 
+                    fontSize: '48px', 
+                    marginBottom: '16px',
+                    color: '#d9d9d9'
+                  }} />
+                  <div>暂无数据</div>
                   </div>
                 )}
               </div>
@@ -447,22 +496,27 @@ const DashboardPage: React.FC = () => {
         <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
           <Col xs={24}>
             <Card title="应用流量监控" variant="outlined">
-              {timeTrafficData.length > 0 ? (
-                <Line
-                  data={timeTrafficData.map((d) => {
-                    // 确保值为数字类型
-                    const bytesIn = typeof d.bytes_in === 'number' ? d.bytes_in : parseInt(String(d.bytes_in || 0), 10);
-                    const bytesOut = typeof d.bytes_out === 'number' ? d.bytes_out : parseInt(String(d.bytes_out || 0), 10);
-                    // 转换为bps（bits per second）：字节/分钟 * 8 bits/byte / 60 seconds = bits/second
-                    // 数据是每分钟的平均值，需要转换为每秒的比特数
-                    const totalBytes = (Number.isNaN(bytesIn) ? 0 : bytesIn) + (Number.isNaN(bytesOut) ? 0 : bytesOut);
-                    const bps = (totalBytes * 8) / 60; // 字节/分钟 * 8 / 60 = 比特/秒
-                    return {
-                      date: d.time, // 使用 date 字段名，与示例保持一致
-                      type: d.application, // 使用 type 字段名，对应 colorField
-                      value: bps, // 转换为bps
-                    };
-                  })}
+              {timeTrafficData.length > 0 ? (() => {
+                // 计算所有数据的bps值，用于确定Y轴范围
+                const dataWithBps = timeTrafficData.map((d) => {
+                  const bytesIn = typeof d.bytes_in === 'number' ? d.bytes_in : parseInt(String(d.bytes_in || 0), 10);
+                  const bytesOut = typeof d.bytes_out === 'number' ? d.bytes_out : parseInt(String(d.bytes_out || 0), 10);
+                  const totalBytes = (Number.isNaN(bytesIn) ? 0 : bytesIn) + (Number.isNaN(bytesOut) ? 0 : bytesOut);
+                  const bps = (totalBytes * 8) / 60;
+                  return {
+                    date: d.time,
+                    type: d.application,
+                    value: bps,
+                  };
+                });
+                
+                // 计算最大值，如果所有值都是0，设置一个小的非零值避免显示多个0刻度
+                const maxValue = Math.max(...dataWithBps.map(d => d.value));
+                const allZero = maxValue === 0;
+                
+                return (
+                  <Line
+                    data={dataWithBps}
                   xField={(d: any) => {
                     // 解析本地时间格式（YYYY-MM-DDTHH:mm:ss）
                     const dateStr = d.date;
@@ -486,6 +540,16 @@ const DashboardPage: React.FC = () => {
                     position: 'top-right',
                     itemHeight: 14,
                     maxWidth: 300,
+                  }}
+                  scale={{
+                    value: allZero ? {
+                      domain: [0, 1],
+                      nice: false,
+                      ticks: [0, 1],
+                    } : {
+                      nice: true,
+                      min: 0,
+                    },
                   }}
                   axis={{
                     x: {
@@ -513,35 +577,30 @@ const DashboardPage: React.FC = () => {
                       },
                       lineStroke: '#e8e8e8',
                       tickStroke: '#e8e8e8',
-                      nice: true, // 自动优化刻度
+                      tickCount: allZero ? 2 : 5, // 当所有值都是0时，只显示2个刻度（0和1）
                     },
                   }}
                   label={false}
                   tooltip={{
-                    formatter: (datum: any) => {
-                      const value = datum.value || 0; // 单位：bps
-                      let formattedValue = '';
-                      // 转换为合适的单位：bps, Kbps, Mbps, Gbps
-                      if (value === 0) {
-                        formattedValue = '0 bps';
-                      } else if (value >= 1000 * 1000 * 1000) {
-                        formattedValue = `${(value / (1000 * 1000 * 1000)).toFixed(2)} Gbps`;
-                      } else if (value >= 1000 * 1000) {
-                        formattedValue = `${(value / (1000 * 1000)).toFixed(2)} Mbps`;
-                      } else if (value >= 1000) {
-                        formattedValue = `${(value / 1000).toFixed(2)} Kbps`;
-                      } else {
-                        formattedValue = `${Math.round(value)} bps`;
-                      }
-                      return {
-                        name: datum.type,
-                        value: formattedValue,
-                      };
-                    },
+                    showCrosshairs: true,
+                    shared: true,
                   }}
                 />
-              ) : (
-                <div style={{ textAlign: 'center', padding: '40px 0' }}>暂无数据</div>
+                );
+              })(              ) : (
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: '60px 20px',
+                  color: '#999',
+                  fontSize: '14px'
+                }}>
+                  <LineChartOutlined style={{ 
+                    fontSize: '48px', 
+                    marginBottom: '16px',
+                    color: '#d9d9d9'
+                  }} />
+                  <div>暂无流量数据</div>
+                </div>
               )}
             </Card>
           </Col>

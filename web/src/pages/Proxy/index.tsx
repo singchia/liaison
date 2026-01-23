@@ -33,22 +33,29 @@ const ProxyPage: React.FC = () => {
   const reload = () => actionRef.current?.reload();
 
   const handleAdd = async (values: any) => {
-    return executeAction(
+    const createPort = values.port || undefined;
+    
+    const result = await executeAction(
       () => createProxy({
         name: values.name,
         description: values.description,
-        port: values.port,
+        port: createPort,
         application_id: values.application_id,
       }),
       {
         successMessage: '创建成功',
         errorMessage: '创建失败',
         onSuccess: () => {
-          setCreateModalVisible(false);
-          reload();
+          // 如果创建时端口为空，后端会动态分配端口并在响应中返回
+          // 刷新列表即可显示动态分配的端口
         },
       },
     );
+    
+    setCreateModalVisible(false);
+    reload();
+    
+    return result;
   };
 
   const handleEdit = async (values: any) => {
@@ -85,6 +92,10 @@ const ProxyPage: React.FC = () => {
       dataIndex: 'name',
       ellipsis: true,
       copyable: true,
+      fieldProps: {
+        placeholder: '请输入代理名称',
+        style: { width: 200 },
+      },
     },
     {
       title: '描述',
@@ -138,6 +149,7 @@ const ProxyPage: React.FC = () => {
       title: '操作',
       valueType: 'option',
       width: 150,
+      fixed: 'right',
       render: (_, record) => (
         <Space>
           <EditLink onClick={() => {

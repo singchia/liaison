@@ -213,7 +213,7 @@ func (cp *controlPlane) ListEdges(_ context.Context, req *v1.ListEdgesRequest) (
 	for _, edge := range edges {
 		edgeIDList = append(edgeIDList, uint64(edge.ID))
 	}
-	
+
 	// 批量查询 EdgeDevice 关系
 	hostType := model.EdgeDeviceRelationHost
 	deviceIDSet := make(map[uint]bool)
@@ -453,9 +453,33 @@ func (cp *controlPlane) GetEdgeScanApplicationTask(_ context.Context, req *v1.Ge
 		log.Errorf("unmarshal task result error: %s", err)
 		return nil, err
 	}
+	// 根据端口号推断应用类型
+	detectApplicationTypeByPort := func(port int) string {
+		portToType := map[int]string{
+			22:    "ssh",
+			80:    "web",
+			443:   "web",
+			3389:  "rdp",
+			3306:  "mysql",
+			5432:  "postgresql",
+			6379:  "redis",
+			27017: "mongodb",
+		}
+		if appType, ok := portToType[port]; ok {
+			return appType
+		}
+		return "tcp" // 默认返回 tcp
+	}
+
 	applications := []string{}
 	for _, application := range result.ScannedApplications {
-		applications = append(applications, fmt.Sprintf("%s:%d:%s", application.IP, application.Port, application.Protocol))
+		// 根据端口推断应用类型，如果推断不出则使用 protocol
+		appType := detectApplicationTypeByPort(application.Port)
+		if appType == "tcp" && application.Protocol != "" {
+			// 如果推断为 tcp，但 protocol 不是 tcp，则使用 protocol
+			appType = application.Protocol
+		}
+		applications = append(applications, fmt.Sprintf("%s:%d:%s", application.IP, application.Port, appType))
 	}
 
 	// 返回

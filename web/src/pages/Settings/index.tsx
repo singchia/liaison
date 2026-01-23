@@ -72,7 +72,7 @@ const SettingsPage: React.FC = () => {
               <Avatar
                 size={80}
                 icon={<UserOutlined />}
-                src="https://api.dicebear.com/7.x/bottts/svg?seed=Liaison"
+                src="/avatar.svg"
               />
               <div className="user-info">
                 <Title level={4}>

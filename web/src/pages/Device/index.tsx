@@ -78,6 +78,10 @@ const DevicePage: React.FC = () => {
       title: '设备名称',
       dataIndex: 'name',
       ellipsis: true,
+      fieldProps: {
+        placeholder: '请输入设备名称',
+        style: { width: 200 },
+      },
       render: (_, record) => (
         <Space>
           <DesktopOutlined />

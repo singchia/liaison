@@ -3,6 +3,7 @@ import { Dropdown, message } from 'antd';
 import { LogoutOutlined, SettingOutlined } from '@ant-design/icons';
 import React from 'react';
 import { getCurrentUser, logout } from '@/services/api';
+import './global.less';
 
 if (process.env.NODE_ENV === 'development') {
   const filterMessages = [
@@ -114,12 +115,26 @@ export const layout = () => {
     titleRender: () => {
       return React.createElement(
         'div',
-        { style: { display: 'flex', alignItems: 'center', color: '#1890ff', fontWeight: 600, fontSize: '18px' } },
+        { 
+          style: { 
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            color: '#1890ff', 
+            fontWeight: 600, 
+            fontSize: '30px',
+            fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+            letterSpacing: '-0.2px',
+            width: '100%',
+            paddingRight: '32px',
+            marginLeft: 24,
+          } 
+        },
         'Liaison'
       );
     },
     avatarProps: {
-      src: 'https://api.dicebear.com/7.x/bottts/svg?seed=Liaison',
+      src: '/avatar.svg',
       size: 'small',
       title: 'Admin',
       render: (_props: any, avatarChildren: React.ReactNode) => {
@@ -165,14 +180,20 @@ export const request: RequestConfig = {
   errorConfig: {
     errorHandler: (error: any) => {
       const { response } = error;
-      if (response?.status === 401) {
+      if (response?.status === 401 || response?.status === 403) {
         localStorage.removeItem('token');
         message.error('登录已过期，请重新登录');
         history.push('/login');
-      } else if (response?.status === 403) {
-        message.error('没有权限访问');
       } else if (response?.status === 500) {
-        message.error('服务器错误');
+        // 检查是否是认证相关的500错误
+        const errorMessage = error?.response?.data?.message || error?.message || '';
+        if (errorMessage.includes('authentication') || errorMessage.includes('token') || errorMessage.includes('unauthorized')) {
+          localStorage.removeItem('token');
+          message.error('登录已过期，请重新登录');
+          history.push('/login');
+        } else {
+          message.error('服务器错误');
+        }
       } else if (!response) {
         message.error('网络异常');
       }

@@ -4,7 +4,7 @@ daemon:
     enable: true
 manager:
   listen:
-    addr: 0.0.0.0:443
+    addr: 0.0.0.0:${MANAGER_PORT}
     network: tcp
     tls:
       enable: true
@@ -14,7 +14,8 @@ manager:
   db: /opt/liaison/data/liaison.db
   packages_dir: /opt/liaison/edge
   web_dir: /opt/liaison/web
-  server_url: https://${PUBLIC_ADDR}
+  frontier_edge_port: ${FRONTIER_PORT}  # Edge 和 Frontier 之间的通信端口
+  server_url: ${SERVER_URL}
   jwt_secret: ${JWT_SECRET}  # JWT密钥（必需，至少32字符，安装时自动生成）
 frontier:
   dial:

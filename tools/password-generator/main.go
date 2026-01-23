@@ -135,7 +135,8 @@ func main() {
 		}
 
 		fmt.Printf("📝 Creating new user...\n")
-		insertQuery := "INSERT INTO users (email, password, status) VALUES (?, ?, ?)"
+		// 使用当前时间作为创建时间
+		insertQuery := "INSERT INTO users (email, password, status, created_at, updated_at) VALUES (?, ?, ?, datetime('now'), datetime('now'))"
 		result, err := db.Exec(insertQuery, email, hashedPassword, status)
 		if err != nil {
 			log.Fatalf("Failed to create user: %v", err)

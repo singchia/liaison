@@ -78,7 +78,7 @@ func NewLiaison() (*Liaison, error) {
 		return nil, err
 	}
 	// entry layer
-	entry, err := entry.NewEntry(config.Conf, controlPlane)
+	entry, err := entry.NewEntry(config.Conf, controlPlane, trafficCollector)
 	if err != nil {
 		return nil, err
 	}
