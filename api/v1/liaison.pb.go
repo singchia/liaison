@@ -1780,6 +1780,7 @@ type CreateApplicationResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
 	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Data          *Application           `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1828,6 +1829,13 @@ func (x *CreateApplicationResponse) GetMessage() string {
 	return ""
 }
 
+func (x *CreateApplicationResponse) GetData() *Application {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
 // 列举应用请求
 type ListApplicationsRequest struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
@@ -1836,6 +1844,7 @@ type ListApplicationsRequest struct {
 	DeviceId        *uint64                `protobuf:"varint,3,opt,name=device_id,proto3,oneof" json:"device_id,omitempty"`
 	DeviceName      *string                `protobuf:"bytes,4,opt,name=device_name,proto3,oneof" json:"device_name,omitempty"`
 	ApplicationName *string                `protobuf:"bytes,5,opt,name=application_name,proto3,oneof" json:"application_name,omitempty"`
+	ApplicationType *string                `protobuf:"bytes,6,opt,name=application_type,proto3,oneof" json:"application_type,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -1901,6 +1910,13 @@ func (x *ListApplicationsRequest) GetDeviceName() string {
 func (x *ListApplicationsRequest) GetApplicationName() string {
 	if x != nil && x.ApplicationName != nil {
 		return *x.ApplicationName
+	}
+	return ""
+}
+
+func (x *ListApplicationsRequest) GetApplicationType() string {
+	if x != nil && x.ApplicationType != nil {
+		return *x.ApplicationType
 	}
 	return ""
 }
@@ -4181,20 +4197,23 @@ const file_liaison_proto_rawDesc = "" +
 	"\aedge_id\x18\x05 \x01(\x04R\aedge_id\x12!\n" +
 	"\tdevice_id\x18\x06 \x01(\x04H\x00R\tdevice_id\x88\x01\x01B\f\n" +
 	"\n" +
-	"_device_id\"I\n" +
+	"_device_id\"k\n" +
 	"\x19CreateApplicationResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\"\xf9\x01\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12 \n" +
+	"\x04data\x18\x03 \x01(\v2\f.ApplicationR\x04data\"\xbf\x02\n" +
 	"\x17ListApplicationsRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1c\n" +
 	"\tpage_size\x18\x02 \x01(\x05R\tpage_size\x12!\n" +
 	"\tdevice_id\x18\x03 \x01(\x04H\x00R\tdevice_id\x88\x01\x01\x12%\n" +
 	"\vdevice_name\x18\x04 \x01(\tH\x01R\vdevice_name\x88\x01\x01\x12/\n" +
-	"\x10application_name\x18\x05 \x01(\tH\x02R\x10application_name\x88\x01\x01B\f\n" +
+	"\x10application_name\x18\x05 \x01(\tH\x02R\x10application_name\x88\x01\x01\x12/\n" +
+	"\x10application_type\x18\x06 \x01(\tH\x03R\x10application_type\x88\x01\x01B\f\n" +
 	"\n" +
 	"_device_idB\x0e\n" +
 	"\f_device_nameB\x13\n" +
-	"\x11_application_name\"k\n" +
+	"\x11_application_nameB\x13\n" +
+	"\x11_application_type\"k\n" +
 	"\x18ListApplicationsResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12!\n" +
@@ -4473,74 +4492,75 @@ var file_liaison_proto_depIdxs = []int32{
 	13, // 11: Application.device:type_name -> Device
 	34, // 12: Application.proxy:type_name -> Proxy
 	24, // 13: Applications.applications:type_name -> Application
-	25, // 14: ListApplicationsResponse.data:type_name -> Applications
-	24, // 15: UpdateApplicationResponse.data:type_name -> Application
-	24, // 16: Proxy.application:type_name -> Application
-	34, // 17: Proxies.proxies:type_name -> Proxy
-	35, // 18: ListProxiesResponse.data:type_name -> Proxies
-	34, // 19: CreateProxyResponse.data:type_name -> Proxy
-	34, // 20: UpdateProxyResponse.data:type_name -> Proxy
-	44, // 21: GetEdgeScanApplicationTaskResponse.data:type_name -> EdgeScanApplicationTask
-	52, // 22: LoginResponse.data:type_name -> LoginData
-	49, // 23: LoginData.user:type_name -> User
-	49, // 24: GetProfileResponse.data:type_name -> User
-	61, // 25: TrafficMetrics.metrics:type_name -> TrafficMetric
-	62, // 26: ListTrafficMetricsResponse.data:type_name -> TrafficMetrics
-	3,  // 27: LiaisonService.CreateEdge:input_type -> CreateEdgeRequest
-	5,  // 28: LiaisonService.GetEdge:input_type -> GetEdgeRequest
-	7,  // 29: LiaisonService.ListEdges:input_type -> ListEdgesRequest
-	9,  // 30: LiaisonService.UpdateEdge:input_type -> UpdateEdgeRequest
-	11, // 31: LiaisonService.DeleteEdge:input_type -> DeleteEdgeRequest
-	18, // 32: LiaisonService.ListDevices:input_type -> ListDevicesRequest
-	20, // 33: LiaisonService.UpdateDevice:input_type -> UpdateDeviceRequest
-	16, // 34: LiaisonService.GetDevice:input_type -> GetDeviceRequest
-	22, // 35: LiaisonService.DeleteDevice:input_type -> DeleteDeviceRequest
-	26, // 36: LiaisonService.CreateApplication:input_type -> CreateApplicationRequest
-	28, // 37: LiaisonService.ListApplications:input_type -> ListApplicationsRequest
-	30, // 38: LiaisonService.UpdateApplication:input_type -> UpdateApplicationRequest
-	32, // 39: LiaisonService.DeleteApplication:input_type -> DeleteApplicationRequest
-	36, // 40: LiaisonService.ListProxies:input_type -> ListProxiesRequest
-	38, // 41: LiaisonService.CreateProxy:input_type -> CreateProxyRequest
-	40, // 42: LiaisonService.UpdateProxy:input_type -> UpdateProxyRequest
-	42, // 43: LiaisonService.DeleteProxy:input_type -> DeleteProxyRequest
-	45, // 44: LiaisonService.CreateEdgeScanApplicationTask:input_type -> CreateEdgeScanApplicationTaskRequest
-	47, // 45: LiaisonService.GetEdgeScanApplicationTask:input_type -> GetEdgeScanApplicationTaskRequest
-	50, // 46: LiaisonService.Login:input_type -> LoginRequest
-	55, // 47: LiaisonService.Logout:input_type -> LogoutRequest
-	53, // 48: LiaisonService.GetProfile:input_type -> GetProfileRequest
-	57, // 49: LiaisonService.ChangePassword:input_type -> ChangePasswordRequest
-	59, // 50: LiaisonService.Health:input_type -> HealthRequest
-	63, // 51: LiaisonService.ListTrafficMetrics:input_type -> ListTrafficMetricsRequest
-	4,  // 52: LiaisonService.CreateEdge:output_type -> CreateEdgeResponse
-	6,  // 53: LiaisonService.GetEdge:output_type -> GetEdgeResponse
-	8,  // 54: LiaisonService.ListEdges:output_type -> ListEdgesResponse
-	10, // 55: LiaisonService.UpdateEdge:output_type -> UpdateEdgeResponse
-	12, // 56: LiaisonService.DeleteEdge:output_type -> DeleteEdgeResponse
-	19, // 57: LiaisonService.ListDevices:output_type -> ListDevicesResponse
-	21, // 58: LiaisonService.UpdateDevice:output_type -> UpdateDeviceResponse
-	17, // 59: LiaisonService.GetDevice:output_type -> GetDeviceResponse
-	23, // 60: LiaisonService.DeleteDevice:output_type -> DeleteDeviceResponse
-	27, // 61: LiaisonService.CreateApplication:output_type -> CreateApplicationResponse
-	29, // 62: LiaisonService.ListApplications:output_type -> ListApplicationsResponse
-	31, // 63: LiaisonService.UpdateApplication:output_type -> UpdateApplicationResponse
-	33, // 64: LiaisonService.DeleteApplication:output_type -> DeleteApplicationResponse
-	37, // 65: LiaisonService.ListProxies:output_type -> ListProxiesResponse
-	39, // 66: LiaisonService.CreateProxy:output_type -> CreateProxyResponse
-	41, // 67: LiaisonService.UpdateProxy:output_type -> UpdateProxyResponse
-	43, // 68: LiaisonService.DeleteProxy:output_type -> DeleteProxyResponse
-	46, // 69: LiaisonService.CreateEdgeScanApplicationTask:output_type -> CreateEdgeScanApplicationTaskResponse
-	48, // 70: LiaisonService.GetEdgeScanApplicationTask:output_type -> GetEdgeScanApplicationTaskResponse
-	51, // 71: LiaisonService.Login:output_type -> LoginResponse
-	56, // 72: LiaisonService.Logout:output_type -> LogoutResponse
-	54, // 73: LiaisonService.GetProfile:output_type -> GetProfileResponse
-	58, // 74: LiaisonService.ChangePassword:output_type -> ChangePasswordResponse
-	60, // 75: LiaisonService.Health:output_type -> HealthResponse
-	64, // 76: LiaisonService.ListTrafficMetrics:output_type -> ListTrafficMetricsResponse
-	52, // [52:77] is the sub-list for method output_type
-	27, // [27:52] is the sub-list for method input_type
-	27, // [27:27] is the sub-list for extension type_name
-	27, // [27:27] is the sub-list for extension extendee
-	0,  // [0:27] is the sub-list for field type_name
+	24, // 14: CreateApplicationResponse.data:type_name -> Application
+	25, // 15: ListApplicationsResponse.data:type_name -> Applications
+	24, // 16: UpdateApplicationResponse.data:type_name -> Application
+	24, // 17: Proxy.application:type_name -> Application
+	34, // 18: Proxies.proxies:type_name -> Proxy
+	35, // 19: ListProxiesResponse.data:type_name -> Proxies
+	34, // 20: CreateProxyResponse.data:type_name -> Proxy
+	34, // 21: UpdateProxyResponse.data:type_name -> Proxy
+	44, // 22: GetEdgeScanApplicationTaskResponse.data:type_name -> EdgeScanApplicationTask
+	52, // 23: LoginResponse.data:type_name -> LoginData
+	49, // 24: LoginData.user:type_name -> User
+	49, // 25: GetProfileResponse.data:type_name -> User
+	61, // 26: TrafficMetrics.metrics:type_name -> TrafficMetric
+	62, // 27: ListTrafficMetricsResponse.data:type_name -> TrafficMetrics
+	3,  // 28: LiaisonService.CreateEdge:input_type -> CreateEdgeRequest
+	5,  // 29: LiaisonService.GetEdge:input_type -> GetEdgeRequest
+	7,  // 30: LiaisonService.ListEdges:input_type -> ListEdgesRequest
+	9,  // 31: LiaisonService.UpdateEdge:input_type -> UpdateEdgeRequest
+	11, // 32: LiaisonService.DeleteEdge:input_type -> DeleteEdgeRequest
+	18, // 33: LiaisonService.ListDevices:input_type -> ListDevicesRequest
+	20, // 34: LiaisonService.UpdateDevice:input_type -> UpdateDeviceRequest
+	16, // 35: LiaisonService.GetDevice:input_type -> GetDeviceRequest
+	22, // 36: LiaisonService.DeleteDevice:input_type -> DeleteDeviceRequest
+	26, // 37: LiaisonService.CreateApplication:input_type -> CreateApplicationRequest
+	28, // 38: LiaisonService.ListApplications:input_type -> ListApplicationsRequest
+	30, // 39: LiaisonService.UpdateApplication:input_type -> UpdateApplicationRequest
+	32, // 40: LiaisonService.DeleteApplication:input_type -> DeleteApplicationRequest
+	36, // 41: LiaisonService.ListProxies:input_type -> ListProxiesRequest
+	38, // 42: LiaisonService.CreateProxy:input_type -> CreateProxyRequest
+	40, // 43: LiaisonService.UpdateProxy:input_type -> UpdateProxyRequest
+	42, // 44: LiaisonService.DeleteProxy:input_type -> DeleteProxyRequest
+	45, // 45: LiaisonService.CreateEdgeScanApplicationTask:input_type -> CreateEdgeScanApplicationTaskRequest
+	47, // 46: LiaisonService.GetEdgeScanApplicationTask:input_type -> GetEdgeScanApplicationTaskRequest
+	50, // 47: LiaisonService.Login:input_type -> LoginRequest
+	55, // 48: LiaisonService.Logout:input_type -> LogoutRequest
+	53, // 49: LiaisonService.GetProfile:input_type -> GetProfileRequest
+	57, // 50: LiaisonService.ChangePassword:input_type -> ChangePasswordRequest
+	59, // 51: LiaisonService.Health:input_type -> HealthRequest
+	63, // 52: LiaisonService.ListTrafficMetrics:input_type -> ListTrafficMetricsRequest
+	4,  // 53: LiaisonService.CreateEdge:output_type -> CreateEdgeResponse
+	6,  // 54: LiaisonService.GetEdge:output_type -> GetEdgeResponse
+	8,  // 55: LiaisonService.ListEdges:output_type -> ListEdgesResponse
+	10, // 56: LiaisonService.UpdateEdge:output_type -> UpdateEdgeResponse
+	12, // 57: LiaisonService.DeleteEdge:output_type -> DeleteEdgeResponse
+	19, // 58: LiaisonService.ListDevices:output_type -> ListDevicesResponse
+	21, // 59: LiaisonService.UpdateDevice:output_type -> UpdateDeviceResponse
+	17, // 60: LiaisonService.GetDevice:output_type -> GetDeviceResponse
+	23, // 61: LiaisonService.DeleteDevice:output_type -> DeleteDeviceResponse
+	27, // 62: LiaisonService.CreateApplication:output_type -> CreateApplicationResponse
+	29, // 63: LiaisonService.ListApplications:output_type -> ListApplicationsResponse
+	31, // 64: LiaisonService.UpdateApplication:output_type -> UpdateApplicationResponse
+	33, // 65: LiaisonService.DeleteApplication:output_type -> DeleteApplicationResponse
+	37, // 66: LiaisonService.ListProxies:output_type -> ListProxiesResponse
+	39, // 67: LiaisonService.CreateProxy:output_type -> CreateProxyResponse
+	41, // 68: LiaisonService.UpdateProxy:output_type -> UpdateProxyResponse
+	43, // 69: LiaisonService.DeleteProxy:output_type -> DeleteProxyResponse
+	46, // 70: LiaisonService.CreateEdgeScanApplicationTask:output_type -> CreateEdgeScanApplicationTaskResponse
+	48, // 71: LiaisonService.GetEdgeScanApplicationTask:output_type -> GetEdgeScanApplicationTaskResponse
+	51, // 72: LiaisonService.Login:output_type -> LoginResponse
+	56, // 73: LiaisonService.Logout:output_type -> LogoutResponse
+	54, // 74: LiaisonService.GetProfile:output_type -> GetProfileResponse
+	58, // 75: LiaisonService.ChangePassword:output_type -> ChangePasswordResponse
+	60, // 76: LiaisonService.Health:output_type -> HealthResponse
+	64, // 77: LiaisonService.ListTrafficMetrics:output_type -> ListTrafficMetricsResponse
+	53, // [53:78] is the sub-list for method output_type
+	28, // [28:53] is the sub-list for method input_type
+	28, // [28:28] is the sub-list for extension type_name
+	28, // [28:28] is the sub-list for extension extendee
+	0,  // [0:28] is the sub-list for field type_name
 }
 
 func init() { file_liaison_proto_init() }

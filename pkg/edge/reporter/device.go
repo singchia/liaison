@@ -142,9 +142,13 @@ func getDevice() (*proto.Device, error) {
 		log.Warnf("failed to get network interfaces, using empty list, error: %v", err)
 	}
 	// 指纹
-	fingerprint, err := utils.GetFingerprint()
+	fingerprint, components, err := utils.GetFingerprint()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get fingerprint: %w", err)
+	}
+	if components != nil {
+		log.Debugf("getDevice fingerprint: %s, MACs: %v, CPU: %s, DiskIDs: %v, Raw: %s",
+			fingerprint, components.MACs, components.CPUInfo, components.DiskIDs, components.Raw)
 	}
 
 	return &proto.Device{
@@ -168,39 +172,39 @@ func getDeviceEthernetInterface() ([]*proto.DeviceEthernetInterface, error) {
 	ethernetInterfaces := make([]*proto.DeviceEthernetInterface, 0)
 
 	for _, iface := range interfaces {
-		// 跳过 lo 网卡
-		if iface.Name == "lo" || iface.Name == "lo0" {
-			continue
+		// 检查是否是 loopback 接口（lo、lo0 等）
+		isLoopback := iface.Flags&net.FlagLoopback != 0 || iface.Name == "lo" || iface.Name == "lo0"
+
+		// 如果不是 loopback 接口，使用物理接口检查
+		if !isLoopback {
+			// 在 macOS、Windows 和 Linux 上，只使用物理接口
+			if runtime.GOOS == "darwin" {
+				if !utils.IsMacPhysicalInterface(&iface) {
+					continue
+				}
+			} else if runtime.GOOS == "windows" {
+				if !utils.IsWindowsPhysicalInterface(&iface) {
+					continue
+				}
+			} else if runtime.GOOS == "linux" {
+				if !utils.IsLinuxPhysicalInterface(&iface) {
+					continue
+				}
+			} else {
+				// 其他系统，过滤掉常见的虚拟接口
+				name := strings.ToLower(iface.Name)
+				if strings.Contains(name, "utun") || // VPN 接口
+					strings.Contains(name, "bridge") || // 桥接接口
+					strings.Contains(name, "vmnet") || // VMware 虚拟接口
+					strings.Contains(name, "vboxnet") || // VirtualBox 虚拟接口
+					strings.Contains(name, "awdl") || // Apple Wireless Direct Link (可能不稳定)
+					strings.Contains(name, "anpi") { // Apple Network Packet Injection
+					continue
+				}
+			}
 		}
-		// 在 macOS、Windows 和 Linux 上，只使用物理接口
-		if runtime.GOOS == "darwin" || runtime.GOOS == "windows" {
-			if len(iface.HardwareAddr) == 0 {
-				continue
-			}
-			mac := iface.HardwareAddr.String()
-			// 只使用物理接口
-			if !utils.IsPhysicalInterface(iface.Name, mac) {
-				continue
-			}
-		} else if runtime.GOOS == "linux" {
-			// Linux: 使用 sysfs 判断物理接口
-			if !utils.IsPhysicalInterfaceLinux(iface) {
-				continue
-			}
-		} else {
-			// 其他系统，过滤掉常见的虚拟接口
-			name := strings.ToLower(iface.Name)
-			if strings.Contains(name, "utun") || // VPN 接口
-				strings.Contains(name, "bridge") || // 桥接接口
-				strings.Contains(name, "vmnet") || // VMware 虚拟接口
-				strings.Contains(name, "vboxnet") || // VirtualBox 虚拟接口
-				strings.Contains(name, "awdl") || // Apple Wireless Direct Link (可能不稳定)
-				strings.Contains(name, "anpi") { // Apple Network Packet Injection
-				continue
-			}
-		}
-		// 跳过没有MAC或未启用的接口
-		if iface.Flags&net.FlagUp == 0 {
+		// 跳过没有MAC或未启用的接口（loopback 接口可能没有 MAC，允许通过）
+		if iface.Flags&net.FlagUp == 0 && !isLoopback {
 			continue
 		}
 
@@ -216,8 +220,13 @@ func getDeviceEthernetInterface() ([]*proto.DeviceEthernetInterface, error) {
 			switch v := addr.(type) {
 			case *net.IPNet: // 带掩码的情况
 				ip := v.IP.String()
-				// 跳过 loopback 和 link-local 地址
-				if v.IP.IsLoopback() || v.IP.IsLinkLocalUnicast() {
+				// 如果是 loopback 接口，允许 loopback 地址；否则跳过 loopback 和 link-local 地址
+				if !isLoopback {
+					if v.IP.IsLoopback() || v.IP.IsLinkLocalUnicast() {
+						continue
+					}
+				} else if v.IP.IsLinkLocalUnicast() {
+					// loopback 接口上，只跳过 link-local，保留 loopback 地址
 					continue
 				}
 				// 检查是否为 IPv4
@@ -236,8 +245,13 @@ func getDeviceEthernetInterface() ([]*proto.DeviceEthernetInterface, error) {
 				})
 
 			case *net.IPAddr: // 只有IP没有掩码
-				// 跳过 loopback 和 link-local 地址
-				if v.IP.IsLoopback() || v.IP.IsLinkLocalUnicast() {
+				// 如果是 loopback 接口，允许 loopback 地址；否则跳过 loopback 和 link-local 地址
+				if !isLoopback {
+					if v.IP.IsLoopback() || v.IP.IsLinkLocalUnicast() {
+						continue
+					}
+				} else if v.IP.IsLinkLocalUnicast() {
+					// loopback 接口上，只跳过 link-local，保留 loopback 地址
 					continue
 				}
 				// 检查是否为 IPv4
@@ -251,11 +265,15 @@ func getDeviceEthernetInterface() ([]*proto.DeviceEthernetInterface, error) {
 			}
 		}
 
-		// 只添加有IP地址且至少有一个IPv4地址的网卡（跳过只有IPv6的网卡）
-		if len(ipMasks) > 0 && hasIPv4 {
+		// 添加有IP地址的网卡（loopback 接口允许没有 IPv4，只要有 IP 地址即可）
+		if len(ipMasks) > 0 && (hasIPv4 || isLoopback) {
+			mac := ""
+			if len(iface.HardwareAddr) > 0 {
+				mac = iface.HardwareAddr.String()
+			}
 			ethernetInterfaces = append(ethernetInterfaces, &proto.DeviceEthernetInterface{
 				Name:    iface.Name,
-				MAC:     iface.HardwareAddr.String(),
+				MAC:     mac,
 				IPMasks: ipMasks,
 			})
 		}
@@ -265,9 +283,13 @@ func getDeviceEthernetInterface() ([]*proto.DeviceEthernetInterface, error) {
 
 func getDeviceUsage() (*proto.DeviceUsage, error) {
 	// 获取指纹
-	fingerprint, err := utils.GetFingerprint()
+	fingerprint, components, err := utils.GetFingerprint()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get fingerprint: %w", err)
+	}
+	if components != nil {
+		log.Debugf("getDeviceUsage fingerprint: %s, MACs: %v, CPU: %s, DiskIDs: %v, Raw: %s",
+			fingerprint, components.MACs, components.CPUInfo, components.DiskIDs, components.Raw)
 	}
 
 	memory, err := mem.VirtualMemory()
@@ -294,5 +316,10 @@ func getDeviceUsage() (*proto.DeviceUsage, error) {
 
 // GetFingerprint 获取设备指纹（导出函数，供命令行使用）
 func GetFingerprint() (string, error) {
-	return utils.GetFingerprint()
+	fingerprint, components, err := utils.GetFingerprint()
+	if err == nil && components != nil {
+		log.Debugf("GetFingerprint fingerprint: %s, MACs: %v, CPU: %s, DiskIDs: %v, Raw: %s",
+			fingerprint, components.MACs, components.CPUInfo, components.DiskIDs, components.Raw)
+	}
+	return fingerprint, err
 }

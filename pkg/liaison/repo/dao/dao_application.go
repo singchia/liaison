@@ -30,6 +30,9 @@ func (d *dao) CountApplications(query *ListApplicationsQuery) (int64, error) {
 	if len(query.IDs) > 0 {
 		db = db.Where("id IN ?", query.IDs)
 	}
+	if query.ApplicationType != "" {
+		db = db.Where("application_type = ?", query.ApplicationType)
+	}
 	var count int64
 	if err := db.Model(&model.Application{}).Count(&count).Error; err != nil {
 		return 0, err
@@ -43,6 +46,10 @@ func (d *dao) ListApplications(query *ListApplicationsQuery) ([]*model.Applicati
 	// device_ids
 	if len(query.DeviceIDs) > 0 {
 		db = db.Where("device_id IN ?", query.DeviceIDs)
+	}
+	// application_type
+	if query.ApplicationType != "" {
+		db = db.Where("application_type = ?", query.ApplicationType)
 	}
 	// page & page_size
 	if query.Page > 0 && query.PageSize > 0 {

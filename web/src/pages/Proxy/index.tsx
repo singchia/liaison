@@ -10,7 +10,8 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { Space, Tag, Typography } from 'antd';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
+import { useSearchParams, useLocation } from '@umijs/max';
 import {
   getProxyList,
   createProxy,
@@ -26,9 +27,133 @@ const { Text } = Typography;
 
 const ProxyPage: React.FC = () => {
   const actionRef = useRef<ActionType>();
+  const createFormRef = useRef<any>();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [currentRow, setCurrentRow] = useState<API.Proxy>();
+  const [initialApplicationId, setInitialApplicationId] = useState<number | undefined>();
+  const [applicationOptions, setApplicationOptions] = useState<
+    { label: string; value: number }[]
+  >([]);
+  const hasProcessedUrlRef = useRef(false); // 使用 ref 跟踪是否已处理过 URL 参数
+
+  // 从 URL 查询参数中读取 application_id、application_name 和 autoCreate（只执行一次）
+  useEffect(() => {
+    // 如果已经处理过 URL 参数，不再重复处理
+    if (hasProcessedUrlRef.current) return;
+    
+    // 优先从 searchParams 读取
+    let applicationId = searchParams.get('application_id');
+    let applicationName = searchParams.get('application_name');
+    let autoCreate = searchParams.get('autoCreate');
+    
+    // 如果 searchParams 没有，从 location.search 读取
+    if (location.search) {
+      const urlParams = new URLSearchParams(location.search);
+      if (!applicationId) {
+        applicationId = urlParams.get('application_id');
+      }
+      if (!applicationName) {
+        applicationName = urlParams.get('application_name');
+      }
+      if (!autoCreate) {
+        autoCreate = urlParams.get('autoCreate');
+      }
+    }
+    
+    // 如果 application_id 存在，设置初始值
+    if (applicationId) {
+      const id = parseInt(applicationId, 10);
+      if (!isNaN(id)) {
+        setInitialApplicationId(id);
+        
+        // 如果 URL 中有应用名称，立即添加到 options 中（避免等待列表加载）
+        if (applicationName) {
+          const decodedName = decodeURIComponent(applicationName);
+          setApplicationOptions((prev) => {
+            // 检查是否已经在 options 中
+            const exists = prev.some(opt => opt.value === id);
+            if (exists) {
+              // 如果已存在，更新 label（使用URL中的名称）
+              return prev.map(opt => 
+                opt.value === id ? { ...opt, label: decodedName } : opt
+              );
+            }
+            // 如果不存在，添加到 options 中
+            return [...prev, { label: decodedName, value: id }];
+          });
+        }
+        
+        // 重新加载应用列表，确保包含完整信息（IP和端口）
+        getApplicationList({ page_size: 100 }).then((res) => {
+          const options =
+            res.data?.applications?.map((item) => ({
+              label: `${item.name} (${item.ip}:${item.port})`,
+              value: item.id,
+            })) || [];
+          // 如果URL中有应用名称，确保对应的选项存在（即使列表中没有）
+          if (applicationName) {
+            const decodedName = decodeURIComponent(applicationName);
+            const exists = options.some(opt => opt.value === id);
+            if (!exists) {
+              options.push({ label: decodedName, value: id });
+            }
+          }
+          setApplicationOptions(options);
+        }).catch(() => {
+          // 忽略错误，但如果URL中有应用名称，至少保留它
+          if (applicationName) {
+            const decodedName = decodeURIComponent(applicationName);
+            setApplicationOptions((prev) => {
+              const exists = prev.some(opt => opt.value === id);
+              if (exists) return prev;
+              return [...prev, { label: decodedName, value: id }];
+            });
+          }
+        });
+      }
+    }
+    
+    // 如果 autoCreate 为 true，自动打开对话框
+    if (autoCreate === 'true') {
+      hasProcessedUrlRef.current = true; // 标记为已处理
+      setCreateModalVisible(true);
+      // 清除 URL 中的查询参数
+      window.history.replaceState({}, '', '/proxy');
+    } else if (applicationId) {
+      // 如果没有 autoCreate，但有 application_id，也打开对话框（向后兼容）
+      hasProcessedUrlRef.current = true; // 标记为已处理
+      setCreateModalVisible(true);
+      // 清除 URL 中的查询参数
+      window.history.replaceState({}, '', '/proxy');
+    } else {
+      // 如果没有相关参数，也标记为已处理，避免重复检查
+      hasProcessedUrlRef.current = true;
+    }
+  }, [searchParams, location.search]);
+
+  // 页面加载时就拉应用列表
+  useEffect(() => {
+    const loadApplications = async () => {
+      try {
+        const res = await getApplicationList({ page_size: 100 });
+        const options =
+          res.data?.applications?.map((item) => ({
+            label: `${item.name} (${item.ip}:${item.port})`,
+            value: item.id,
+          })) || [];
+        setApplicationOptions(options);
+      } catch {
+        setApplicationOptions([]);
+      }
+    };
+
+    loadApplications();
+  }, []);
+
+
 
   const reload = () => actionRef.current?.reload();
 
@@ -94,7 +219,6 @@ const ProxyPage: React.FC = () => {
       copyable: true,
       fieldProps: {
         placeholder: '请输入代理名称',
-        style: { width: 200 },
       },
     },
     {
@@ -148,8 +272,9 @@ const ProxyPage: React.FC = () => {
     {
       title: '操作',
       valueType: 'option',
-      width: 150,
+      width: 120,
       fixed: 'right',
+      align: 'center',
       render: (_, record) => (
         <Space>
           <EditLink onClick={() => {
@@ -167,7 +292,8 @@ const ProxyPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <ProTable<API.Proxy>
+      <div className="table-search-wrapper">
+        <ProTable<API.Proxy>
         headerTitle="代理列表"
         actionRef={actionRef}
         rowKey="id"
@@ -182,14 +308,30 @@ const ProxyPage: React.FC = () => {
           </CreateButton>,
         ]}
         pagination={defaultPagination}
-        search={defaultSearch}
+        search={{
+          ...defaultSearch,
+          labelWidth: 'auto',
+        }}
         scroll={{ x: 'max-content' }}
       />
+      </div>
 
       <ModalForm
+        key={initialApplicationId ?? 'create'}
         title="新建代理"
         open={createModalVisible}
-        onOpenChange={setCreateModalVisible}
+        formRef={createFormRef}
+        initialValues={
+          initialApplicationId
+            ? { application_id: initialApplicationId }
+            : undefined
+        }
+        onOpenChange={(visible) => {
+          setCreateModalVisible(visible);
+          if (!visible) {
+            setInitialApplicationId(undefined);
+          }
+        }}
         onFinish={handleAdd}
         modalProps={{ destroyOnClose: true }}
         width={500}
@@ -205,19 +347,7 @@ const ProxyPage: React.FC = () => {
           label="关联应用"
           placeholder="请选择要代理的应用"
           rules={[{ required: true, message: '请选择应用' }]}
-          request={async () => {
-            try {
-              const res = await getApplicationList({ page_size: 100 });
-              return (
-                res.data?.applications?.map((item) => ({
-                  label: `${item.name} (${item.ip}:${item.port})`,
-                  value: item.id,
-                })) || []
-              );
-            } catch {
-              return [];
-            }
-          }}
+          options={applicationOptions}
         />
         <ProFormDigit
           name="port"

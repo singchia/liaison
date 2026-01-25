@@ -9,7 +9,7 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { Space, Tag, Typography, Select, Form } from 'antd';
-import { LinkOutlined, ApiOutlined, EditOutlined } from '@ant-design/icons';
+import { LinkOutlined, ApiOutlined } from '@ant-design/icons';
 import { useRef, useState } from 'react';
 import {
   getApplicationList,
@@ -138,7 +138,6 @@ const AppPage: React.FC = () => {
       ellipsis: true,
       fieldProps: {
         placeholder: '请输入应用名称',
-        style: { width: 200 },
       },
       render: (_, record) => (
         <Space>
@@ -151,14 +150,28 @@ const AppPage: React.FC = () => {
       title: '类型',
       dataIndex: 'application_type',
       width: 100,
-      search: false,
+      valueType: 'select',
       valueEnum: {
         web: { text: 'Web' },
         tcp: { text: 'TCP' },
-        udp: { text: 'UDP' },
         ssh: { text: 'SSH' },
         rdp: { text: 'RDP' },
-        database: { text: '数据库' },
+        mysql: { text: 'MySQL' },
+        postgresql: { text: 'PostgreSQL' },
+        redis: { text: 'Redis' },
+        mongodb: { text: 'MongoDB' },
+      },
+      fieldProps: {
+        placeholder: '请选择应用类型',
+        allowClear: true,
+        onChange: (val: string) => {
+          // 使用 formRef 获取表单实例并设置值
+          if (formRef.current) {
+            formRef.current.setFieldsValue({ application_type: val });
+            // 触发表单提交
+            formRef.current.submit();
+          }
+        },
       },
     },
     {
@@ -180,29 +193,27 @@ const AppPage: React.FC = () => {
       dataIndex: 'device_name',
       ellipsis: true,
       width: 150,
+      valueType: 'select',
       render: (_, record) => record.device?.name || '-',
-      renderFormItem: () => {
-        return (
-          <Select
-            placeholder="请选择设备"
-            showSearch
-            allowClear
-            style={{ width: 200 }}
-            options={deviceOptions}
-            filterOption={(input: string, option?: { label: string; value: string }) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-            }
-            onFocus={loadDeviceOptions}
-            onChange={(val) => {
-              // 使用 formRef 获取表单实例并设置值
-              if (formRef.current) {
-                formRef.current.setFieldsValue({ device_name: val });
-                // 触发表单提交
-                formRef.current.submit();
-              }
-            }}
-          />
-        );
+      fieldProps: {
+        placeholder: '请选择设备',
+        showSearch: true,
+        allowClear: true,
+        options: deviceOptions,
+        filterOption: (input: string, option?: { label: string; value: string }) =>
+          (option?.label ?? '').toLowerCase().includes(input.toLowerCase()),
+        onFocus: loadDeviceOptions,
+        onChange: (val: string) => {
+          // 使用 formRef 获取表单实例并设置值
+          if (formRef.current) {
+            formRef.current.setFieldsValue({ device_name: val });
+            // 触发表单提交
+            formRef.current.submit();
+          }
+        },
+      },
+      formItemProps: {
+        style: { marginBottom: 0, marginRight: 16 },
       },
     },
     {
@@ -232,21 +243,22 @@ const AppPage: React.FC = () => {
     {
       title: '操作',
       valueType: 'option',
-      width: 200,
+      width: 180,
       fixed: 'right',
+      align: 'center',
       render: (_, record) => (
         <Space>
           <a onClick={() => {
             setCurrentRow(record);
             setProxyModalVisible(true);
           }}>
-            <LinkOutlined /> 创建代理
+            创建代理
           </a>
           <a onClick={() => {
             setCurrentRow(record);
             setEditModalVisible(true);
           }}>
-            <EditOutlined /> 编辑
+            编辑
           </a>
           <DeleteLink
             title="确定要删除这个应用吗？"
@@ -259,7 +271,8 @@ const AppPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <ProTable<API.Application>
+      <div className="table-search-wrapper">
+        <ProTable<API.Application>
         headerTitle="应用列表"
         actionRef={actionRef}
         formRef={formRef}
@@ -267,7 +280,7 @@ const AppPage: React.FC = () => {
         columns={columns}
         request={async (params) => {
           console.log('ProTable request params:', params);
-          const searchParams = buildSearchParams<API.ApplicationListParams>(params, ['name', 'device_name']);
+          const searchParams = buildSearchParams<API.ApplicationListParams>(params, ['name', 'device_name', 'application_type']);
           console.log('buildSearchParams result:', searchParams);
           return tableRequest(() => getApplicationList(searchParams), 'applications');
         }}
@@ -282,9 +295,13 @@ const AppPage: React.FC = () => {
           </CreateButton>,
         ]}
         pagination={defaultPagination}
-        search={defaultSearch}
+        search={{
+          ...defaultSearch,
+          labelWidth: 'auto',
+        }}
         scroll={{ x: 'max-content' }}
       />
+      </div>
 
       <ModalForm
         title="新建应用"
@@ -327,7 +344,6 @@ const AppPage: React.FC = () => {
                 postgresql: 5432,
                 redis: 6379,
                 mongodb: 27017,
-                database: 3306,
               };
               const defaultPort = defaultPorts[value as string];
               if (defaultPort) {

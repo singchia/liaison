@@ -9,7 +9,7 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { Drawer, Space, Tag, Popconfirm, Badge, Tooltip, message } from 'antd';
-import { DesktopOutlined, InfoCircleOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { DesktopOutlined } from '@ant-design/icons';
 import { useRef, useState } from 'react';
 import { getDeviceList, getDeviceDetail, updateDevice, deleteDevice } from '@/services/api';
 import { executeAction, tableRequest } from '@/utils/request';
@@ -80,7 +80,6 @@ const DevicePage: React.FC = () => {
       ellipsis: true,
       fieldProps: {
         placeholder: '请输入设备名称',
-        style: { width: 200 },
       },
       render: (_, record) => (
         <Space>
@@ -182,23 +181,24 @@ const DevicePage: React.FC = () => {
     {
       title: '操作',
       valueType: 'option',
-      width: 200,
+      width: 150,
       fixed: 'right',
+      align: 'center',
       render: (_, record) => (
         <Space size="small">
           <a onClick={() => handleViewDetail(record)}>
-            <InfoCircleOutlined /> 详情
+            详情
           </a>
           <a onClick={() => {
             setCurrentRow(record);
             setEditModalVisible(true);
           }}>
-            <EditOutlined /> 编辑
+            编辑
           </a>
           {record.online === 1 ? (
             <Tooltip title="在线设备不允许删除，请先断开连接">
               <a style={{ color: '#d9d9d9', cursor: 'not-allowed' }}>
-                <DeleteOutlined /> 删除
+                删除
               </a>
             </Tooltip>
           ) : (
@@ -211,7 +211,7 @@ const DevicePage: React.FC = () => {
               okButtonProps={{ danger: true }}
             >
               <a style={{ color: '#ff4d4f' }}>
-                <DeleteOutlined /> 删除
+                删除
               </a>
             </Popconfirm>
           )}
@@ -222,7 +222,8 @@ const DevicePage: React.FC = () => {
 
   return (
     <PageContainer>
-      <ProTable<API.Device>
+      <div className="table-search-wrapper">
+        <ProTable<API.Device>
         headerTitle="设备列表"
         actionRef={actionRef}
         rowKey="id"
@@ -232,9 +233,13 @@ const DevicePage: React.FC = () => {
           return tableRequest(() => getDeviceList(searchParams), 'devices');
         }}
         pagination={defaultPagination}
-        search={defaultSearch}
+        search={{
+          ...defaultSearch,
+          labelWidth: 'auto',
+        }}
         scroll={{ x: 'max-content' }}
       />
+      </div>
 
       <Drawer
         title="设备详情"

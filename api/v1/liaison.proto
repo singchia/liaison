@@ -198,6 +198,7 @@ message CreateApplicationRequest {
 message CreateApplicationResponse {
     int32 code = 1 [json_name = "code"];
     string message = 2 [json_name = "message"];
+    Application data = 3 [json_name = "data"];
 }
 
 // 列举应用请求
@@ -207,6 +208,7 @@ message ListApplicationsRequest {
     optional uint64 device_id = 3 [json_name = "device_id"];
     optional string device_name = 4 [json_name = "device_name"];
     optional string application_name = 5 [json_name = "application_name"];
+    optional string application_type = 6 [json_name = "application_type"];
 }
 
 message ListApplicationsResponse {

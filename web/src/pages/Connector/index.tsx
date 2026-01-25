@@ -25,14 +25,13 @@ import {
   Select,
 } from 'antd';
 import {
-  SearchOutlined,
   CopyOutlined,
   CheckCircleOutlined,
   LoadingOutlined,
-  EditOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
 import { useRef, useState } from 'react';
+import { history } from '@umijs/max';
 import {
   getEdgeList,
   createEdge,
@@ -229,28 +228,96 @@ const ConnectorPage: React.FC = () => {
       return portToType[port] || 'tcp';
     })();
 
-    await executeAction(
-      () =>
-        createApplication({
-          name: `App-${ip}:${port}`,
-          application_type: appType,
-          ip,
-          port,
-          edge_id: currentRow.id,
-        }),
-      {
-        successMessage: '添加应用成功',
-        errorMessage: '添加应用失败',
-        onSuccess: () => {
-          if (scanTask) {
-            setScanTask({
-              ...scanTask,
-              applications: scanTask.applications.filter((a) => a !== appStr),
-            });
-          }
+    // 显示确认对话框
+    const handleAddOnly = async () => {
+      // 只添加应用
+      await executeAction(
+        () =>
+          createApplication({
+            name: `App-${ip}:${port}`,
+            application_type: appType,
+            ip,
+            port,
+            edge_id: currentRow.id,
+          }),
+        {
+          successMessage: '添加应用成功',
+          errorMessage: '添加应用失败',
+          onSuccess: () => {
+            if (scanTask) {
+              setScanTask({
+                ...scanTask,
+                applications: scanTask.applications.filter((a) => a !== appStr),
+              });
+            }
+          },
         },
+      );
+    };
+
+    const modalInstance = Modal.confirm({
+      title: '添加应用',
+      content: (
+        <div>
+          <div style={{ marginBottom: 8 }}>确定要添加应用 <strong>{ip}:{port}</strong> 吗？是否同时创建代理？</div>
+        </div>
+      ),
+      width: 450,
+      centered: true,
+      closable: true,
+      maskClosable: false, // 禁止点击遮罩层关闭
+      okText: '添加并设置代理',
+      cancelText: '只添加应用',
+      okButtonProps: { style: { marginRight: 80 } },
+      footer: (_, { OkBtn }) => (
+        <>
+          <Button onClick={async () => {
+            modalInstance.destroy();
+            await handleAddOnly();
+          }}>
+            只添加应用
+          </Button>
+          <OkBtn />
+        </>
+      ),
+      onOk: async () => {
+        // 添加应用并跳转到代理页面
+        const result = await executeAction(
+          () =>
+            createApplication({
+              name: `App-${ip}:${port}`,
+              application_type: appType,
+              ip,
+              port,
+              edge_id: currentRow.id,
+            }),
+          {
+            successMessage: '添加应用成功',
+            errorMessage: '添加应用失败',
+            onSuccess: (data?: API.Application) => {
+              if (scanTask) {
+                setScanTask({
+                  ...scanTask,
+                  applications: scanTask.applications.filter((a) => a !== appStr),
+                });
+              }
+              // 跳转到代理页面，传递应用ID、名称和autoCreate参数
+              if (data?.id) {
+                const appName = encodeURIComponent(data.name || `App-${ip}:${port}`);
+                history.push(`/proxy?application_id=${data.id}&application_name=${appName}&autoCreate=true`);
+              } else {
+                history.push('/proxy?autoCreate=true');
+              }
+            },
+          },
+        );
+        return result;
       },
-    );
+      onCancel: () => {
+        // 点击关闭按钮时，不执行任何操作，只关闭对话框
+        // 不做任何处理
+      },
+    });
   };
 
   const columns: ProColumns<API.Edge>[] = [
@@ -261,7 +328,6 @@ const ConnectorPage: React.FC = () => {
       width: 150,
       fieldProps: {
         placeholder: '请输入连接器名称',
-        style: { width: 200 },
       },
     },
     {
@@ -276,7 +342,6 @@ const ConnectorPage: React.FC = () => {
             placeholder="请选择设备"
             showSearch
             allowClear
-            style={{ width: 200 }}
             options={deviceOptions}
             filterOption={(input: string, option?: { label: string; value: string }) =>
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
@@ -342,18 +407,19 @@ const ConnectorPage: React.FC = () => {
     {
       title: '操作',
       valueType: 'option',
-      width: 220,
+      width: 180,
       fixed: 'right',
+      align: 'center',
       render: (_, record) => (
         <Space>
           <a onClick={() => handleDiscoverApps(record)}>
-            <SearchOutlined /> 扫描应用
+            扫描应用
           </a>
           <a onClick={() => {
             setCurrentRow(record);
             setEditModalVisible(true);
           }}>
-            <EditOutlined /> 编辑
+            编辑
           </a>
           <DeleteLink
             title="确定要删除这个连接器吗？"
@@ -367,7 +433,8 @@ const ConnectorPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <ProTable<API.Edge>
+      <div className="table-search-wrapper">
+        <ProTable<API.Edge>
         headerTitle="连接器列表"
         actionRef={actionRef}
         formRef={formRef}
@@ -390,9 +457,13 @@ const ConnectorPage: React.FC = () => {
           </CreateButton>,
         ]}
         pagination={defaultPagination}
-        search={defaultSearch}
+        search={{
+          ...defaultSearch,
+          labelWidth: 'auto',
+        }}
         scroll={{ x: 'max-content' }}
       />
+      </div>
 
       <StepsForm
         onFinish={async () => {

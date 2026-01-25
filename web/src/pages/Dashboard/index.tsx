@@ -330,15 +330,7 @@ const DashboardPage: React.FC = () => {
       // 使用更丰富的颜色方案
       color: ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1', '#13c2c2', '#eb2f96', '#fa8c16'],
       height: 250,
-      tooltip: {
-        fields: ['type', 'value'],
-        formatter: (datum: any) => {
-          return {
-            name: datum.type,
-            value: `${datum.value}`,
-          };
-        },
-      },
+      tooltip: false,
     };
   };
 

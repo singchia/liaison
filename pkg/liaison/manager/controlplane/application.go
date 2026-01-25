@@ -113,9 +113,17 @@ func (cp *controlPlane) CreateApplication(_ context.Context, req *v1.CreateAppli
 	if err != nil {
 		return nil, err
 	}
+	
+	// 重新获取创建的应用，包含完整的关联数据
+	createdApplication, err := cp.repo.GetApplicationByID(application.ID)
+	if err != nil {
+		return nil, err
+	}
+	
 	return &v1.CreateApplicationResponse{
 		Code:    200,
 		Message: "success",
+		Data:    transformApplication(createdApplication),
 	}, nil
 }
 
@@ -167,7 +175,7 @@ func (cp *controlPlane) ListApplications(_ context.Context, req *v1.ListApplicat
 		deviceIDs = []uint{uint(*req.DeviceId)}
 	}
 
-	applications, err := cp.repo.ListApplications(&dao.ListApplicationsQuery{
+	query := &dao.ListApplicationsQuery{
 		Query: dao.Query{
 			Page:     int(req.Page),
 			PageSize: int(req.PageSize),
@@ -175,7 +183,14 @@ func (cp *controlPlane) ListApplications(_ context.Context, req *v1.ListApplicat
 			Desc:     true,
 		},
 		DeviceIDs: deviceIDs,
-	})
+	}
+	// 应用类型筛选
+	if req.ApplicationType != nil && *req.ApplicationType != "" {
+		query.ApplicationType = *req.ApplicationType
+	}
+	// 应用名称筛选（如果提供了 application_name，需要在这里处理）
+	// 注意：目前 DAO 层还没有实现 name 筛选，如果需要可以后续添加
+	applications, err := cp.repo.ListApplications(query)
 	if err != nil {
 		return nil, err
 	}
@@ -244,9 +259,14 @@ func (cp *controlPlane) ListApplications(_ context.Context, req *v1.ListApplicat
 		}
 	}
 
-	count, err := cp.repo.CountApplications(&dao.ListApplicationsQuery{
+	countQuery := &dao.ListApplicationsQuery{
 		DeviceIDs: deviceIDs,
-	})
+	}
+	// 应用类型筛选
+	if req.ApplicationType != nil && *req.ApplicationType != "" {
+		countQuery.ApplicationType = *req.ApplicationType
+	}
+	count, err := cp.repo.CountApplications(countQuery)
 	if err != nil {
 		return nil, err
 	}
