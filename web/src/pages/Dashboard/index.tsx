@@ -329,7 +329,7 @@ const DashboardPage: React.FC = () => {
       // @ant-design/plots 默认有 tooltip，显示类型和数值
       // 使用更丰富的颜色方案
       color: ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1', '#13c2c2', '#eb2f96', '#fa8c16'],
-      height: 250,
+      height: 200,
       tooltip: false,
     };
   };
@@ -343,7 +343,7 @@ const DashboardPage: React.FC = () => {
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {deviceData.length > 0 ? (
                   <>
-                    <div style={{ flex: 1, minHeight: 250 }}>
+                    <div style={{ flex: 1, minHeight: 200 }}>
                       <Pie {...getPieConfig(deviceData)} />
                     </div>
                     <div style={{ marginTop: 16, textAlign: 'center' }}>
@@ -391,7 +391,7 @@ const DashboardPage: React.FC = () => {
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {applicationData.length > 0 ? (
                   <>
-                    <div style={{ flex: 1, minHeight: 250 }}>
+                    <div style={{ flex: 1, minHeight: 200 }}>
                       <Pie {...getPieConfig(applicationData)} />
                     </div>
                     <div style={{ marginTop: 16, textAlign: 'center' }}>
@@ -439,7 +439,7 @@ const DashboardPage: React.FC = () => {
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {edgeData.length > 0 ? (
                   <>
-                    <div style={{ flex: 1, minHeight: 250 }}>
+                    <div style={{ flex: 1, minHeight: 200 }}>
                       <Pie {...getPieConfig(edgeData)} />
                     </div>
                     <div style={{ marginTop: 16, textAlign: 'center' }}>

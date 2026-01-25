@@ -9,7 +9,7 @@ import {
   ProFormTextArea,
   ProTable,
 } from '@ant-design/pro-components';
-import { Space, Tag, Typography } from 'antd';
+import { Space, Tag, Typography, Switch } from 'antd';
 import { useRef, useState, useEffect } from 'react';
 import { useSearchParams, useLocation } from '@umijs/max';
 import {
@@ -190,7 +190,6 @@ const ProxyPage: React.FC = () => {
         name: values.name,
         description: values.description,
         port: values.port,
-        status: values.status,
       }),
       {
         successMessage: '更新成功',
@@ -261,6 +260,34 @@ const ProxyPage: React.FC = () => {
         stopped: { text: '已停止', status: 'Default' },
         error: { text: '异常', status: 'Error' },
       },
+    },
+    {
+      title: '启用',
+      dataIndex: 'enabled',
+      width: 80,
+      search: false,
+      align: 'center',
+      render: (_, record) => (
+        <Switch
+          checked={record.status === 'running'}
+          onChange={async (checked) => {
+            const newStatus = checked ? 'running' : 'stopped';
+            await executeAction(
+              () => updateProxy(record.id, {
+                name: record.name,
+                description: record.description,
+                port: record.port,
+                status: newStatus,
+              }),
+              {
+                successMessage: checked ? '已启用' : '已停用',
+                errorMessage: '操作失败',
+                onSuccess: reload,
+              },
+            );
+          }}
+        />
+      ),
     },
     {
       title: '创建时间',
@@ -385,14 +412,6 @@ const ProxyPage: React.FC = () => {
           placeholder="请输入端口"
           min={1}
           max={65535}
-        />
-        <ProFormSelect
-          name="status"
-          label="状态"
-          options={[
-            { label: '运行中', value: 'running' },
-            { label: '已停止', value: 'stopped' },
-          ]}
         />
         <ProFormTextArea
           name="description"
