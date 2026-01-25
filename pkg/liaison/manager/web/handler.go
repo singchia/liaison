@@ -92,6 +92,15 @@ func (web *web) UpdateDevice(ctx context.Context, req *v1.UpdateDeviceRequest) (
 	return web.controlPlane.UpdateDevice(ctx, req)
 }
 
+// @Summary DeleteDevice
+// @Tags 1.0
+// @Param id path int true "device id"
+// @Success 200 {object} v1.DeleteDeviceResponse
+// @Router /api/v1/devices/{id} [delete]
+func (web *web) DeleteDevice(ctx context.Context, req *v1.DeleteDeviceRequest) (*v1.DeleteDeviceResponse, error) {
+	return web.controlPlane.DeleteDevice(ctx, req)
+}
+
 //-- Application --//
 
 // @Summary CreateApplication

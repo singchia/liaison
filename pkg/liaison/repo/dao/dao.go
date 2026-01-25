@@ -58,6 +58,7 @@ type Dao interface {
 	ListDevices(query *ListDevicesQuery) ([]*model.Device, error)
 	CountDevices(query *ListDevicesQuery) (int64, error)
 	UpdateDevice(device *model.Device) error
+	DeleteDevice(id uint) error
 	UpdateDeviceUsage(deviceID uint, cpuUsage, memoryUsage, diskUsage float32) error
 
 	// Application 相关方法

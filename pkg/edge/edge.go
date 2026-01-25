@@ -21,12 +21,6 @@ type Edge struct {
 }
 
 func NewEdge() (*Edge, error) {
-
-	err := config.Init()
-	if err != nil {
-		log.Errorf("init config error: %v", err)
-		return nil, err
-	}
 	// pprof & rlimit
 	log.Infof("pprof config: enable=%v, addr=%s", config.Conf.Daemon.PProf.Enable, config.Conf.Daemon.PProf.Addr)
 	if config.Conf.Daemon.PProf.Enable {
@@ -47,7 +41,7 @@ func NewEdge() (*Edge, error) {
 	}
 	// rlimit
 	if config.Conf.Daemon.RLimit.Enable {
-		err = utils.SetRLimit(uint64(config.Conf.Daemon.RLimit.NumFile))
+		err := utils.SetRLimit(uint64(config.Conf.Daemon.RLimit.NumFile))
 		if err != nil {
 			klog.Errorf("set rlimit err: %s", err)
 			return nil, err

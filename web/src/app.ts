@@ -99,7 +99,13 @@ export const layout = () => {
   ];
 
   return {
-    logo: false, // 不显示 logo 图标
+    logo: React.createElement('img', {
+      src: '/liaison.png',
+      alt: 'Liaison',
+      style: {
+        height: 52,
+      },
+    }),
     menu: {
       locale: false,
     },
@@ -111,28 +117,11 @@ export const layout = () => {
     contentWidth: 'Fluid',
     colorPrimary: '#1890ff',
     siderWidth: 208,
-    title: 'Liaison',
-    titleRender: () => {
-      return React.createElement(
-        'div',
-        { 
-          style: { 
-            display: 'flex',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            color: '#1890ff', 
-            fontWeight: 600, 
-            fontSize: '30px',
-            fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-            letterSpacing: '-0.2px',
-            width: '100%',
-            paddingRight: '32px',
-            marginLeft: 24,
-          } 
-        },
-        'Liaison'
-      );
-    },
+    title: React.createElement('span', {
+      style: {
+        color: '#1890ff',
+      },
+    }, 'Liaison'),
     avatarProps: {
       src: '/avatar.svg',
       size: 'small',
@@ -147,6 +136,13 @@ export const layout = () => {
     },
     waterMarkProps: {
       content: 'Liaison',
+      fontSize: 14,
+      fontColor: 'rgba(0, 0, 0, 0.06)',
+      gapX: 100,
+      gapY: 100,
+      rotate: -22,
+      fontStyle: 'normal',
+      fontWeight: 'normal',
     },
   };
 };

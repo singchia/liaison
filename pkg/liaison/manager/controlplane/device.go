@@ -84,6 +84,17 @@ func (cp *controlPlane) UpdateDevice(_ context.Context, req *v1.UpdateDeviceRequ
 	}, nil
 }
 
+func (cp *controlPlane) DeleteDevice(_ context.Context, req *v1.DeleteDeviceRequest) (*v1.DeleteDeviceResponse, error) {
+	err := cp.repo.DeleteDevice(uint(req.Id))
+	if err != nil {
+		return nil, err
+	}
+	return &v1.DeleteDeviceResponse{
+		Code:    200,
+		Message: "success",
+	}, nil
+}
+
 func transformDevices(devices []*model.Device) []*v1.Device {
 	devicesV1 := make([]*v1.Device, len(devices))
 	for i, device := range devices {

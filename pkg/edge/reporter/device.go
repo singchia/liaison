@@ -2,13 +2,11 @@ package reporter
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net"
 	"os"
-	"sort"
+	"runtime"
 	"strings"
 	"time"
 
@@ -18,6 +16,7 @@ import (
 	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
 	"github.com/singchia/liaison/pkg/proto"
+	"github.com/singchia/liaison/pkg/utils"
 )
 
 func (r *reporter) loopReportDevice(ctx context.Context) {
@@ -143,7 +142,7 @@ func getDevice() (*proto.Device, error) {
 		log.Warnf("failed to get network interfaces, using empty list, error: %v", err)
 	}
 	// 指纹
-	fingerprint, err := getFingerprint()
+	fingerprint, err := utils.GetFingerprint()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get fingerprint: %w", err)
 	}
@@ -172,6 +171,33 @@ func getDeviceEthernetInterface() ([]*proto.DeviceEthernetInterface, error) {
 		// 跳过 lo 网卡
 		if iface.Name == "lo" || iface.Name == "lo0" {
 			continue
+		}
+		// 在 macOS、Windows 和 Linux 上，只使用物理接口
+		if runtime.GOOS == "darwin" || runtime.GOOS == "windows" {
+			if len(iface.HardwareAddr) == 0 {
+				continue
+			}
+			mac := iface.HardwareAddr.String()
+			// 只使用物理接口
+			if !utils.IsPhysicalInterface(iface.Name, mac) {
+				continue
+			}
+		} else if runtime.GOOS == "linux" {
+			// Linux: 使用 sysfs 判断物理接口
+			if !utils.IsPhysicalInterfaceLinux(iface) {
+				continue
+			}
+		} else {
+			// 其他系统，过滤掉常见的虚拟接口
+			name := strings.ToLower(iface.Name)
+			if strings.Contains(name, "utun") || // VPN 接口
+				strings.Contains(name, "bridge") || // 桥接接口
+				strings.Contains(name, "vmnet") || // VMware 虚拟接口
+				strings.Contains(name, "vboxnet") || // VirtualBox 虚拟接口
+				strings.Contains(name, "awdl") || // Apple Wireless Direct Link (可能不稳定)
+				strings.Contains(name, "anpi") { // Apple Network Packet Injection
+				continue
+			}
 		}
 		// 跳过没有MAC或未启用的接口
 		if iface.Flags&net.FlagUp == 0 {
@@ -239,7 +265,7 @@ func getDeviceEthernetInterface() ([]*proto.DeviceEthernetInterface, error) {
 
 func getDeviceUsage() (*proto.DeviceUsage, error) {
 	// 获取指纹
-	fingerprint, err := getFingerprint()
+	fingerprint, err := utils.GetFingerprint()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get fingerprint: %w", err)
 	}
@@ -268,77 +294,5 @@ func getDeviceUsage() (*proto.DeviceUsage, error) {
 
 // GetFingerprint 获取设备指纹（导出函数，供命令行使用）
 func GetFingerprint() (string, error) {
-	return getFingerprint()
-}
-
-// 基于 MAC、CPU、磁盘序列号生成指纹
-// 所有组件都进行排序，确保指纹稳定性
-func getFingerprint() (string, error) {
-	// 获取所有非 loopback 网卡的 MAC 地址，并排序
-	interfaces, err := net.Interfaces()
-	if err != nil {
-		return "", fmt.Errorf("failed to get network interfaces: %w", err)
-	}
-	macs := make([]string, 0)
-	for _, iface := range interfaces {
-		if len(iface.HardwareAddr) > 0 && iface.Flags&net.FlagLoopback == 0 {
-			macs = append(macs, iface.HardwareAddr.String())
-		}
-	}
-	if len(macs) == 0 {
-		return "", fmt.Errorf("failed to get MAC address")
-	}
-	// 对 MAC 地址进行排序，确保顺序稳定
-	sort.Strings(macs)
-	mac := strings.Join(macs, ",") // 使用所有 MAC 地址，用逗号分隔
-
-	// CPU 信息
-	cpuID := ""
-	cpuInfo, err := cpu.Info()
-	if err != nil {
-		// 如果无法获取 CPU 信息，使用 hostname 作为备用
-		hostname, _ := os.Hostname()
-		cpuID = hostname
-	} else if len(cpuInfo) > 0 {
-		// 如果有多个 CPU，对 CPU 信息进行排序
-		cpuStrings := make([]string, 0, len(cpuInfo))
-		for _, info := range cpuInfo {
-			cpuStr := info.ModelName + info.VendorID + info.Family
-			cpuStrings = append(cpuStrings, cpuStr)
-		}
-		// 去重并排序
-		cpuMap := make(map[string]bool)
-		uniqueCpus := make([]string, 0)
-		for _, cpuStr := range cpuStrings {
-			if !cpuMap[cpuStr] {
-				cpuMap[cpuStr] = true
-				uniqueCpus = append(uniqueCpus, cpuStr)
-			}
-		}
-		sort.Strings(uniqueCpus)
-		cpuID = strings.Join(uniqueCpus, ",")
-	}
-
-	// 磁盘序列号（收集所有磁盘的序列号，并排序）
-	diskIDs := make([]string, 0)
-	counts, err := disk.IOCounters()
-	if err == nil && len(counts) > 0 {
-		for _, stats := range counts {
-			if stats.SerialNumber != "" {
-				diskIDs = append(diskIDs, stats.SerialNumber)
-			}
-		}
-	}
-	// 如果无法获取磁盘序列号，使用 hostname 作为备用
-	if len(diskIDs) == 0 {
-		hostname, _ := os.Hostname()
-		diskIDs = []string{hostname}
-	}
-	// 对磁盘序列号进行排序，确保顺序稳定
-	sort.Strings(diskIDs)
-	diskID := strings.Join(diskIDs, ",") // 使用所有磁盘序列号，用逗号分隔
-
-	raw := fmt.Sprintf("%s|%s|%s", mac, cpuID, diskID)
-	sum := sha256.Sum256([]byte(raw))
-	return hex.EncodeToString(sum[:]), nil
+	return utils.GetFingerprint()
 }

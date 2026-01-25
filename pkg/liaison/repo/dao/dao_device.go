@@ -223,3 +223,33 @@ func (d *dao) UpdateDeviceHeartbeat(deviceID uint) error {
 		"online":       model.DeviceOnlineStatusOnline,
 	}).Error
 }
+
+// DeleteDevice 删除设备及其关联数据
+func (d *dao) DeleteDevice(id uint) error {
+	tx := d.getDB().Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// 删除设备的网卡
+	if err := tx.Where("device_id = ?", id).Delete(&model.EthernetInterface{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// 删除 EdgeDevice 关系
+	if err := tx.Where("device_id = ?", id).Delete(&model.EdgeDevice{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// 删除设备本身
+	if err := tx.Delete(&model.Device{}, id).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
+}

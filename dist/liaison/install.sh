@@ -129,7 +129,12 @@ if [[ "$LANG_CODE" == "zh_CN" ]]; then
     MSG_CONFIG_FRONTIER_PORT="配置 Frontier edge 连接端口..."
     MSG_ENTER_FRONTIER_PORT="请输入 Frontier edge 连接端口号 (默认:"
     MSG_FRONTIER_PORT_SET="Frontier edge 将监听端口:"
-    MSG_INVALID_PORT="端口号无效。使用默认端口"
+    MSG_INVALID_PORT="⚠️  输入的端口号无效，使用默认端口"
+    MSG_COUNTDOWN="倒计时"
+    MSG_USE_DEFAULT="直接回车使用默认值"
+    MSG_USING_DEFAULT="使用默认值"
+    MSG_PORT_INPUT_HINT="提示: 请输入端口号 (1-65535)，或直接按回车使用默认值"
+    MSG_PORT_PROMPT="端口号"
 else
     # English strings
     MSG_INSTALLING="Installing Liaison Service..."
@@ -146,7 +151,7 @@ else
     MSG_WARNING_BIN_NOT_FOUND="Warning: bin directory not found, skipping binary copy"
     MSG_DETECTING_IP="Detecting public IP address..."
     MSG_IP_DETECTED="Auto-detected public IP:"
-    MSG_IP_WARNING="⚠️  If this IP is incorrect, you can edit"
+    MSG_IP_WARNING="⚠️  If this IP is incorrect, you can laterly edit"
     MSG_IP_MANUAL="Warning: Could not detect public IP automatically."
     MSG_IP_MANUAL_INSTR="Please manually set the public IP in $CONFIG_DIR/liaison.yaml after installation."
     MSG_GENERATING_JWT="Generating JWT secret key..."
@@ -212,7 +217,12 @@ else
     MSG_CONFIG_FRONTIER_PORT="Configuring Frontier edge connection port..."
     MSG_ENTER_FRONTIER_PORT="Enter the port number for Frontier edge connections (default:"
     MSG_FRONTIER_PORT_SET="Frontier edge will listen on port:"
-    MSG_INVALID_PORT="Invalid port number. Using default port"
+    MSG_INVALID_PORT="⚠️  Invalid port number, using default port"
+    MSG_COUNTDOWN="Countdown"
+    MSG_USE_DEFAULT="Press Enter to use default"
+    MSG_USING_DEFAULT="Using default value"
+    MSG_PORT_INPUT_HINT="Hint: Enter a port number (1-65535), or press Enter to use default value"
+    MSG_PORT_PROMPT="Port"
 fi
 
 # Configuration
@@ -305,20 +315,97 @@ if [ -z "$PUBLIC_ADDR" ] || [ "$PUBLIC_ADDR" = "localhost" ]; then
     PUBLIC_ADDR="localhost"
 else
     echo -e "${GREEN}${MSG_IP_DETECTED} ${BOLD}${CYAN}$PUBLIC_ADDR${NC}${GREEN}${NC}"
-    echo -e "${YELLOW}${MSG_IP_WARNING} $CONFIG_DIR/liaison.yaml later${NC}"
+    echo -e "${YELLOW}${MSG_IP_WARNING} $CONFIG_DIR/liaison.yaml ${NC}"
 fi
+
+# Function to read input with countdown
+read_with_countdown() {
+    local prompt="$1"
+    local default_value="$2"
+    local timeout=30
+    local input=""
+    local time_unit="秒"
+    local remaining=$timeout
+    
+    # Set time unit based on language
+    if [[ "$LANG_CODE" != "zh_CN" ]]; then
+        time_unit="s"
+    fi
+    
+    # Show prominent header (output to stderr so it's visible)
+    echo "" >&2
+    echo -e "${BOLD}${YELLOW}═══════════════════════════════════════════════════════════════${NC}" >&2
+    echo -e "${BOLD}${CYAN}${prompt} ${default_value})${NC}" >&2
+    echo -e "${BOLD}${YELLOW}═══════════════════════════════════════════════════════════════${NC}" >&2
+    echo -e "${YELLOW}${MSG_PORT_INPUT_HINT} ${default_value}${NC}" >&2
+    echo "" >&2
+    
+    # Save terminal settings
+    local old_stty=$(stty -g 2>/dev/null || true)
+    
+    # Show countdown on a separate line above input (won't interfere with typing)
+    echo -e "${YELLOW}${MSG_COUNTDOWN}: ${remaining}${time_unit} (${MSG_USE_DEFAULT})${NC}" >&2
+    
+    # Show input prompt on the line below countdown
+    echo -ne "${BOLD}${CYAN}>>> ${MSG_PORT_PROMPT} [${default_value}]: ${NC}" >&2
+    
+    # Use a background process to update countdown (only updates the countdown line)
+    # Use save/restore cursor position to avoid affecting input line
+    (
+        local count=$((timeout - 1))
+        while [ $count -gt 0 ]; do
+            sleep 1
+            # Save cursor position, move up, update countdown, restore cursor
+            echo -ne "\033[s\033[1A\033[K${YELLOW}${MSG_COUNTDOWN}: ${count}${time_unit} (${MSG_USE_DEFAULT})${NC}\033[u" >&2
+            count=$((count - 1))
+        done
+        # Final message when timeout
+        sleep 1
+        echo -ne "\033[s\033[1A\033[K${GREEN}${MSG_USING_DEFAULT} ${default_value}${NC}\033[u" >&2
+    ) &
+    local countdown_pid=$!
+    
+    # Read input (with full timeout, from /dev/tty to avoid interference)
+    if read -r -t $timeout input </dev/tty 2>/dev/null; then
+        # User provided input, kill countdown process
+        kill $countdown_pid 2>/dev/null || true
+        wait $countdown_pid 2>/dev/null || true
+        stty "$old_stty" 2>/dev/null || true
+        # Clear countdown line
+        echo -ne "\033[1A\033[K" >&2
+        echo "" >&2
+        # If user just pressed Enter, return default value
+        if [ -z "$input" ]; then
+            echo -e "${GREEN}✓ ${MSG_USING_DEFAULT} ${default_value}${NC}" >&2
+            echo "$default_value"  # Output to stdout for command substitution
+        else
+            echo -e "${GREEN}✓ ${MSG_INPUT_RECEIVED}: ${input}${NC}" >&2
+            echo "$input"  # Output to stdout for command substitution
+        fi
+        return 0
+    else
+        # Timeout reached, wait for countdown process to finish
+        wait $countdown_pid 2>/dev/null || true
+        stty "$old_stty" 2>/dev/null || true
+        echo "" >&2
+        echo "$default_value"  # Output to stdout for command substitution
+        return 0
+    fi
+}
 
 # Get management page port
 echo ""
 echo -e "${YELLOW}${MSG_CONFIG_MANAGER_PORT}${NC}"
 DEFAULT_MANAGER_PORT="443"
-echo -e "${CYAN}${MSG_ENTER_MANAGER_PORT} ${DEFAULT_MANAGER_PORT}):${NC} "
-read -r MANAGER_PORT
-if [ -z "$MANAGER_PORT" ]; then
-    MANAGER_PORT="$DEFAULT_MANAGER_PORT"
-fi
+MANAGER_PORT=$(read_with_countdown "${MSG_ENTER_MANAGER_PORT}" "$DEFAULT_MANAGER_PORT")
+
 # Validate port number (1-65535)
-if ! [[ "$MANAGER_PORT" =~ ^[0-9]+$ ]] || [ "$MANAGER_PORT" -lt 1 ] || [ "$MANAGER_PORT" -gt 65535 ]; then
+# Only show error if user provided a non-empty, invalid value
+if [ -z "$MANAGER_PORT" ]; then
+    # Empty value, use default
+    MANAGER_PORT="$DEFAULT_MANAGER_PORT"
+elif ! [[ "$MANAGER_PORT" =~ ^[0-9]+$ ]] || [ "$MANAGER_PORT" -lt 1 ] || [ "$MANAGER_PORT" -gt 65535 ]; then
+    # Invalid value provided by user
     echo -e "${RED}${MSG_INVALID_PORT} ${DEFAULT_MANAGER_PORT}${NC}"
     MANAGER_PORT="$DEFAULT_MANAGER_PORT"
 fi
@@ -328,13 +415,15 @@ echo -e "${GREEN}${MSG_MANAGER_PORT_SET} ${BOLD}${CYAN}${MANAGER_PORT}${NC}${GRE
 echo ""
 echo -e "${YELLOW}${MSG_CONFIG_FRONTIER_PORT}${NC}"
 DEFAULT_FRONTIER_PORT="30012"
-echo -e "${CYAN}${MSG_ENTER_FRONTIER_PORT} ${DEFAULT_FRONTIER_PORT}):${NC} "
-read -r FRONTIER_PORT
-if [ -z "$FRONTIER_PORT" ]; then
-    FRONTIER_PORT="$DEFAULT_FRONTIER_PORT"
-fi
+FRONTIER_PORT=$(read_with_countdown "${MSG_ENTER_FRONTIER_PORT}" "$DEFAULT_FRONTIER_PORT")
+
 # Validate port number (1-65535)
-if ! [[ "$FRONTIER_PORT" =~ ^[0-9]+$ ]] || [ "$FRONTIER_PORT" -lt 1 ] || [ "$FRONTIER_PORT" -gt 65535 ]; then
+# Only show error if user provided a non-empty, invalid value
+if [ -z "$FRONTIER_PORT" ]; then
+    # Empty value, use default
+    FRONTIER_PORT="$DEFAULT_FRONTIER_PORT"
+elif ! [[ "$FRONTIER_PORT" =~ ^[0-9]+$ ]] || [ "$FRONTIER_PORT" -lt 1 ] || [ "$FRONTIER_PORT" -gt 65535 ]; then
+    # Invalid value provided by user
     echo -e "${RED}${MSG_INVALID_PORT} ${DEFAULT_FRONTIER_PORT}${NC}"
     FRONTIER_PORT="$DEFAULT_FRONTIER_PORT"
 fi

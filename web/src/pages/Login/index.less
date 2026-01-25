@@ -29,6 +29,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 16px;
   margin-bottom: 16px;
 }
 
@@ -39,12 +40,28 @@
 }
 
 .login-title {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 600;
   color: #1890ff;
   
   @media screen and (max-width: 576px) {
-    font-size: 22px;
+    font-size: 18px;
+  }
+}
+
+.login-logo-img {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  @media screen and (max-width: 576px) {
+    height: 48px;
+    padding: 6px;
   }
 }
 
@@ -60,12 +77,11 @@
     background: #ffffff;
     border-radius: 12px;
     padding: 40px 32px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     width: 100%;
     max-width: 420px;
     margin: 0 16px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.06);
   }
   
   .ant-pro-form-login-main {
@@ -74,11 +90,12 @@
   
   .ant-pro-form-login-container .ant-input-affix-wrapper {
     border-radius: 8px;
-    border: 1px solid #d9d9d9;
+    border: 1px solid #e0e0e0;
     transition: all 0.3s;
+    height: 44px;
     
     &:hover {
-      border-color: #40a9ff;
+      border-color: #1890ff;
     }
     
     &.ant-input-affix-wrapper-focused {
@@ -103,13 +120,18 @@
     background: #1890ff;
     border: none;
     transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(24, 144, 255, 0.2);
     
     &:hover {
       background: #40a9ff;
+      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+      transform: translateY(-1px);
     }
     
     &:active {
       background: #096dd9;
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(24, 144, 255, 0.2);
     }
   }
   

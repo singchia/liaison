@@ -94,7 +94,7 @@ func (m *Gatekeeper) CreateProxy(ctx context.Context, protoproxy *proto.Proxy) e
 		log.Errorf("failed to listen on port %d: %s", requestedPort, err)
 		return err
 	}
-	
+
 	// 获取实际监听的端口（如果端口为0，系统会分配一个端口）
 	actualPort := listener.Addr().(*net.TCPAddr).Port
 	if requestedPort == 0 {
@@ -158,11 +158,32 @@ func (m *Gatekeeper) CreateProxy(ctx context.Context, protoproxy *proto.Proxy) e
 		return err
 	}
 
-	go rp.Proxy(context.Background())
+	// 创建可取消的 context，用于控制 Proxy 方法的退出
+	proxyCtx, cancel := context.WithCancel(context.Background())
+
+	// 创建一个 done channel 来跟踪 goroutine 是否退出
+	done := make(chan struct{})
+
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Errorf("rproxy Proxy panic: %v", r)
+			}
+			close(done)
+		}()
+		// 在 goroutine 中运行 Proxy
+		// 注意：rproxy.Proxy 方法在遇到错误时会检查错误是否在退出错误列表中
+		// 如果不在，会继续循环，导致死循环
+		// 我们需要确保在关闭时，监听器先关闭，这样 Accept() 会返回错误
+		rp.Proxy(proxyCtx)
+	}()
 
 	p := &proxy{
-		port: actualPort, // 使用实际端口
-		rp:   rp,
+		port:   actualPort, // 使用实际端口
+		rp:     rp,
+		ctx:    proxyCtx,
+		cancel: cancel,
+		done:   done,
 	}
 	m.proxies[protoproxy.ID] = p
 	m.proxiesIdxPort[actualPort] = protoproxy.ID
@@ -185,8 +206,25 @@ func (m *Gatekeeper) DeleteProxy(ctx context.Context, id int) error {
 		return nil
 	}
 
-	// 关闭监听器
+	// 先取消 context（虽然 rproxy.Proxy 可能不支持，但先尝试）
+	if p.cancel != nil {
+		p.cancel()
+	}
+
+	// 关闭监听器，这样 Accept() 会返回 "use of closed network connection" 错误
+	// 注意：rproxy 库的问题：如果错误不在退出错误列表中，会死循环
+	// 我们需要等待 goroutine 退出，或者设置超时
 	p.rp.Close()
+
+	// 等待 goroutine 退出，最多等待 1 秒
+	// 如果 rproxy 库正确处理了关闭错误，goroutine 应该会立即退出
+	select {
+	case <-p.done:
+		// goroutine 已退出
+	case <-time.After(1 * time.Second):
+		// 超时，goroutine 可能还在运行（死循环）
+		log.Warnf("proxy %d goroutine did not exit within 1 second, may be in infinite loop", id)
+	}
 
 	// 删除映射
 	delete(m.proxies, id)
@@ -198,11 +236,18 @@ func (m *Gatekeeper) DeleteProxy(ctx context.Context, id int) error {
 
 // Close 关闭端口管理器
 func (m *Gatekeeper) Close() {
-
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
+	// 停止流量上报循环
+	close(m.stop)
+
 	for _, p := range m.proxies {
+		// 取消 context，停止 Proxy 方法
+		if p.cancel != nil {
+			p.cancel()
+		}
+		// 关闭监听器
 		p.rp.Close()
 	}
 	m.proxies = make(map[int]*proxy)
@@ -223,8 +268,11 @@ type proxyContext struct {
 }
 
 type proxy struct {
-	port int
-	rp   *rproxy.RProxy
+	port   int
+	rp     *rproxy.RProxy
+	ctx    context.Context
+	cancel context.CancelFunc
+	done   chan struct{} // 用于跟踪 goroutine 是否退出
 }
 
 // recordTraffic 记录流量（累积到stats中，由定时器每分钟上报一次）

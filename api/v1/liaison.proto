@@ -154,6 +154,16 @@ message UpdateDeviceResponse {
     Device data = 3 [json_name = "data"]; // 设备
 }
 
+// 删除设备请求
+message DeleteDeviceRequest {
+    uint64 id = 1 [json_name = "id"]; // 设备ID
+}
+
+message DeleteDeviceResponse {
+    int32 code = 1 [json_name = "code"]; // 状态码
+    string message = 2 [json_name = "message"]; // 消息
+}
+
 // 应用
 message Application {
     uint64 id = 1 [json_name = "id"]; // 应用ID
@@ -375,6 +385,11 @@ service LiaisonService {
     rpc GetDevice(GetDeviceRequest) returns (GetDeviceResponse) {
         option (google.api.http) = {
             get: "/api/v1/devices/{id}"
+        };
+    };
+    rpc DeleteDevice(DeleteDeviceRequest) returns (DeleteDeviceResponse) {
+        option (google.api.http) = {
+            delete: "/api/v1/devices/{id}"
         };
     };
 
