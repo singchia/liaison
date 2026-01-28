@@ -2,6 +2,7 @@ package controlplane
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	v1 "github.com/singchia/liaison/api/v1"
@@ -83,6 +84,17 @@ func (cp *controlPlane) UpdateDevice(_ context.Context, req *v1.UpdateDeviceRequ
 	}, nil
 }
 
+func (cp *controlPlane) DeleteDevice(_ context.Context, req *v1.DeleteDeviceRequest) (*v1.DeleteDeviceResponse, error) {
+	err := cp.repo.DeleteDevice(uint(req.Id))
+	if err != nil {
+		return nil, err
+	}
+	return &v1.DeleteDeviceResponse{
+		Code:    200,
+		Message: "success",
+	}, nil
+}
+
 func transformDevices(devices []*model.Device) []*v1.Device {
 	devicesV1 := make([]*v1.Device, len(devices))
 	for i, device := range devices {
@@ -97,24 +109,37 @@ func transformEthernetInterfaces(interfaces []*model.EthernetInterface) []*v1.Et
 	// 每个网卡可能有多个IP地址
 	v1ifaces := map[string]*v1.EthernetInterface{}
 	for _, iface := range interfaces {
-		// 过滤 lo 网卡
-		if iface.Name == "lo" {
+		// 过滤 lo 网卡（包括 lo 和 lo0）
+		if iface.Name == "lo" || iface.Name == "lo0" {
 			continue
 		}
-		v1iface, ok := v1ifaces[iface.Name+iface.MAC]
-		if !ok {
-			v1ifaces[iface.Name+iface.MAC] = &v1.EthernetInterface{
-				Name: iface.Name,
-				Mac:  iface.MAC,
-				Ip:   []string{iface.IP},
-			}
-		} else {
-			v1iface.Ip = append(v1iface.Ip, iface.IP)
+		// 过滤没有IP地址的网卡（IP为空或只有空白字符）
+		if iface.IP == "" {
+			continue
 		}
+		// 检查IP是否为IPv4（跳过只有IPv6的网卡）
+		// IPv6地址包含冒号，IPv4地址不包含
+		if !strings.Contains(iface.IP, ":") {
+			// 这是IPv4地址
+			v1iface, ok := v1ifaces[iface.Name+iface.MAC]
+			if !ok {
+				v1ifaces[iface.Name+iface.MAC] = &v1.EthernetInterface{
+					Name: iface.Name,
+					Mac:  iface.MAC,
+					Ip:   []string{iface.IP},
+				}
+			} else {
+				v1iface.Ip = append(v1iface.Ip, iface.IP)
+			}
+		}
+		// 如果是IPv6地址，跳过（不添加到结果中）
 	}
 	v1ifaceslice := make([]*v1.EthernetInterface, 0, len(v1ifaces))
 	for _, v1iface := range v1ifaces {
-		v1ifaceslice = append(v1ifaceslice, v1iface)
+		// 再次检查，确保只返回有IP地址的网卡
+		if len(v1iface.Ip) > 0 {
+			v1ifaceslice = append(v1ifaceslice, v1iface)
+		}
 	}
 	return v1ifaceslice
 }
@@ -129,6 +154,7 @@ func transformDevice(device *model.Device) *v1.Device {
 		Disk:        int32(device.Disk),
 		Os:          device.OS,
 		Version:     device.OSVersion,
+		Online:      int32(device.Online), // 1: online, 2: offline
 		CreatedAt:   device.CreatedAt.Format(time.DateTime),
 		UpdatedAt:   device.UpdatedAt.Format(time.DateTime),
 	}

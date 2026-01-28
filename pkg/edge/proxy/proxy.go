@@ -59,12 +59,12 @@ func (p *proxy) proxy(ctx context.Context, stream geminio.Stream) {
 		return
 	}
 
-	wg := new(sync.WaitGroup)
+	var wg sync.WaitGroup
 	wg.Add(2)
 
 	go func() {
 		defer wg.Done()
-
+		// 从 stream 读取到 conn（从客户端到服务器）
 		_, err := io.Copy(conn, stream)
 		if err != nil && !IsErrClosed(err) {
 			log.Errorf("read stream, src: %s, dst: %s; to conn, src: %s, dst: %s; err: %s",
@@ -76,7 +76,7 @@ func (p *proxy) proxy(ctx context.Context, stream geminio.Stream) {
 
 	go func() {
 		defer wg.Done()
-
+		// 从 conn 读取到 stream（从服务器到客户端）
 		_, err := io.Copy(stream, conn)
 		if err != nil && !IsErrClosed(err) {
 			log.Errorf("read conn, src: %s, dst: %s; to stream, src: %s, dst: %s; err: %s",
@@ -87,8 +87,6 @@ func (p *proxy) proxy(ctx context.Context, stream geminio.Stream) {
 	}()
 
 	wg.Wait()
-
-	// TODO: some statistics
 }
 
 func IsErrClosed(err error) bool {

@@ -20,7 +20,9 @@ type Entry struct {
 	manager controlplane.ControlPlane
 }
 
-func NewEntry(conf *config.Configuration, manager controlplane.ControlPlane) (*Entry, error) {
+func NewEntry(conf *config.Configuration, manager controlplane.ControlPlane, trafficCollector interface {
+	RecordTraffic(proxyID, applicationID uint, bytesIn, bytesOut int64)
+}) (*Entry, error) {
 
 	frontierBound, err := frontierbound.NewFrontierBound(conf)
 	if err != nil {
@@ -29,6 +31,10 @@ func NewEntry(conf *config.Configuration, manager controlplane.ControlPlane) (*E
 
 	// 创建端口管理器
 	gatekeeper := transport.NewGatekeeper(frontierBound)
+	// 设置流量统计器
+	if trafficCollector != nil {
+		gatekeeper.SetTrafficCollector(trafficCollector)
+	}
 	manager.RegisterProxyManager(gatekeeper)
 
 	entry := &Entry{
@@ -68,11 +74,12 @@ func (e *Entry) pullProxyConfigs() error {
 		}
 		dst := fmt.Sprintf("%s:%d", application.Ip, application.Port)
 		e.gatekeeper.CreateProxy(context.Background(), &proto.Proxy{
-			ID:        int(proxy.Id),
-			Name:      proxy.Name,
-			ProxyPort: int(proxy.Port),
-			EdgeID:    application.EdgeId,
-			Dst:       dst,
+			ID:            int(proxy.Id),
+			Name:          proxy.Name,
+			ProxyPort:     int(proxy.Port),
+			EdgeID:        application.EdgeId,
+			ApplicationID: uint(application.Id),
+			Dst:           dst,
 		})
 	}
 

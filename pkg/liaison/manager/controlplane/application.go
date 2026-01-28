@@ -9,17 +9,94 @@ import (
 	"github.com/singchia/liaison/pkg/liaison/repo/model"
 )
 
+// getDefaultPortByApplicationType 根据应用类型返回默认端口
+func getDefaultPortByApplicationType(appType string) int {
+	defaultPorts := map[string]int{
+		"web":        80,
+		"ssh":        22,
+		"rdp":        3389,
+		"mysql":      3306,
+		"postgresql": 5432,
+		"redis":      6379,
+		"mongodb":    27017,
+		"database":   3306,
+	}
+	if port, ok := defaultPorts[appType]; ok {
+		return port
+	}
+	return 0
+}
+
+// detectApplicationTypeByPort 根据端口号推断应用类型
+func detectApplicationTypeByPort(port int) string {
+	portToType := map[int]string{
+		22:    "ssh",
+		80:    "web",
+		443:   "web",
+		3389:  "rdp",
+		3306:  "mysql",
+		5432:  "postgresql",
+		6379:  "redis",
+		27017: "mongodb",
+	}
+	if appType, ok := portToType[port]; ok {
+		return appType
+	}
+	return "tcp" // 默认返回 tcp
+}
+
 func (cp *controlPlane) CreateApplication(_ context.Context, req *v1.CreateApplicationRequest) (*v1.CreateApplicationResponse, error) {
-	// 查找相关的 edge
-	edge, err := cp.repo.GetEdge(req.EdgeId)
+	// 验证 edge 是否存在
+	_, err := cp.repo.GetEdge(req.EdgeId)
 	if err != nil {
 		return nil, err
 	}
 
-	// 确定 device_id：优先使用请求中的 device_id，否则使用 edge 关联的 device_id
-	deviceID := edge.DeviceID
+	// 根据应用的 IP 地址查找对应的 Device
+	var deviceID uint
 	if req.DeviceId != nil && *req.DeviceId > 0 {
+		// 如果请求中指定了 device_id，优先使用
 		deviceID = uint(*req.DeviceId)
+	} else if req.Ip != "" {
+		// 如果 IP 是 127.0.0.1，使用 edge 所在的 device
+		if req.Ip == "127.0.0.1" || req.Ip == "::1" || req.Ip == "localhost" {
+			// 获取 edge 所在的 device（通过 EdgeDevice 关系表，类型为 Host）
+			hostType := model.EdgeDeviceRelationHost
+			edgeDevices, err := cp.repo.GetEdgeDevicesByEdgeID(req.EdgeId, &hostType)
+			if err == nil && len(edgeDevices) > 0 {
+				deviceID = edgeDevices[0].DeviceID
+			}
+		} else {
+			// 根据 IP 查找 Device
+			device, err := cp.repo.GetDeviceByIP(req.Ip)
+			if err == nil && device != nil {
+				deviceID = uint(device.ID)
+			}
+			// 如果根据 IP 找不到 Device，deviceID 保持为 0
+		}
+	}
+
+	// 处理应用类型和端口
+	appType := req.ApplicationType
+	port := int(req.Port)
+
+	// 如果用户已经指定了应用类型，保持用户的选择，不根据端口推断
+	// 只有当应用类型为空（未指定）时，才根据端口号推断应用类型
+	if appType == "" && port > 0 {
+		detectedType := detectApplicationTypeByPort(port)
+		if detectedType != "" {
+			appType = detectedType
+		}
+	}
+
+	// 如果端口为空或0，根据应用类型设置默认端口
+	if port == 0 && appType != "" {
+		port = getDefaultPortByApplicationType(appType)
+	}
+
+	// 如果应用类型仍然为空，设置为 tcp
+	if appType == "" {
+		appType = "tcp"
 	}
 
 	// 注意如果edge id不在线，应用可能无法访问
@@ -27,8 +104,8 @@ func (cp *controlPlane) CreateApplication(_ context.Context, req *v1.CreateAppli
 		Name:            req.Name,
 		Description:     req.Description,
 		IP:              req.Ip,
-		Port:            int(req.Port),
-		ApplicationType: model.ApplicationType(req.ApplicationType),
+		Port:            port,
+		ApplicationType: model.ApplicationType(appType),
 		EdgeIDs:         model.UintSlice{uint(req.EdgeId)},
 		DeviceID:        deviceID,
 	}
@@ -36,9 +113,17 @@ func (cp *controlPlane) CreateApplication(_ context.Context, req *v1.CreateAppli
 	if err != nil {
 		return nil, err
 	}
+	
+	// 重新获取创建的应用，包含完整的关联数据
+	createdApplication, err := cp.repo.GetApplicationByID(application.ID)
+	if err != nil {
+		return nil, err
+	}
+	
 	return &v1.CreateApplicationResponse{
 		Code:    200,
 		Message: "success",
+		Data:    transformApplication(createdApplication),
 	}, nil
 }
 
@@ -90,7 +175,7 @@ func (cp *controlPlane) ListApplications(_ context.Context, req *v1.ListApplicat
 		deviceIDs = []uint{uint(*req.DeviceId)}
 	}
 
-	applications, err := cp.repo.ListApplications(&dao.ListApplicationsQuery{
+	query := &dao.ListApplicationsQuery{
 		Query: dao.Query{
 			Page:     int(req.Page),
 			PageSize: int(req.PageSize),
@@ -98,7 +183,14 @@ func (cp *controlPlane) ListApplications(_ context.Context, req *v1.ListApplicat
 			Desc:     true,
 		},
 		DeviceIDs: deviceIDs,
-	})
+	}
+	// 应用类型筛选
+	if req.ApplicationType != nil && *req.ApplicationType != "" {
+		query.ApplicationType = *req.ApplicationType
+	}
+	// 应用名称筛选（如果提供了 application_name，需要在这里处理）
+	// 注意：目前 DAO 层还没有实现 name 筛选，如果需要可以后续添加
+	applications, err := cp.repo.ListApplications(query)
 	if err != nil {
 		return nil, err
 	}
@@ -167,9 +259,14 @@ func (cp *controlPlane) ListApplications(_ context.Context, req *v1.ListApplicat
 		}
 	}
 
-	count, err := cp.repo.CountApplications(&dao.ListApplicationsQuery{
+	countQuery := &dao.ListApplicationsQuery{
 		DeviceIDs: deviceIDs,
-	})
+	}
+	// 应用类型筛选
+	if req.ApplicationType != nil && *req.ApplicationType != "" {
+		countQuery.ApplicationType = *req.ApplicationType
+	}
+	count, err := cp.repo.CountApplications(countQuery)
 	if err != nil {
 		return nil, err
 	}

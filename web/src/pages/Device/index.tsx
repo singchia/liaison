@@ -8,10 +8,10 @@ import {
   ProFormTextArea,
   ProTable,
 } from '@ant-design/pro-components';
-import { Drawer, Space, Tag } from 'antd';
-import { DesktopOutlined, InfoCircleOutlined, EditOutlined } from '@ant-design/icons';
+import { Drawer, Space, Tag, Popconfirm, Badge, Tooltip, message } from 'antd';
+import { DesktopOutlined } from '@ant-design/icons';
 import { useRef, useState } from 'react';
-import { getDeviceList, getDeviceDetail, updateDevice } from '@/services/api';
+import { getDeviceList, getDeviceDetail, updateDevice, deleteDevice } from '@/services/api';
 import { executeAction, tableRequest } from '@/utils/request';
 import { defaultPagination, defaultSearch, buildSearchParams } from '@/utils/tableConfig';
 import { formatMBSize } from '@/utils/format';
@@ -60,16 +60,44 @@ const DevicePage: React.FC = () => {
     );
   };
 
+  const handleDelete = async (id: number, online?: number) => {
+    // 如果设备在线，不允许删除
+    if (online === 1) {
+      message.warning('在线设备不允许删除，请先断开连接');
+      return;
+    }
+    await executeAction(() => deleteDevice(id), {
+      successMessage: '删除成功',
+      errorMessage: '删除失败',
+      onSuccess: reload,
+    });
+  };
+
   const columns: ProColumns<API.Device>[] = [
     {
       title: '设备名称',
       dataIndex: 'name',
       ellipsis: true,
+      fieldProps: {
+        placeholder: '请输入设备名称',
+      },
       render: (_, record) => (
         <Space>
           <DesktopOutlined />
           <span>{record.name || `设备-${record.id}`}</span>
         </Space>
+      ),
+    },
+    {
+      title: '在线状态',
+      dataIndex: 'online',
+      width: 100,
+      search: false,
+      render: (_, record) => (
+        <Badge
+          status={record.online === 1 ? 'success' : 'default'}
+          text={record.online === 1 ? '在线' : '离线'}
+        />
       ),
     },
     {
@@ -154,17 +182,39 @@ const DevicePage: React.FC = () => {
       title: '操作',
       valueType: 'option',
       width: 150,
+      fixed: 'right',
+      align: 'center',
       render: (_, record) => (
-        <Space>
+        <Space size="small">
           <a onClick={() => handleViewDetail(record)}>
-            <InfoCircleOutlined /> 详情
+            详情
           </a>
           <a onClick={() => {
             setCurrentRow(record);
             setEditModalVisible(true);
           }}>
-            <EditOutlined /> 编辑
+            编辑
           </a>
+          {record.online === 1 ? (
+            <Tooltip title="在线设备不允许删除，请先断开连接">
+              <a style={{ color: '#d9d9d9', cursor: 'not-allowed' }}>
+                删除
+              </a>
+            </Tooltip>
+          ) : (
+            <Popconfirm
+              title="确定要删除这个设备吗？"
+              description="删除后无法恢复，请谨慎操作"
+              onConfirm={() => handleDelete(record.id, record.online)}
+              okText="确定"
+              cancelText="取消"
+              okButtonProps={{ danger: true }}
+            >
+              <a style={{ color: '#ff4d4f' }}>
+                删除
+              </a>
+            </Popconfirm>
+          )}
         </Space>
       ),
     },
@@ -172,7 +222,8 @@ const DevicePage: React.FC = () => {
 
   return (
     <PageContainer>
-      <ProTable<API.Device>
+      <div className="table-search-wrapper">
+        <ProTable<API.Device>
         headerTitle="设备列表"
         actionRef={actionRef}
         rowKey="id"
@@ -182,9 +233,13 @@ const DevicePage: React.FC = () => {
           return tableRequest(() => getDeviceList(searchParams), 'devices');
         }}
         pagination={defaultPagination}
-        search={defaultSearch}
+        search={{
+          ...defaultSearch,
+          labelWidth: 'auto',
+        }}
         scroll={{ x: 'max-content' }}
       />
+      </div>
 
       <Drawer
         title="设备详情"

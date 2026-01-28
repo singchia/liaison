@@ -6,7 +6,7 @@ import (
 	"errors"
 	"net"
 
-	"github.com/go-kratos/kratos/v2/log"
+	"github.com/jumboframes/armorigo/log"
 	"github.com/singchia/geminio"
 	"github.com/singchia/liaison/pkg/liaison/repo/model"
 	"github.com/singchia/liaison/pkg/proto"
@@ -44,7 +44,6 @@ func (fb *frontierBound) EmitScanApplications(ctx context.Context, taskID uint, 
 }
 
 func (fb *frontierBound) reportTaskScanApplication(ctx context.Context, req geminio.Request, rsp geminio.Response) {
-
 	var task proto.ScanApplicationTaskResult
 	err := json.Unmarshal(req.Data(), &task)
 	if err != nil {

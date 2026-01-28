@@ -35,6 +35,7 @@ logs/
 # .idea/
 # .vscode/
 .DS_Store
+.deploy-liaison.sh
 
 # Frontend dependencies
 web/node_modules/

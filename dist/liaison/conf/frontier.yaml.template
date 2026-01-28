@@ -1,7 +1,11 @@
+daemon:
+  pprof:
+    addr: 127.0.0.1:6061
+    enable: true
 edgebound:
   listen:
     network: tcp
-    addr: 0.0.0.0:30012
+    addr: 0.0.0.0:${FRONTIER_PORT}
     tls:
       enable: true
       insecure_skip_verify: true
@@ -12,4 +16,4 @@ edgebound:
 servicebound:
   listen:
     network: tcp
-    addr: 0.0.0.0:30011
+    addr: 127.0.0.1:30011

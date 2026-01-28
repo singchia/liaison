@@ -70,11 +70,22 @@ include ./Makefile.defs
 # ============================================================================
 # Docker build variables and functions
 # ============================================================================
-DOCKER_IMAGE = golang:latest
+DOCKER_IMAGE = golang:1.24.0
 DOCKER_VOLUME = -v "$(shell pwd):/build"
 DOCKER_WORKDIR = -w /build
 DOCKER_BASE = docker run --rm $(DOCKER_VOLUME) $(DOCKER_WORKDIR)
 GO_BUILD_FLAGS = -trimpath -ldflags '-s -w'
+
+# Ensure Docker image exists (pull only if not present locally)
+.PHONY: docker-image
+docker-image:
+	@if docker image inspect $(DOCKER_IMAGE) >/dev/null 2>&1; then \
+		echo "✅ Docker image $(DOCKER_IMAGE) already exists locally"; \
+	else \
+		echo "📥 Pulling Docker image $(DOCKER_IMAGE)..."; \
+		docker pull $(DOCKER_IMAGE) || exit 1; \
+		echo "✅ Docker image $(DOCKER_IMAGE) pulled successfully"; \
+	fi
 
 # Function to build with CGO (for liaison and tools)
 # Usage: $(call docker-build-cgo,platform,goos,goarch,output,source)
@@ -171,11 +182,11 @@ liaison-edge: build-edge
 build-linux: build-liaison-linux build-edge-linux build-frontier-linux
 
 .PHONY: build-liaison-linux
-build-liaison-linux:
+build-liaison-linux: docker-image
 	$(call docker-build-cgo,linux/amd64,linux,amd64,liaison,cmd/manager/main.go)
 
 .PHONY: build-edge-linux
-build-edge-linux:
+build-edge-linux: docker-image
 	$(call docker-build-no-cgo,linux/amd64,linux,amd64,liaison-edge,cmd/edge/main.go)
 
 .PHONY: build-frontier-linux
@@ -252,11 +263,11 @@ build-password-generator:
 build-tools-linux: build-password-verifier-linux build-password-generator-linux
 
 .PHONY: build-password-verifier-linux
-build-password-verifier-linux:
+build-password-verifier-linux: docker-image
 	$(call docker-build-cgo,linux/amd64,linux,amd64,password-verifier,./tools/password-verifier)
 
 .PHONY: build-password-generator-linux
-build-password-generator-linux:
+build-password-generator-linux: docker-image
 	$(call docker-build-cgo,linux/amd64,linux,amd64,password-generator,./tools/password-generator)
 
 # Legacy aliases
@@ -276,11 +287,11 @@ build-edge-all: build-edge-linux-amd64 build-edge-linux-arm64 build-edge-darwin-
 	@echo "✅ All edge binaries built in ./bin/"
 
 .PHONY: build-edge-linux-amd64
-build-edge-linux-amd64:
+build-edge-linux-amd64: docker-image
 	$(call docker-build-no-cgo,linux/amd64,linux,amd64,liaison-edge-linux-amd64,cmd/edge/main.go)
 
 .PHONY: build-edge-linux-arm64
-build-edge-linux-arm64:
+build-edge-linux-arm64: docker-image
 	$(call docker-build-no-cgo,linux/arm64,linux,arm64,liaison-edge-linux-arm64,cmd/edge/main.go)
 
 .PHONY: build-edge-darwin-amd64
@@ -292,7 +303,7 @@ build-edge-darwin-arm64:
 	$(call local-build-darwin,arm64,liaison-edge-darwin-arm64,cmd/edge/main.go)
 
 .PHONY: build-edge-windows-amd64
-build-edge-windows-amd64:
+build-edge-windows-amd64: docker-image
 	@echo "Building liaison-edge for windows-amd64..."
 	@mkdir -p ./bin
 	@$(DOCKER_BASE) \

@@ -89,6 +89,7 @@ declare namespace API {
     cpu: number;
     memory: number;
     disk: number;
+    online?: number; // 0: offline, 1: online
     interfaces?: Array<{
       name: string;
       mac: string;
@@ -122,7 +123,7 @@ declare namespace API {
     description?: string;
     status: number; // 1: running, 2: stopped
     online: number; // 0: offline, 1: online
-    device?: Device; // 所属设备
+    device?: Device; // 所在设备
     created_at: string;
     updated_at: string;
   }
@@ -204,5 +205,27 @@ declare namespace API {
     description?: string;
     port?: number;
     status?: string;
+  }
+
+  // ========== 流量监控 (Traffic Metric) ==========
+  interface TrafficMetric {
+    id: number;
+    application_id: number;
+    proxy_id: number;
+    timestamp: string; // ISO 8601 格式
+    bytes_in: number; // 入站流量（字节）
+    bytes_out: number; // 出站流量（字节）
+  }
+
+  interface TrafficMetricsListParams {
+    application_ids?: number[];
+    proxy_ids?: number[];
+    start_time?: string; // ISO 8601 格式
+    end_time?: string; // ISO 8601 格式
+    limit?: number; // 默认 100
+  }
+
+  interface TrafficMetricsListResult {
+    metrics: TrafficMetric[];
   }
 }

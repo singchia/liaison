@@ -109,6 +109,19 @@ if [[ "$(uname)" == "Darwin" ]]; then
         cp -X dist/edge/uninstall.sh "$PACK_DIR/edge/" 2>/dev/null || cp dist/edge/uninstall.sh "$PACK_DIR/edge/"
         echo -e "${GREEN}  - uninstall.sh${NC}"
     fi
+    # Copy Windows install and uninstall scripts
+    if [ -f "dist/edge/install.ps1" ]; then
+        cp -X dist/edge/install.ps1 "$PACK_DIR/edge/" 2>/dev/null || cp dist/edge/install.ps1 "$PACK_DIR/edge/"
+        echo -e "${GREEN}  - install.ps1${NC}"
+    fi
+    if [ -f "dist/edge/install.bat" ]; then
+        cp -X dist/edge/install.bat "$PACK_DIR/edge/" 2>/dev/null || cp dist/edge/install.bat "$PACK_DIR/edge/"
+        echo -e "${GREEN}  - install.bat${NC}"
+    fi
+    if [ -f "dist/edge/uninstall.ps1" ]; then
+        cp -X dist/edge/uninstall.ps1 "$PACK_DIR/edge/" 2>/dev/null || cp dist/edge/uninstall.ps1 "$PACK_DIR/edge/"
+        echo -e "${GREEN}  - uninstall.ps1${NC}"
+    fi
 else
     cp packages/edge/liaison-edge-linux-amd64.tar.gz "$PACK_DIR/edge/" 2>/dev/null && echo -e "${GREEN}  - liaison-edge-linux-amd64.tar.gz${NC}" || true
     cp packages/edge/liaison-edge-linux-arm64.tar.gz "$PACK_DIR/edge/" 2>/dev/null && echo -e "${GREEN}  - liaison-edge-linux-arm64.tar.gz${NC}" || true
@@ -123,6 +136,19 @@ else
     if [ -f "dist/edge/uninstall.sh" ]; then
         cp dist/edge/uninstall.sh "$PACK_DIR/edge/"
         echo -e "${GREEN}  - uninstall.sh${NC}"
+    fi
+    # Copy Windows install and uninstall scripts
+    if [ -f "dist/edge/install.ps1" ]; then
+        cp dist/edge/install.ps1 "$PACK_DIR/edge/"
+        echo -e "${GREEN}  - install.ps1${NC}"
+    fi
+    if [ -f "dist/edge/install.bat" ]; then
+        cp dist/edge/install.bat "$PACK_DIR/edge/"
+        echo -e "${GREEN}  - install.bat${NC}"
+    fi
+    if [ -f "dist/edge/uninstall.ps1" ]; then
+        cp dist/edge/uninstall.ps1 "$PACK_DIR/edge/"
+        echo -e "${GREEN}  - uninstall.ps1${NC}"
     fi
 fi
 

@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"net"
+	"time"
 
+	"github.com/jumboframes/armorigo/log"
 	"github.com/singchia/liaison/pkg/liaison/repo/model"
 	"github.com/singchia/liaison/pkg/proto"
 )
@@ -26,15 +28,29 @@ func (fb *frontierBound) getID(meta []byte) (uint64, error) {
 	return uint64(edge.ID), nil
 }
 
+// updateEdgeHeartbeat 更新 edge 心跳时间
+func (fb *frontierBound) updateEdgeHeartbeat(edgeID uint64) {
+	log.Debugf("update edge heartbeat: %d", edgeID)
+	now := time.Now()
+	err := fb.repo.UpdateEdgeHeartbeatAt(edgeID, now)
+	if err != nil {
+		log.Errorf("update edge heartbeat error: %s, edge_id: %d", err, edgeID)
+	}
+}
+
 func (fb *frontierBound) online(edgeID uint64, meta []byte, addr net.Addr) error {
+	log.Infof("edge online: %d, meta: %s, addr: %s", edgeID, string(meta), addr.String())
 	err := fb.repo.UpdateEdgeOnlineStatus(edgeID, model.EdgeOnlineStatusOnline)
 	if err != nil {
 		return err
 	}
+	// 更新心跳时间
+	fb.updateEdgeHeartbeat(edgeID)
 	return nil
 }
 
 func (fb *frontierBound) offline(edgeID uint64, meta []byte, addr net.Addr) error {
+	log.Infof("edge offline: %d, meta: %s, addr: %s", edgeID, string(meta), addr.String())
 	err := fb.repo.UpdateEdgeOnlineStatus(edgeID, model.EdgeOnlineStatusOffline)
 	if err != nil {
 		return err

@@ -4,7 +4,9 @@
 
 ```
 dist/edge/
-├── install.sh      # 安装脚本（会根据操作系统自动下载对应的安装包）
+├── install.sh      # 安装脚本（Linux/macOS，会根据操作系统自动下载对应的安装包）
+├── install.ps1     # 安装脚本（Windows PowerShell，推荐）
+├── install.bat     # 安装脚本（Windows 批处理脚本）
 └── README.md       # 本文件
 ```
 
@@ -26,6 +28,8 @@ dist/edge/
 
 ### 使用方法
 
+#### Linux/macOS
+
 ```bash
 # 基本用法（使用默认服务器地址 localhost:8080）
 curl -sSL http://your-server:8080/install.sh | bash -s -- \
@@ -36,8 +40,50 @@ curl -sSL http://your-server:8080/install.sh | bash -s -- \
 curl -sSL http://your-server:8080/install.sh | bash -s -- \
   --access-key=YOUR_ACCESS_KEY \
   --secret-key=YOUR_SECRET_KEY \
-  --server-addr=your-server:8080
+  --server-http-addr=your-server:443 \
+  --server-edge-addr=your-server:30012
 ```
+
+#### Windows
+
+**方法 1：使用 PowerShell 脚本（推荐）**
+
+```powershell
+# 下载并运行 PowerShell 脚本
+powershell -ExecutionPolicy Bypass -Command "Invoke-WebRequest -Uri 'https://your-server/install.ps1' -OutFile 'install.ps1'; .\install.ps1 -AccessKey YOUR_ACCESS_KEY -SecretKey YOUR_SECRET_KEY -ServerHttpAddr your-server:443 -ServerEdgeAddr your-server:30012"
+```
+
+或者先下载脚本，然后运行：
+
+```powershell
+# 下载脚本
+Invoke-WebRequest -Uri 'https://your-server/install.ps1' -OutFile 'install.ps1'
+
+# 运行脚本
+.\install.ps1 -AccessKey YOUR_ACCESS_KEY -SecretKey YOUR_SECRET_KEY -ServerHttpAddr your-server:443 -ServerEdgeAddr your-server:30012
+```
+
+**方法 2：使用批处理脚本**
+
+```cmd
+# 下载 install.bat 后直接运行
+install.bat --access-key=YOUR_ACCESS_KEY --secret-key=YOUR_SECRET_KEY --server-http-addr=your-server:443 --server-edge-addr=your-server:30012
+```
+
+**方法 3：使用 Git Bash 或 WSL**
+
+如果已安装 Git Bash 或 WSL，可以使用 `install.sh` 脚本：
+
+```bash
+# 在 Git Bash 中运行
+curl -k -sSL https://your-server/install.sh | bash -s -- \
+  --access-key=YOUR_ACCESS_KEY \
+  --secret-key=YOUR_SECRET_KEY \
+  --server-http-addr=your-server:443 \
+  --server-edge-addr=your-server:30012
+```
+
+**注意：** 如果在 Windows CMD 或 PowerShell 中直接运行 `install.sh`，会提示 "bash不是内部命令或外部命令"。请使用 `install.ps1` 或通过 Git Bash/WSL 运行。
 
 ### 参数说明
 

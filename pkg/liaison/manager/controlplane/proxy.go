@@ -25,12 +25,18 @@ func (cp *controlPlane) CreateProxy(_ context.Context, req *v1.CreateProxyReques
 		return nil, err
 	}
 
-	// 创建Proxy持久化
+	// 如果端口为空或0，设置为0让系统自动分配
+	requestedPort := int(req.Port)
+	if requestedPort == 0 {
+		requestedPort = 0 // 明确设置为0，让系统自动分配
+	}
+
+	// 创建Proxy持久化（如果端口为0，先保存0，后续会更新）
 	proxy := &model.Proxy{
 		Name:          req.Name,
 		Status:        model.ProxyStatusRunning,
 		Description:   req.Description,
-		Port:          int(req.Port),
+		Port:          requestedPort,
 		ApplicationID: uint(req.ApplicationId),
 	}
 	err = cp.repo.CreateProxy(proxy)
@@ -39,17 +45,42 @@ func (cp *controlPlane) CreateProxy(_ context.Context, req *v1.CreateProxyReques
 		return nil, err
 	}
 
-	// 创建Proxy
-	cp.proxyManager.CreateProxy(context.Background(), &proto.Proxy{
-		ID:        int(proxy.ID),
-		Name:      proxy.Name,
-		ProxyPort: int(proxy.Port),
-		EdgeID:    uint64(application.EdgeIDs[0]),
-		Dst:       fmt.Sprintf("%s:%d", application.IP, application.Port),
-	})
+	// 创建Proxy（如果端口为0，系统会自动分配）
+	protoproxy := &proto.Proxy{
+		ID:            int(proxy.ID),
+		Name:          proxy.Name,
+		ProxyPort:     requestedPort, // 如果为0，系统会自动分配
+		EdgeID:        uint64(application.EdgeIDs[0]),
+		ApplicationID: application.ID,
+		Dst:           fmt.Sprintf("%s:%d", application.IP, application.Port),
+	}
+	err = cp.proxyManager.CreateProxy(context.Background(), protoproxy)
+	if err != nil {
+		log.Errorf("failed to create proxy listener: %s", err)
+		// 如果创建失败，删除数据库记录
+		_ = cp.repo.DeleteProxy(proxy.ID)
+		return nil, err
+	}
+
+	// 如果端口为0，系统已经分配了端口，更新数据库中的端口
+	if requestedPort == 0 {
+		actualPort := protoproxy.ProxyPort
+		if actualPort > 0 {
+			proxy.Port = actualPort
+			err = cp.repo.UpdateProxy(proxy)
+			if err != nil {
+				log.Errorf("failed to update proxy port: %s", err)
+				// 即使更新失败，代理已经创建成功，继续返回成功
+			} else {
+				log.Infof("proxy %d: updated port to %d (system allocated)", proxy.ID, actualPort)
+			}
+		}
+	}
+
 	return &v1.CreateProxyResponse{
 		Code:    200,
 		Message: "success",
+		Data:    transformProxy(proxy),
 	}, nil
 }
 

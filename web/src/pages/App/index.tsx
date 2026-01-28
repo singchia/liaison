@@ -8,8 +8,8 @@ import {
   ProFormText,
   ProTable,
 } from '@ant-design/pro-components';
-import { Space, Tag, Typography, Input } from 'antd';
-import { LinkOutlined, ApiOutlined, EditOutlined } from '@ant-design/icons';
+import { Space, Tag, Typography, Select, Form } from 'antd';
+import { LinkOutlined, ApiOutlined } from '@ant-design/icons';
 import { useRef, useState } from 'react';
 import {
   getApplicationList,
@@ -18,6 +18,7 @@ import {
   deleteApplication,
   getEdgeList,
   createProxy,
+  getDeviceList,
 } from '@/services/api';
 import { executeAction, tableRequest } from '@/utils/request';
 import { CreateButton, DeleteLink } from '@/components/TableButtons';
@@ -27,12 +28,30 @@ const { Text } = Typography;
 
 const AppPage: React.FC = () => {
   const actionRef = useRef<ActionType>();
+  const formRef = useRef<any>();
+  const [createForm] = Form.useForm();
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [proxyModalVisible, setProxyModalVisible] = useState(false);
   const [currentRow, setCurrentRow] = useState<API.Application>();
+  const [deviceOptions, setDeviceOptions] = useState<{ label: string; value: string }[]>([]);
 
   const reload = () => actionRef.current?.reload();
+
+  // 加载设备列表
+  const loadDeviceOptions = async () => {
+    if (deviceOptions.length > 0) return; // 已加载过，不再重复加载
+    try {
+      const res = await getDeviceList({ page_size: 100 });
+      const options = (res.data?.devices || []).map((device: API.Device) => ({
+        label: device.name,
+        value: device.name,
+      }));
+      setDeviceOptions(options);
+    } catch {
+      // 忽略错误
+    }
+  };
 
   const handleAdd = async (values: any) => {
     return executeAction(
@@ -81,23 +100,35 @@ const AppPage: React.FC = () => {
 
   const handleCreateProxy = async (values: any) => {
     if (!currentRow?.id) return false;
-    return executeAction(
+    const createPort = values.port || undefined;
+    let createdProxy: API.Proxy | null = null;
+    
+    const result = await executeAction(
       () =>
         createProxy({
           name: values.name || currentRow.name,
           description: values.description,
-          port: values.port,
+          port: createPort,
           application_id: currentRow.id,
         }),
       {
         successMessage: '代理创建成功',
         errorMessage: '代理创建失败',
-        onSuccess: () => {
-          setProxyModalVisible(false);
-          reload();
+        onSuccess: (data) => {
+          // 保存创建的代理信息
+          if (data) {
+            createdProxy = data as API.Proxy;
+          }
         },
       },
     );
+    
+    // 如果创建时端口为空，创建后获取动态分配的端口
+    // 端口已经在响应中返回，刷新列表即可显示动态分配的端口
+    setProxyModalVisible(false);
+    reload();
+    
+    return result;
   };
 
   const columns: ProColumns<API.Application>[] = [
@@ -105,6 +136,9 @@ const AppPage: React.FC = () => {
       title: '应用名称',
       dataIndex: 'name',
       ellipsis: true,
+      fieldProps: {
+        placeholder: '请输入应用名称',
+      },
       render: (_, record) => (
         <Space>
           <ApiOutlined />
@@ -116,14 +150,28 @@ const AppPage: React.FC = () => {
       title: '类型',
       dataIndex: 'application_type',
       width: 100,
-      search: false,
+      valueType: 'select',
       valueEnum: {
         web: { text: 'Web' },
         tcp: { text: 'TCP' },
-        udp: { text: 'UDP' },
         ssh: { text: 'SSH' },
         rdp: { text: 'RDP' },
-        database: { text: '数据库' },
+        mysql: { text: 'MySQL' },
+        postgresql: { text: 'PostgreSQL' },
+        redis: { text: 'Redis' },
+        mongodb: { text: 'MongoDB' },
+      },
+      fieldProps: {
+        placeholder: '请选择应用类型',
+        allowClear: true,
+        onChange: (val: string) => {
+          // 使用 formRef 获取表单实例并设置值
+          if (formRef.current) {
+            formRef.current.setFieldsValue({ application_type: val });
+            // 触发表单提交
+            formRef.current.submit();
+          }
+        },
       },
     },
     {
@@ -141,13 +189,31 @@ const AppPage: React.FC = () => {
       render: (port) => <Tag>{port}</Tag>,
     },
     {
-      title: '所属设备',
+      title: '所在设备',
       dataIndex: 'device_name',
       ellipsis: true,
       width: 150,
+      valueType: 'select',
       render: (_, record) => record.device?.name || '-',
-      renderFormItem: () => {
-        return <Input placeholder="请输入设备名称" />;
+      fieldProps: {
+        placeholder: '请选择设备',
+        showSearch: true,
+        allowClear: true,
+        options: deviceOptions,
+        filterOption: (input: string, option?: { label: string; value: string }) =>
+          (option?.label ?? '').toLowerCase().includes(input.toLowerCase()),
+        onFocus: loadDeviceOptions,
+        onChange: (val: string) => {
+          // 使用 formRef 获取表单实例并设置值
+          if (formRef.current) {
+            formRef.current.setFieldsValue({ device_name: val });
+            // 触发表单提交
+            formRef.current.submit();
+          }
+        },
+      },
+      formItemProps: {
+        style: { marginBottom: 0, marginRight: 16 },
       },
     },
     {
@@ -177,20 +243,22 @@ const AppPage: React.FC = () => {
     {
       title: '操作',
       valueType: 'option',
-      width: 200,
+      width: 180,
+      fixed: 'right',
+      align: 'center',
       render: (_, record) => (
         <Space>
           <a onClick={() => {
             setCurrentRow(record);
             setProxyModalVisible(true);
           }}>
-            <LinkOutlined /> 创建代理
+            创建代理
           </a>
           <a onClick={() => {
             setCurrentRow(record);
             setEditModalVisible(true);
           }}>
-            <EditOutlined /> 编辑
+            编辑
           </a>
           <DeleteLink
             title="确定要删除这个应用吗？"
@@ -203,14 +271,23 @@ const AppPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <ProTable<API.Application>
+      <div className="table-search-wrapper">
+        <ProTable<API.Application>
         headerTitle="应用列表"
         actionRef={actionRef}
+        formRef={formRef}
         rowKey="id"
         columns={columns}
         request={async (params) => {
-          const searchParams = buildSearchParams<API.ApplicationListParams>(params, ['name', 'device_name']);
+          console.log('ProTable request params:', params);
+          const searchParams = buildSearchParams<API.ApplicationListParams>(params, ['name', 'device_name', 'application_type']);
+          console.log('buildSearchParams result:', searchParams);
           return tableRequest(() => getApplicationList(searchParams), 'applications');
+        }}
+        onSubmit={(values) => {
+          console.log('ProTable onSubmit:', values);
+          // 触发表格刷新，此时会使用表单值
+          actionRef.current?.reload();
         }}
         toolBarRender={() => [
           <CreateButton key="create" onClick={() => setCreateModalVisible(true)}>
@@ -218,9 +295,13 @@ const AppPage: React.FC = () => {
           </CreateButton>,
         ]}
         pagination={defaultPagination}
-        search={defaultSearch}
+        search={{
+          ...defaultSearch,
+          labelWidth: 'auto',
+        }}
         scroll={{ x: 'max-content' }}
       />
+      </div>
 
       <ModalForm
         title="新建应用"
@@ -228,6 +309,7 @@ const AppPage: React.FC = () => {
         onOpenChange={setCreateModalVisible}
         onFinish={handleAdd}
         modalProps={{ destroyOnClose: true }}
+        form={createForm}
         width={500}
       >
         <ProFormText
@@ -239,16 +321,36 @@ const AppPage: React.FC = () => {
         <ProFormSelect
           name="application_type"
           label="应用类型"
-          placeholder="请选择应用类型"
+          placeholder="请选择应用类型（不填默认为TCP）"
           options={[
             { label: 'Web', value: 'web' },
             { label: 'TCP', value: 'tcp' },
-            { label: 'UDP', value: 'udp' },
             { label: 'SSH', value: 'ssh' },
             { label: 'RDP', value: 'rdp' },
-            { label: '数据库', value: 'database' },
+            { label: 'MySQL', value: 'mysql' },
+            { label: 'PostgreSQL', value: 'postgresql' },
+            { label: 'Redis', value: 'redis' },
+            { label: 'MongoDB', value: 'mongodb' },
           ]}
-          rules={[{ required: true, message: '请选择应用类型' }]}
+          extra="不填默认为TCP"
+          fieldProps={{
+            onChange: (value: string) => {
+              // 根据应用类型设置默认端口
+              const defaultPorts: Record<string, number> = {
+                web: 80,
+                ssh: 22,
+                rdp: 3389,
+                mysql: 3306,
+                postgresql: 5432,
+                redis: 6379,
+                mongodb: 27017,
+              };
+              const defaultPort = defaultPorts[value as string];
+              if (defaultPort) {
+                createForm.setFieldsValue({ port: defaultPort });
+              }
+            },
+          }}
         />
         <ProFormText
           name="ip"
@@ -262,7 +364,20 @@ const AppPage: React.FC = () => {
           placeholder="请输入端口号"
           min={1}
           max={65535}
-          rules={[{ required: true, message: '请输入端口号' }]}
+          rules={[
+            { required: true, message: '请输入端口号' },
+            {
+              validator: (_: any, value: number) => {
+                if (!value || value === 0) {
+                  return Promise.reject(new Error('端口号不能为0，请输入1-65535之间的端口号'));
+                }
+                if (value < 1 || value > 65535) {
+                  return Promise.reject(new Error('端口号必须在1-65535之间'));
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
         />
         <ProFormSelect
           name="edge_id"

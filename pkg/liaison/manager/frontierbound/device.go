@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/go-kratos/kratos/v2/log"
+	"github.com/jumboframes/armorigo/log"
 	"github.com/singchia/geminio"
 	"github.com/singchia/liaison/pkg/liaison/repo/model"
 	"github.com/singchia/liaison/pkg/proto"
@@ -20,11 +20,39 @@ func (fb *frontierBound) reportDeviceUsage(ctx context.Context, req geminio.Requ
 		return
 	}
 
-	// 客户端ID就是EdgeID
-	err := fb.repo.UpdateDeviceUsage(uint(req.ClientID()), usage.CPUUsage, usage.MemoryUsage, usage.DiskUsage)
+	// 通过指纹查找设备
+	deviceModel, err := fb.repo.GetDeviceByFingerprint(usage.Fingerprint)
+	if err != nil {
+		log.Errorf("get device by fingerprint: %v error: %s", usage.Fingerprint, err)
+		rsp.SetError(err)
+		return
+	}
+
+	// 更新设备使用情况和心跳时间（UpdateDeviceUsage 已经会更新 heartbeat_at）
+	err = fb.repo.UpdateDeviceUsage(deviceModel.ID, usage.CPUUsage, usage.MemoryUsage, usage.DiskUsage)
 	if err != nil {
 		rsp.SetError(err)
 		return
+	}
+
+	// 更新 edge 心跳（edge 定期上报设备信息时更新心跳）
+	// 优先从 request 的 ClientID 获取
+	var edgeID uint64
+	if clientID := req.ClientID(); clientID > 0 {
+		edgeID = clientID
+	} else {
+		// 如果无法从 ClientID 获取，通过设备查找关联的 edge
+		hostType := model.EdgeDeviceRelationHost
+		edgeDevices, err := fb.repo.GetEdgeDevicesByDeviceID(deviceModel.ID, &hostType)
+		if err == nil && len(edgeDevices) > 0 {
+			edgeID = edgeDevices[0].EdgeID
+		}
+	}
+
+	if edgeID > 0 {
+		fb.updateEdgeHeartbeat(edgeID)
+	} else {
+		log.Debugf("cannot get edgeID from device usage request for heartbeat update")
 	}
 }
 
@@ -71,6 +99,12 @@ func (fb *frontierBound) reportDevice(ctx context.Context, req geminio.Request, 
 			rsp.SetError(err)
 			return
 		}
+		// 创建设备后，更新心跳时间
+		if err := tx.UpdateDeviceHeartbeat(deviceModel.ID); err != nil {
+			log.Errorf("update device heartbeat error: %s", err)
+			rsp.SetError(err)
+			return
+		}
 	} else {
 		updates := &model.Device{
 			Fingerprint: device.Fingerprint,
@@ -90,6 +124,12 @@ func (fb *frontierBound) reportDevice(ctx context.Context, req geminio.Request, 
 		}
 		if err := tx.UpdateDevice(updates); err != nil {
 			log.Errorf("update device error: %s", err)
+			rsp.SetError(err)
+			return
+		}
+		// 更新设备后，更新心跳时间
+		if err := tx.UpdateDeviceHeartbeat(deviceModel.ID); err != nil {
+			log.Errorf("update device heartbeat error: %s", err)
 			rsp.SetError(err)
 			return
 		}
@@ -177,12 +217,39 @@ func (fb *frontierBound) reportDevice(ctx context.Context, req geminio.Request, 
 		}
 	}
 
-	// 如果关联到edge，那么更新edge的device id
+	// 如果关联到edge，创建 EdgeDevice 关系（Host 类型）
+	// 注意：一个 Edge 只能有一个 Host 类型的 Device，所以需要先删除旧的关系
 	if device.EdgeID > 0 {
-		if err := tx.UpdateEdgeDeviceID(device.EdgeID, deviceModel.ID); err != nil {
+		hostType := model.EdgeDeviceRelationHost
+		// 先查询是否已经存在该关系
+		existingEdgeDevice, err := tx.GetEdgeDevice(device.EdgeID, deviceModel.ID, hostType)
+		if err != nil {
+			log.Errorf("get edge device relation error: %s", err)
 			rsp.SetError(err)
 			return
 		}
+
+		// 如果关系不存在，才创建
+		if existingEdgeDevice == nil {
+			// 先删除该 Edge 的所有旧的 Host 类型关系（因为指纹可能变化，导致设备 ID 变化）
+			if err := tx.DeleteEdgeDevicesByEdgeID(device.EdgeID, &hostType); err != nil {
+				log.Errorf("delete old edge device relations error: %s", err)
+				rsp.SetError(err)
+				return
+			}
+			// 创建新的关系
+			edgeDevice := &model.EdgeDevice{
+				EdgeID:   device.EdgeID,
+				DeviceID: deviceModel.ID,
+				Type:     hostType,
+			}
+			if err := tx.CreateEdgeDevice(edgeDevice); err != nil {
+				log.Errorf("create edge device relation error: %s", err)
+				rsp.SetError(err)
+				return
+			}
+		}
+		// 如果关系已存在，跳过创建
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -190,4 +257,6 @@ func (fb *frontierBound) reportDevice(ctx context.Context, req geminio.Request, 
 		return
 	}
 	committed = true
+
+	fb.updateEdgeHeartbeat(req.ClientID())
 }

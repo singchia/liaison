@@ -99,6 +99,7 @@ message Device {
     int32 disk = 6 [json_name = "disk"]; // 磁盘，MB
     string os = 7 [json_name = "os"]; // 操作系统
     string version = 8 [json_name = "version"]; // 系统版本
+    int32 online = 12 [json_name = "online"]; // 在线状态: 1: 在线, 2: 离线
     repeated EthernetInterface interfaces = 9 [json_name = "interfaces"]; // 网卡
     string created_at = 10 [json_name = "created_at"]; // 创建时间
     string updated_at = 11 [json_name = "updated_at"]; // 更新时间
@@ -153,6 +154,16 @@ message UpdateDeviceResponse {
     Device data = 3 [json_name = "data"]; // 设备
 }
 
+// 删除设备请求
+message DeleteDeviceRequest {
+    uint64 id = 1 [json_name = "id"]; // 设备ID
+}
+
+message DeleteDeviceResponse {
+    int32 code = 1 [json_name = "code"]; // 状态码
+    string message = 2 [json_name = "message"]; // 消息
+}
+
 // 应用
 message Application {
     uint64 id = 1 [json_name = "id"]; // 应用ID
@@ -187,6 +198,7 @@ message CreateApplicationRequest {
 message CreateApplicationResponse {
     int32 code = 1 [json_name = "code"];
     string message = 2 [json_name = "message"];
+    Application data = 3 [json_name = "data"];
 }
 
 // 列举应用请求
@@ -196,6 +208,7 @@ message ListApplicationsRequest {
     optional uint64 device_id = 3 [json_name = "device_id"];
     optional string device_name = 4 [json_name = "device_name"];
     optional string application_name = 5 [json_name = "application_name"];
+    optional string application_type = 6 [json_name = "application_type"];
 }
 
 message ListApplicationsResponse {
@@ -376,6 +389,11 @@ service LiaisonService {
             get: "/api/v1/devices/{id}"
         };
     };
+    rpc DeleteDevice(DeleteDeviceRequest) returns (DeleteDeviceResponse) {
+        option (google.api.http) = {
+            delete: "/api/v1/devices/{id}"
+        };
+    };
 
     // 应用
     rpc CreateApplication(CreateApplicationRequest) returns (CreateApplicationResponse) {
@@ -469,6 +487,13 @@ service LiaisonService {
             get: "/api/health"
         };
     };
+
+    // 流量监控
+    rpc ListTrafficMetrics(ListTrafficMetricsRequest) returns (ListTrafficMetricsResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/traffic-metrics"
+        };
+    };
 }
 
 // 用户信息
@@ -538,5 +563,35 @@ message HealthRequest {
 
 // 健康检查响应
 message HealthResponse {
-    string status = 1 [json_name = "status"];
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
+    string status = 3 [json_name = "status"];
+}
+
+// 流量监控
+message TrafficMetric {
+    uint64 id = 1 [json_name = "id"];
+    uint64 application_id = 2 [json_name = "application_id"];
+    uint64 proxy_id = 3 [json_name = "proxy_id"];
+    string timestamp = 4 [json_name = "timestamp"]; // 时间戳（分钟级别）
+    int32 bytes_in = 5 [json_name = "bytes_in"]; // 入站流量（字节，平均每分钟）
+    int32 bytes_out = 6 [json_name = "bytes_out"]; // 出站流量（字节，平均每分钟）
+}
+
+message TrafficMetrics {
+    repeated TrafficMetric metrics = 1 [json_name = "metrics"];
+}
+
+message ListTrafficMetricsRequest {
+    repeated uint64 application_ids = 1 [json_name = "application_ids"]; // 应用ID列表（可选）
+    repeated uint64 proxy_ids = 2 [json_name = "proxy_ids"]; // 代理ID列表（可选）
+    string start_time = 3 [json_name = "start_time"]; // 开始时间（ISO 8601格式，可选）
+    string end_time = 4 [json_name = "end_time"]; // 结束时间（ISO 8601格式，可选）
+    int32 limit = 5 [json_name = "limit"]; // 限制返回数量（可选，默认100）
+}
+
+message ListTrafficMetricsResponse {
+    int32 code = 1 [json_name = "code"];
+    string message = 2 [json_name = "message"];
+    TrafficMetrics data = 3 [json_name = "data"];
 }

@@ -5,7 +5,7 @@ go 1.24.0
 require (
 	github.com/go-kratos/kratos/v2 v2.7.2
 	github.com/golang-jwt/jwt/v5 v5.3.0
-	github.com/jumboframes/armorigo v0.4.1
+	github.com/jumboframes/armorigo v0.5.0-rc.2
 	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/pion/transport/v2 v2.2.10
 	github.com/shirou/gopsutil v3.21.11+incompatible
@@ -55,8 +55,6 @@ require (
 	github.com/singchia/yafsm v1.0.1 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
-	github.com/vishvananda/netlink v1.1.0 // indirect
-	github.com/vishvananda/netns v0.0.0-20211101163701-50045581ed74 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	golang.org/x/mod v0.29.0 // indirect
 	golang.org/x/net v0.47.0 // indirect

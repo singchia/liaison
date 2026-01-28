@@ -19,6 +19,10 @@ export const defaultPagination = {
  */
 export const defaultSearch = {
   labelWidth: 'auto' as const,
+  span: 6, // 每行显示4个字段（24/6=4）
+  defaultCollapsed: true, // 默认折叠搜索表单
+  searchText: '搜索',
+  resetText: '重置',
 };
 
 /**

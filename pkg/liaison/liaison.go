@@ -5,12 +5,12 @@ import (
 	"net/http"
 	"runtime"
 
-	frontierutils "github.com/singchia/frontier/pkg/utils"
 	"github.com/singchia/liaison/pkg/entry"
 	"github.com/singchia/liaison/pkg/liaison/config"
 	"github.com/singchia/liaison/pkg/liaison/manager/controlplane"
 	"github.com/singchia/liaison/pkg/liaison/manager/frontierbound"
 	"github.com/singchia/liaison/pkg/liaison/manager/iam"
+	"github.com/singchia/liaison/pkg/liaison/manager/traffic"
 	"github.com/singchia/liaison/pkg/liaison/manager/web"
 	"github.com/singchia/liaison/pkg/liaison/repo"
 	"github.com/singchia/liaison/pkg/utils"
@@ -18,11 +18,12 @@ import (
 )
 
 type Liaison struct {
-	web           web.Web
-	frontierBound frontierbound.FrontierBound
-	entry         *entry.Entry
-	repo          repo.Repo
-	iamService    *iam.IAMService
+	web              web.Web
+	frontierBound    frontierbound.FrontierBound
+	entry            *entry.Entry
+	repo             repo.Repo
+	iamService       *iam.IAMService
+	trafficCollector *traffic.TrafficCollector
 }
 
 func NewLiaison() (*Liaison, error) {
@@ -39,7 +40,7 @@ func NewLiaison() (*Liaison, error) {
 	}
 	// rlimit
 	if config.Conf.Daemon.RLimit.Enable {
-		err = frontierutils.SetRLimit(uint64(config.Conf.Daemon.RLimit.NumFile))
+		err = utils.SetRLimit(uint64(config.Conf.Daemon.RLimit.NumFile))
 		if err != nil {
 			klog.Errorf("set rlimit err: %s", err)
 			return nil, err
@@ -50,8 +51,10 @@ func NewLiaison() (*Liaison, error) {
 	if err != nil {
 		return nil, err
 	}
+	// traffic collector
+	trafficCollector := traffic.NewTrafficCollector(repo)
 	// frontier bound
-	frontierBound, err := frontierbound.NewFrontierBound(config.Conf, repo)
+	frontierBound, err := frontierbound.NewFrontierBound(config.Conf, repo, trafficCollector)
 	if err != nil {
 		return nil, err
 	}
@@ -75,16 +78,17 @@ func NewLiaison() (*Liaison, error) {
 		return nil, err
 	}
 	// entry layer
-	entry, err := entry.NewEntry(config.Conf, controlPlane)
+	entry, err := entry.NewEntry(config.Conf, controlPlane, trafficCollector)
 	if err != nil {
 		return nil, err
 	}
 	return &Liaison{
-		web:           web,
-		frontierBound: frontierBound,
-		entry:         entry,
-		repo:          repo,
-		iamService:    iamService,
+		web:              web,
+		frontierBound:    frontierBound,
+		entry:            entry,
+		repo:             repo,
+		iamService:       iamService,
+		trafficCollector: trafficCollector,
 	}, nil
 }
 
@@ -104,6 +108,9 @@ func (l *Liaison) Close() error {
 	err = l.entry.Close()
 	if err != nil {
 		return err
+	}
+	if l.trafficCollector != nil {
+		l.trafficCollector.Stop()
 	}
 	err = l.repo.Close()
 	if err != nil {

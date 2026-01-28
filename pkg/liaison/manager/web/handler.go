@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	kratoserrors "github.com/go-kratos/kratos/v2/errors"
 	kratoshttp "github.com/go-kratos/kratos/v2/transport/http"
 	v1 "github.com/singchia/liaison/api/v1"
 	"github.com/singchia/liaison/pkg/liaison/manager/iam"
@@ -92,6 +93,15 @@ func (web *web) UpdateDevice(ctx context.Context, req *v1.UpdateDeviceRequest) (
 	return web.controlPlane.UpdateDevice(ctx, req)
 }
 
+// @Summary DeleteDevice
+// @Tags 1.0
+// @Param id path int true "device id"
+// @Success 200 {object} v1.DeleteDeviceResponse
+// @Router /api/v1/devices/{id} [delete]
+func (web *web) DeleteDevice(ctx context.Context, req *v1.DeleteDeviceRequest) (*v1.DeleteDeviceResponse, error) {
+	return web.controlPlane.DeleteDevice(ctx, req)
+}
+
 //-- Application --//
 
 // @Summary CreateApplication
@@ -170,6 +180,17 @@ func (web *web) DeleteProxy(ctx context.Context, req *v1.DeleteProxyRequest) (*v
 	return web.controlPlane.DeleteProxy(ctx, req)
 }
 
+//-- Traffic Metric --//
+
+// @Summary ListTrafficMetrics
+// @Tags 1.0
+// @Param params query v1.ListTrafficMetricsRequest true "queries"
+// @Success 200 {object} v1.ListTrafficMetricsResponse
+// @Router /api/v1/traffic-metrics [get]
+func (web *web) ListTrafficMetrics(ctx context.Context, req *v1.ListTrafficMetricsRequest) (*v1.ListTrafficMetricsResponse, error) {
+	return web.controlPlane.ListTrafficMetrics(ctx, req)
+}
+
 //-- Task --//
 
 // @Summary CreateEdgeScanApplicationTask
@@ -210,6 +231,18 @@ func (web *web) Login(ctx context.Context, req *v1.LoginRequest) (*v1.LoginRespo
 
 	resp, err := web.iamService.Login(iamReq, loginIP)
 	if err != nil {
+		// 根据错误类型返回适当的 HTTP 状态码
+		errMsg := err.Error()
+		if errMsg == "invalid password" || errMsg == "密码错误" {
+			return nil, kratoserrors.New(401, "INVALID_PASSWORD", "密码错误")
+		}
+		if errMsg == "user not found" || errMsg == "用户不存在" {
+			return nil, kratoserrors.New(401, "USER_NOT_FOUND", "用户不存在")
+		}
+		if errMsg == "user account is disabled" || errMsg == "用户账户已禁用" {
+			return nil, kratoserrors.New(403, "ACCOUNT_DISABLED", "用户账户已禁用")
+		}
+		// 其他错误返回 500
 		return nil, err
 	}
 

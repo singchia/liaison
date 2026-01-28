@@ -36,9 +36,13 @@ const Login: React.FC = () => {
     <div className="login-container">
       <div className="login-content">
         <div className="login-header">
+          <img 
+            src="/liaison.png" 
+            alt="Liaison" 
+            className="login-logo-img"
+          />
           <span className="login-title">{APP_NAME}</span>
         </div>
-        <div className="login-desc">网络马上通达</div>
         
         <LoginForm
           style={{

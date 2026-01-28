@@ -11,6 +11,8 @@ type Proxy struct {
 	ProxyPort int
 	// 边缘ID
 	EdgeID uint64
+	// 应用ID（用于流量统计）
+	ApplicationID uint
 	// 目的地址
 	Dst string
 }
@@ -80,7 +82,9 @@ type ScanApplicationTaskResult struct {
 }
 
 type Dst struct {
-	Addr string `json:"addr"`
+	Addr          string `json:"addr"`
+	ApplicationID uint   `json:"application_id,omitempty"` // 应用ID（用于流量统计）
+	ProxyID       uint   `json:"proxy_id,omitempty"`       // 代理ID（用于流量统计）
 }
 
 type PullTaskScanApplicationRequest struct {
@@ -92,4 +96,30 @@ type PullTaskScanApplicationResponse struct {
 	Nets     []string `json:"nets"`
 	Port     int      `json:"port"`
 	Protocol string   `json:"protocol"`
+}
+
+// ping device
+type GetEdgeDiscoveredDevicesRequest struct {
+	EdgeID uint64 `json:"edge_id"`
+}
+
+type DiscoveredDevice struct {
+	DeviceID uint64 `json:"device_id"`
+	IP       string `json:"ip"` // 设备的 IP 地址（用于 ping）
+}
+
+type GetEdgeDiscoveredDevicesResponse struct {
+	Devices []DiscoveredDevice `json:"devices"`
+}
+
+type UpdateDeviceHeartbeatRequest struct {
+	DeviceID uint64 `json:"device_id"`
+}
+
+// traffic metric
+type ReportTrafficMetricRequest struct {
+	ProxyID       uint  `json:"proxy_id"`
+	ApplicationID uint  `json:"application_id"`
+	BytesIn       int64 `json:"bytes_in"`
+	BytesOut      int64 `json:"bytes_out"`
 }

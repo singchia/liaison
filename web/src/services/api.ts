@@ -96,6 +96,13 @@ export async function updateDevice(id: number, data: API.DeviceUpdateParams) {
   });
 }
 
+/** 删除设备 DELETE /v1/devices/:id */
+export async function deleteDevice(id: number) {
+  return request<API.Response>(`/api/v1/devices/${id}`, {
+    method: 'DELETE',
+  });
+}
+
 /** 获取连接器列表 GET /v1/edges */
 export async function getEdgeList(params?: API.EdgeListParams) {
   return request<API.Response<API.EdgeListResult>>('/api/v1/edges', {
@@ -191,5 +198,13 @@ export async function updateProxy(id: number, data: API.ProxyUpdateParams) {
 export async function deleteProxy(id: number) {
   return request<API.Response>(`/api/v1/proxies/${id}`, {
     method: 'DELETE',
+  });
+}
+
+/** 获取流量监控列表 GET /v1/traffic-metrics */
+export async function getTrafficMetricsList(params?: API.TrafficMetricsListParams) {
+  return request<API.Response<API.TrafficMetricsListResult>>('/api/v1/traffic-metrics', {
+    method: 'GET',
+    params,
   });
 }

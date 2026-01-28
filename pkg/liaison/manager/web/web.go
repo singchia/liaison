@@ -89,11 +89,35 @@ func (web *web) serveFiles(conf *config.Configuration, srv *kratoshttp.Server) e
 		})
 	}
 
+	// PowerShell 安装脚本服务 - 从 /opt/liaison/edge/install.ps1 提供服务
+	installPSScriptPath := filepath.Join(edgeDirAbs, "install.ps1")
+	if _, err := os.Stat(installPSScriptPath); err == nil {
+		srv.HandleFunc("/install.ps1", func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, installPSScriptPath)
+		})
+	}
+
+	// Windows 批处理安装脚本服务 - 从 /opt/liaison/edge/install.bat 提供服务
+	installBatScriptPath := filepath.Join(edgeDirAbs, "install.bat")
+	if _, err := os.Stat(installBatScriptPath); err == nil {
+		srv.HandleFunc("/install.bat", func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, installBatScriptPath)
+		})
+	}
+
 	// 卸载脚本服务 - 从 /opt/liaison/edge/uninstall.sh 提供服务
 	uninstallScriptPath := filepath.Join(edgeDirAbs, "uninstall.sh")
 	if _, err := os.Stat(uninstallScriptPath); err == nil {
 		srv.HandleFunc("/uninstall.sh", func(w http.ResponseWriter, r *http.Request) {
 			http.ServeFile(w, r, uninstallScriptPath)
+		})
+	}
+
+	// PowerShell 卸载脚本服务 - 从 /opt/liaison/edge/uninstall.ps1 提供服务
+	uninstallPSScriptPath := filepath.Join(edgeDirAbs, "uninstall.ps1")
+	if _, err := os.Stat(uninstallPSScriptPath); err == nil {
+		srv.HandleFunc("/uninstall.ps1", func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, uninstallPSScriptPath)
 		})
 	}
 
@@ -115,13 +139,16 @@ func (web *web) serveFiles(conf *config.Configuration, srv *kratoshttp.Server) e
 		return err
 	}
 	fileServer := http.FileServer(http.Dir(webDirAbs))
-	// 前端文件服务：作为 fallback，处理所有非 API、非 install.sh、非 uninstall.sh、非 packages 的路径
+	// 前端文件服务：作为 fallback，处理所有非 API、非 install.sh、非 install.ps1、非 uninstall.sh、非 packages 的路径
 	srv.HandlePrefix("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
-		// 如果不是 API、install.sh、uninstall.sh 和 packages 路径，就走 web 服务
+		// 如果不是 API、install.sh、install.ps1、install.bat、uninstall.sh、uninstall.ps1 和 packages 路径，就走 web 服务
 		if !strings.HasPrefix(path, "/api/") &&
 			path != "/install.sh" &&
+			path != "/install.ps1" &&
+			path != "/install.bat" &&
 			path != "/uninstall.sh" &&
+			path != "/uninstall.ps1" &&
 			!strings.HasPrefix(path, "/packages/") {
 			// 检查文件是否存在
 

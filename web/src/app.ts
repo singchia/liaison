@@ -3,6 +3,7 @@ import { Dropdown, message } from 'antd';
 import { LogoutOutlined, SettingOutlined } from '@ant-design/icons';
 import React from 'react';
 import { getCurrentUser, logout } from '@/services/api';
+import './global.less';
 
 if (process.env.NODE_ENV === 'development') {
   const filterMessages = [
@@ -98,7 +99,13 @@ export const layout = () => {
   ];
 
   return {
-    logo: false, // 不显示 logo 图标
+    logo: React.createElement('img', {
+      src: '/liaison.png',
+      alt: 'Liaison',
+      style: {
+        height: 52,
+      },
+    }),
     menu: {
       locale: false,
     },
@@ -110,16 +117,13 @@ export const layout = () => {
     contentWidth: 'Fluid',
     colorPrimary: '#1890ff',
     siderWidth: 208,
-    title: 'Liaison',
-    titleRender: () => {
-      return React.createElement(
-        'div',
-        { style: { display: 'flex', alignItems: 'center', color: '#1890ff', fontWeight: 600, fontSize: '18px' } },
-        'Liaison'
-      );
-    },
+    title: React.createElement('span', {
+      style: {
+        color: '#1890ff',
+      },
+    }, 'Liaison'),
     avatarProps: {
-      src: 'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
+      src: '/avatar.svg',
       size: 'small',
       title: 'Admin',
       render: (_props: any, avatarChildren: React.ReactNode) => {
@@ -132,6 +136,13 @@ export const layout = () => {
     },
     waterMarkProps: {
       content: 'Liaison',
+      fontSize: 14,
+      fontColor: 'rgba(0, 0, 0, 0.06)',
+      gapX: 100,
+      gapY: 100,
+      rotate: -22,
+      fontStyle: 'normal',
+      fontWeight: 'normal',
     },
   };
 };
@@ -165,14 +176,20 @@ export const request: RequestConfig = {
   errorConfig: {
     errorHandler: (error: any) => {
       const { response } = error;
-      if (response?.status === 401) {
+      if (response?.status === 401 || response?.status === 403) {
         localStorage.removeItem('token');
         message.error('登录已过期，请重新登录');
         history.push('/login');
-      } else if (response?.status === 403) {
-        message.error('没有权限访问');
       } else if (response?.status === 500) {
-        message.error('服务器错误');
+        // 检查是否是认证相关的500错误
+        const errorMessage = error?.response?.data?.message || error?.message || '';
+        if (errorMessage.includes('authentication') || errorMessage.includes('token') || errorMessage.includes('unauthorized')) {
+          localStorage.removeItem('token');
+          message.error('登录已过期，请重新登录');
+          history.push('/login');
+        } else {
+          message.error('服务器错误');
+        }
       } else if (!response) {
         message.error('网络异常');
       }

@@ -1,6 +1,10 @@
 package dao
 
-import "github.com/singchia/liaison/pkg/liaison/repo/model"
+import (
+	"time"
+
+	"github.com/singchia/liaison/pkg/liaison/repo/model"
+)
 
 type Query struct {
 	// Pagination
@@ -22,8 +26,9 @@ type ListTasksQuery struct {
 
 type ListApplicationsQuery struct {
 	Query
-	DeviceIDs []uint
-	IDs       []uint
+	DeviceIDs       []uint
+	IDs             []uint
+	ApplicationType string
 }
 
 type ListDevicesQuery struct {
@@ -42,6 +47,15 @@ type ListProxiesQuery struct {
 
 type ListEdgesQuery struct {
 	Query
-	DeviceIDs []uint
+	DeviceIDs []uint  // 已废弃，保留以兼容
+	EdgeIDs   []uint64 // 通过 EdgeDevice 关系表查询的 Edge IDs
 	Name      string
+}
+
+type ListTrafficMetricsQuery struct {
+	ApplicationIDs []uint
+	ProxyIDs       []uint
+	StartTime      *time.Time
+	EndTime        *time.Time
+	Limit          int
 }
