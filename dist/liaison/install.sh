@@ -135,6 +135,12 @@ if [[ "$LANG_CODE" == "zh_CN" ]]; then
     MSG_USING_DEFAULT="使用默认值"
     MSG_PORT_INPUT_HINT="提示: 请输入端口号 (1-65535)，或直接按回车使用默认值"
     MSG_PORT_PROMPT="端口号"
+    MSG_CONFIG_PUBLIC_ADDR="配置公网地址或域名..."
+    MSG_ENTER_PUBLIC_ADDR="请输入公网 IP 地址或域名 (默认:"
+    MSG_PUBLIC_ADDR_SET="公网地址设置为:"
+    MSG_ADDR_INPUT_HINT="提示: 请输入公网 IP 地址或域名，或直接按回车使用检测到的 IP"
+    MSG_ADDR_PROMPT="公网地址"
+    MSG_INPUT_RECEIVED="已接收输入"
 else
     # English strings
     MSG_INSTALLING="Installing Liaison Service..."
@@ -223,6 +229,12 @@ else
     MSG_USING_DEFAULT="Using default value"
     MSG_PORT_INPUT_HINT="Hint: Enter a port number (1-65535), or press Enter to use default value"
     MSG_PORT_PROMPT="Port"
+    MSG_CONFIG_PUBLIC_ADDR="Configuring public address or domain name..."
+    MSG_ENTER_PUBLIC_ADDR="Enter the public IP address or domain name (default:"
+    MSG_PUBLIC_ADDR_SET="Public address set to:"
+    MSG_ADDR_INPUT_HINT="Hint: Enter a public IP address or domain name, or press Enter to use detected IP"
+    MSG_ADDR_PROMPT="Public address"
+    MSG_INPUT_RECEIVED="Input received"
 fi
 
 # Configuration
@@ -306,22 +318,12 @@ else
     echo -e "${YELLOW}${MSG_WARNING_BIN_NOT_FOUND}${NC}"
 fi
 
-# Get public IP address
-echo -e "${YELLOW}${MSG_DETECTING_IP}${NC}"
-PUBLIC_ADDR=$(curl -s --max-time 5 ifconfig.me 2>/dev/null || curl -s --max-time 5 ifconfig.co 2>/dev/null || echo "localhost")
-if [ -z "$PUBLIC_ADDR" ] || [ "$PUBLIC_ADDR" = "localhost" ]; then
-    echo -e "${YELLOW}${MSG_IP_MANUAL}${NC}"
-    echo -e "${YELLOW}${MSG_IP_MANUAL_INSTR}${NC}"
-    PUBLIC_ADDR="localhost"
-else
-    echo -e "${GREEN}${MSG_IP_DETECTED} ${BOLD}${CYAN}$PUBLIC_ADDR${NC}${GREEN}${NC}"
-    echo -e "${YELLOW}${MSG_IP_WARNING} $CONFIG_DIR/liaison.yaml ${NC}"
-fi
-
 # Function to read input with countdown
 read_with_countdown() {
     local prompt="$1"
     local default_value="$2"
+    local input_hint="${3:-$MSG_PORT_INPUT_HINT}"
+    local input_prompt="${4:-$MSG_PORT_PROMPT}"
     local timeout=30
     local input=""
     local time_unit="秒"
@@ -337,7 +339,7 @@ read_with_countdown() {
     echo -e "${BOLD}${YELLOW}═══════════════════════════════════════════════════════════════${NC}" >&2
     echo -e "${BOLD}${CYAN}${prompt} ${default_value})${NC}" >&2
     echo -e "${BOLD}${YELLOW}═══════════════════════════════════════════════════════════════${NC}" >&2
-    echo -e "${YELLOW}${MSG_PORT_INPUT_HINT} ${default_value}${NC}" >&2
+    echo -e "${YELLOW}${input_hint}${NC}" >&2
     echo "" >&2
     
     # Save terminal settings
@@ -347,7 +349,7 @@ read_with_countdown() {
     echo -e "${YELLOW}${MSG_COUNTDOWN}: ${remaining}${time_unit} (${MSG_USE_DEFAULT})${NC}" >&2
     
     # Show input prompt on the line below countdown
-    echo -ne "${BOLD}${CYAN}>>> ${MSG_PORT_PROMPT} [${default_value}]: ${NC}" >&2
+    echo -ne "${BOLD}${CYAN}>>> ${input_prompt} [${default_value}]: ${NC}" >&2
     
     # Use a background process to update countdown (only updates the countdown line)
     # Use save/restore cursor position to avoid affecting input line
@@ -428,6 +430,28 @@ elif ! [[ "$FRONTIER_PORT" =~ ^[0-9]+$ ]] || [ "$FRONTIER_PORT" -lt 1 ] || [ "$F
     FRONTIER_PORT="$DEFAULT_FRONTIER_PORT"
 fi
 echo -e "${GREEN}${MSG_FRONTIER_PORT_SET} ${BOLD}${CYAN}${FRONTIER_PORT}${NC}${GREEN}${NC}"
+
+# Get public IP address or domain
+echo ""
+echo -e "${YELLOW}${MSG_DETECTING_IP}${NC}"
+DETECTED_PUBLIC_ADDR=$(curl -s --max-time 5 ifconfig.me 2>/dev/null || curl -s --max-time 5 ifconfig.co 2>/dev/null || echo "")
+if [ -z "$DETECTED_PUBLIC_ADDR" ] || [ "$DETECTED_PUBLIC_ADDR" = "localhost" ]; then
+    echo -e "${YELLOW}${MSG_IP_MANUAL}${NC}"
+    echo -e "${YELLOW}${MSG_IP_MANUAL_INSTR}${NC}"
+    PUBLIC_ADDR="localhost"
+else
+    echo -e "${GREEN}${MSG_IP_DETECTED} ${BOLD}${CYAN}$DETECTED_PUBLIC_ADDR${NC}${GREEN}${NC}"
+    # Prompt user to input public address (IP or domain) with countdown
+    echo ""
+    echo -e "${YELLOW}${MSG_CONFIG_PUBLIC_ADDR}${NC}"
+    PUBLIC_ADDR=$(read_with_countdown "${MSG_ENTER_PUBLIC_ADDR}" "$DETECTED_PUBLIC_ADDR" "$MSG_ADDR_INPUT_HINT" "$MSG_ADDR_PROMPT")
+    # If user input is empty, use detected IP
+    if [ -z "$PUBLIC_ADDR" ]; then
+        PUBLIC_ADDR="$DETECTED_PUBLIC_ADDR"
+    fi
+    echo -e "${GREEN}${MSG_PUBLIC_ADDR_SET} ${BOLD}${CYAN}${PUBLIC_ADDR}${NC}${GREEN}${NC}"
+    echo -e "${YELLOW}${MSG_IP_WARNING} $CONFIG_DIR/liaison.yaml ${NC}"
+fi
 
 # Generate server URL based on port
 if [[ "$MANAGER_PORT" == "443" ]]; then
