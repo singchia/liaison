@@ -34,6 +34,26 @@ func (fb *frontierBound) reportDeviceUsage(ctx context.Context, req geminio.Requ
 		rsp.SetError(err)
 		return
 	}
+
+	// 更新 edge 心跳（edge 定期上报设备信息时更新心跳）
+	// 优先从 request 的 ClientID 获取
+	var edgeID uint64
+	if clientID := req.ClientID(); clientID > 0 {
+		edgeID = clientID
+	} else {
+		// 如果无法从 ClientID 获取，通过设备查找关联的 edge
+		hostType := model.EdgeDeviceRelationHost
+		edgeDevices, err := fb.repo.GetEdgeDevicesByDeviceID(deviceModel.ID, &hostType)
+		if err == nil && len(edgeDevices) > 0 {
+			edgeID = edgeDevices[0].EdgeID
+		}
+	}
+
+	if edgeID > 0 {
+		fb.updateEdgeHeartbeat(edgeID)
+	} else {
+		log.Debugf("cannot get edgeID from device usage request for heartbeat update")
+	}
 }
 
 // 上报设备
@@ -237,4 +257,6 @@ func (fb *frontierBound) reportDevice(ctx context.Context, req geminio.Request, 
 		return
 	}
 	committed = true
+
+	fb.updateEdgeHeartbeat(req.ClientID())
 }

@@ -44,7 +44,6 @@ func (fb *frontierBound) EmitScanApplications(ctx context.Context, taskID uint, 
 }
 
 func (fb *frontierBound) reportTaskScanApplication(ctx context.Context, req geminio.Request, rsp geminio.Response) {
-
 	var task proto.ScanApplicationTaskResult
 	err := json.Unmarshal(req.Data(), &task)
 	if err != nil {
