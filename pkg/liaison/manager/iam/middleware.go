@@ -66,7 +66,11 @@ func isIAMEndpoint(path string) bool {
 	noAuthPaths := []string{
 		"/api/v1/iam/login",  // 用户登录
 		"/api/v1/iam/logout", // 用户登出
-		"/install.sh",        // 安装脚本
+		"/install.sh",        // 安装脚本 (Linux/macOS)
+		"/install.ps1",       // 安装脚本 (Windows PowerShell)
+		"/install.bat",       // 安装脚本 (Windows Batch)
+		"/uninstall.sh",      // 卸载脚本 (Linux/macOS)
+		"/uninstall.ps1",      // 卸载脚本 (Windows PowerShell)
 	}
 
 	// 安装包路径不需要认证

@@ -23,6 +23,7 @@ import {
   Result,
   Alert,
   Select,
+  Tabs,
 } from 'antd';
 import {
   CopyOutlined,
@@ -61,6 +62,7 @@ const ConnectorPage: React.FC = () => {
   const [scanTask, setScanTask] = useState<API.EdgeScanApplicationTask>();
   const [scanning, setScanning] = useState(false);
   const [deviceOptions, setDeviceOptions] = useState<{ label: string; value: string }[]>([]);
+  const [installOS, setInstallOS] = useState<'windows' | 'other'>('other');
 
   const reload = () => actionRef.current?.reload();
 
@@ -585,15 +587,67 @@ const ConnectorPage: React.FC = () => {
                 </div>
                 <div className="mt-4">
                   <Text strong>安装命令:</Text>
-                  <div className="bg-gray-100 p-3 rounded-lg mt-2">
-                    <Paragraph
-                      copyable
-                      className="mb-0 text-sm"
-                      style={{ marginBottom: 0, wordBreak: 'break-all' }}
-                    >
-                      {accessKeys.command || `curl -sSL http://49.232.250.11:8080/install.sh | bash -s -- --access-key=${accessKeys.access_key} --secret-key=${accessKeys.secret_key}`}
-                    </Paragraph>
-                  </div>
+                  <Tabs
+                    activeKey={installOS}
+                    onChange={(key) => setInstallOS(key as 'windows' | 'other')}
+                    items={[
+                      {
+                        key: 'other',
+                        label: 'Linux / macOS',
+                        children: (
+                          <div className="bg-gray-100 p-3 rounded-lg mt-2">
+                            <Paragraph
+                              copyable
+                              className="mb-0 text-sm"
+                              style={{ marginBottom: 0, wordBreak: 'break-all' }}
+                            >
+                              {accessKeys.command || `curl -k -sSL https://49.232.250.11/install.sh | bash -s -- --access-key=${accessKeys.access_key} --secret-key=${accessKeys.secret_key} --server-http-addr=49.232.250.11 --server-edge-addr=49.232.250.11:30012`}
+                            </Paragraph>
+                          </div>
+                        ),
+                      },
+                      {
+                        key: 'windows',
+                        label: 'Windows',
+                        children: (
+                          <div className="bg-gray-100 p-3 rounded-lg mt-2">
+                            <Paragraph
+                              copyable
+                              className="mb-0 text-sm"
+                              style={{ marginBottom: 0, wordBreak: 'break-all' }}
+                            >
+                              {(() => {
+                                // 从后端命令中提取服务器地址，或使用默认值
+                                let serverUrl = 'https://49.232.250.11';
+                                let httpAddr = '49.232.250.11';
+                                let edgeAddr = '49.232.250.11:30012';
+                                
+                                if (accessKeys.command) {
+                                  // 从命令中提取 URL（例如：curl -k -sSL https://xxx/install.sh）
+                                  const urlMatch = accessKeys.command.match(/https?:\/\/[^\s\/]+/);
+                                  if (urlMatch) {
+                                    serverUrl = urlMatch[0];
+                                    httpAddr = serverUrl.replace(/^https?:\/\//, '');
+                                    // 提取 edge 地址（--server-edge-addr=xxx）
+                                    const edgeMatch = accessKeys.command.match(/--server-edge-addr=([^\s]+)/);
+                                    if (edgeMatch) {
+                                      edgeAddr = edgeMatch[1];
+                                    }
+                                  }
+                                }
+                                
+                                // 使用 curl.exe 下载脚本，然后使用 PowerShell 执行（Windows 10+ 内置）
+                                // 注意：PowerShell 中 curl 是 Invoke-WebRequest 的别名，需要使用 curl.exe
+                                // 使用分号分隔命令，PowerShell 不支持 &&
+                                const ps1Url = `${serverUrl}/install.ps1`;
+                                return `curl.exe -fsSL "${ps1Url}" -o install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1 -AccessKey "${accessKeys.access_key}" -SecretKey "${accessKeys.secret_key}" -ServerHttpAddr "${httpAddr}" -ServerEdgeAddr "${edgeAddr}"`;
+                              })()}
+                            </Paragraph>
+                          </div>
+                        ),
+                      },
+                    ]}
+                  />
                 </div>
                 <Alert
                   message="请妥善保管以上密钥信息，关闭后将无法再次查看"

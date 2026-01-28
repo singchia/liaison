@@ -118,6 +118,7 @@ func IsLinuxPhysicalInterface(iface *net.Interface) bool {
 }
 
 // IsMacPhysicalInterface macOS 专用的物理接口判断
+// 注意：不检查 MAC 是否是本地管理的，即使 MAC 是本地管理的也会被获取（用于指纹生成）
 func IsMacPhysicalInterface(iface *net.Interface) bool {
 	if runtime.GOOS != "darwin" {
 		return false
@@ -138,11 +139,8 @@ func IsMacPhysicalInterface(iface *net.Interface) bool {
 		return false
 	}
 
-	// 4. MAC 地址不能是本地管理的
-	mac := iface.HardwareAddr.String()
-	if IsLocallyAdministeredMAC(mac) {
-		return false
-	}
+	// 注意：不再检查 MAC 是否是本地管理的，因为某些物理网卡也可能使用本地管理的 MAC
+	// 这样可以确保 en0, en1 等主要网卡都能被获取
 
 	return true
 }
@@ -150,6 +148,7 @@ func IsMacPhysicalInterface(iface *net.Interface) bool {
 // isVirtualInterface 判断是否是虚拟网络接口
 // 返回 true 表示是虚拟接口（应该跳过），返回 false 表示是物理接口（应该使用）
 // 根据不同的系统使用不同的判断机制
+// 注意：不检查 UP 标志，即使网卡未UP也会被获取（用于指纹生成）
 func isVirtualInterface(iface *net.Interface) bool {
 	// 1. 排除 loopback 接口
 	if iface.Flags&net.FlagLoopback != 0 {
@@ -161,8 +160,8 @@ func isVirtualInterface(iface *net.Interface) bool {
 		return true
 	}
 
-	// 3. 只使用有 UP 标志且不是点对点接口
-	if iface.Flags&net.FlagUp == 0 || iface.Flags&net.FlagPointToPoint != 0 {
+	// 3. 排除点对点接口
+	if iface.Flags&net.FlagPointToPoint != 0 {
 		return true
 	}
 

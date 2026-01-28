@@ -14,7 +14,6 @@ NC='\033[0m' # No Color
 # 默认配置
 SERVER_HTTP_ADDR=""  # HTTP下载地址（host:port，用于下载安装包）
 SERVER_EDGE_ADDR=""  # Edge连接地址（host:port，用于建立长连接）
-PACKAGES_DIR="/opt/liaison/packages"
 INSTALL_DIR="/opt/liaison"
 BIN_DIR="/opt/liaison/bin"
 CONFIG_DIR="/opt/liaison/conf"
@@ -116,6 +115,48 @@ detect_os() {
 OS_ARCH=$(detect_os)
 echo -e "${GREEN}Detected OS/Arch: $OS_ARCH${NC}"
 
+# 根据操作系统设置正确的路径
+if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]] || [[ "$OSTYPE" == "win32" ]]; then
+    # Windows 系统：使用标准 Windows 路径
+    # 如果使用 Git Bash/Cygwin，cygpath 可以将路径转换为 Windows 格式
+    if command -v cygpath >/dev/null 2>&1; then
+        # 使用 cygpath 转换路径（/c/Program Files/Liaison）
+        INSTALL_DIR=$(cygpath -w "/c/Program Files/Liaison" 2>/dev/null || echo "C:\\Program Files\\Liaison")
+        BIN_DIR=$(cygpath -w "/c/Program Files/Liaison/bin" 2>/dev/null || echo "C:\\Program Files\\Liaison\\bin")
+        CONFIG_DIR=$(cygpath -w "/c/Program Files/Liaison/conf" 2>/dev/null || echo "C:\\Program Files\\Liaison\\conf")
+        LOG_DIR=$(cygpath -w "/c/Program Files/Liaison/logs" 2>/dev/null || echo "C:\\Program Files\\Liaison\\logs")
+    else
+        # 没有 cygpath，使用标准 Windows 路径
+        INSTALL_DIR="C:\\Program Files\\Liaison"
+        BIN_DIR="C:\\Program Files\\Liaison\\bin"
+        CONFIG_DIR="C:\\Program Files\\Liaison\\conf"
+        LOG_DIR="C:\\Program Files\\Liaison\\logs"
+    fi
+    echo -e "${YELLOW}Windows 安装路径: ${INSTALL_DIR}${NC}"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS 系统：使用标准 macOS 路径
+    BIN_DIR="/usr/local/bin"
+    CONFIG_DIR="${HOME}/Library/Application Support/liaison"
+    LOG_DIR="${HOME}/Library/Logs/liaison"
+    INSTALL_DIR="/usr/local"  # 用于工作目录等
+    echo -e "${YELLOW}macOS 安装路径:${NC}"
+    echo -e "${YELLOW}  二进制: ${BIN_DIR}${NC}"
+    echo -e "${YELLOW}  配置: ${CONFIG_DIR}${NC}"
+    echo -e "${YELLOW}  日志: ${LOG_DIR}${NC}"
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    # Linux 系统：使用标准 Linux 路径
+    BIN_DIR="/usr/local/bin"
+    CONFIG_DIR="/etc/liaison"
+    DATA_DIR="/var/lib/liaison"
+    LOG_DIR="/var/log/liaison"
+    INSTALL_DIR="/usr/local"  # 用于工作目录等
+    echo -e "${YELLOW}Linux 安装路径:${NC}"
+    echo -e "${YELLOW}  二进制: ${BIN_DIR}${NC}"
+    echo -e "${YELLOW}  配置: ${CONFIG_DIR}${NC}"
+    echo -e "${YELLOW}  数据: ${DATA_DIR}${NC}"
+    echo -e "${YELLOW}  日志: ${LOG_DIR}${NC}"
+fi
+
 # 确定安装包文件名（统一使用 tar.gz 格式）
 PACKAGE_NAME="liaison-edge-${OS_ARCH}.tar.gz"
 
@@ -188,13 +229,38 @@ fi
 
 # Linux/macOS/Windows 安装
 # 创建必要的目录
-mkdir -p "$BIN_DIR"
-mkdir -p "$CONFIG_DIR"
-mkdir -p "$LOG_DIR"
-
-# 复制二进制文件
-cp "${TMP_DIR}/${BINARY_NAME}" "${BIN_DIR}/liaison-edge"
-chmod +x "${BIN_DIR}/liaison-edge"
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS: 二进制需要 sudo，配置和日志在用户目录下不需要 sudo
+    if ! sudo -n true 2>/dev/null; then
+        echo -e "${YELLOW}需要 sudo 权限来安装二进制文件，请输入密码:${NC}"
+    fi
+    sudo mkdir -p "$BIN_DIR"
+    mkdir -p "${CONFIG_DIR}"
+    mkdir -p "${LOG_DIR}"
+    # 复制二进制文件（需要 sudo）
+    sudo cp "${TMP_DIR}/${BINARY_NAME}" "${BIN_DIR}/${BINARY_NAME}"
+    sudo chmod +x "${BIN_DIR}/${BINARY_NAME}"
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    # Linux 需要 sudo 权限创建系统目录
+    if ! sudo -n true 2>/dev/null; then
+        echo -e "${YELLOW}需要 sudo 权限来创建系统目录，请输入密码:${NC}"
+    fi
+    sudo mkdir -p "$BIN_DIR"
+    sudo mkdir -p "$CONFIG_DIR"
+    sudo mkdir -p "$DATA_DIR"
+    sudo mkdir -p "$LOG_DIR"
+    # 复制二进制文件
+    sudo cp "${TMP_DIR}/${BINARY_NAME}" "${BIN_DIR}/${BINARY_NAME}"
+    sudo chmod +x "${BIN_DIR}/${BINARY_NAME}"
+else
+    # Windows 安装
+    mkdir -p "$BIN_DIR"
+    mkdir -p "$CONFIG_DIR"
+    mkdir -p "$LOG_DIR"
+    # 复制二进制文件
+    cp "${TMP_DIR}/${BINARY_NAME}" "${BIN_DIR}/${BINARY_NAME}"
+    chmod +x "${BIN_DIR}/${BINARY_NAME}"
+fi
 
 # 从模板渲染配置文件
 echo -e "${YELLOW}Rendering configuration file from template...${NC}"
@@ -210,17 +276,39 @@ fi
 
 if [[ -n "$TEMPLATE_FILE" && -f "$TEMPLATE_FILE" ]]; then
     # 替换模板中的变量（使用Edge连接地址）
-    sed -e "s|\${SERVER_ADDR}|${SERVER_EDGE_ADDR}|g" \
-        -e "s|\${ACCESS_KEY}|${ACCESS_KEY}|g" \
-        -e "s|\${SECRET_KEY}|${SECRET_KEY}|g" \
-        -e "s|\${LOG_DIR}|${LOG_DIR}|g" \
-        "$TEMPLATE_FILE" > "${CONFIG_DIR}/liaison-edge.yaml"
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS: 配置文件在用户目录下，不需要 sudo
+        # 确保目录存在
+        mkdir -p "${CONFIG_DIR}"
+        sed -e "s|\${SERVER_ADDR}|${SERVER_EDGE_ADDR}|g" \
+            -e "s|\${ACCESS_KEY}|${ACCESS_KEY}|g" \
+            -e "s|\${SECRET_KEY}|${SECRET_KEY}|g" \
+            -e "s|\${LOG_DIR}|${LOG_DIR}|g" \
+            "$TEMPLATE_FILE" > "${CONFIG_DIR}/liaison-edge.yaml"
+    elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        # Linux 需要 sudo 权限写入 /etc 目录
+        sed -e "s|\${SERVER_ADDR}|${SERVER_EDGE_ADDR}|g" \
+            -e "s|\${ACCESS_KEY}|${ACCESS_KEY}|g" \
+            -e "s|\${SECRET_KEY}|${SECRET_KEY}|g" \
+            -e "s|\${LOG_DIR}|${LOG_DIR}|g" \
+            "$TEMPLATE_FILE" | sudo tee "${CONFIG_DIR}/liaison-edge.yaml" > /dev/null
+    else
+        sed -e "s|\${SERVER_ADDR}|${SERVER_EDGE_ADDR}|g" \
+            -e "s|\${ACCESS_KEY}|${ACCESS_KEY}|g" \
+            -e "s|\${SECRET_KEY}|${SECRET_KEY}|g" \
+            -e "s|\${LOG_DIR}|${LOG_DIR}|g" \
+            "$TEMPLATE_FILE" > "${CONFIG_DIR}/liaison-edge.yaml"
+    fi
     echo -e "${GREEN}Configuration file rendered from template${NC}"
     echo -e "${GREEN}Edge will connect to: ${SERVER_EDGE_ADDR}${NC}"
 else
     echo -e "${YELLOW}Template file not found, creating default configuration...${NC}"
     # 如果模板文件不存在，使用默认配置
-    cat > "${CONFIG_DIR}/liaison-edge.yaml" <<EOF
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS: 配置文件在用户目录下，不需要 sudo
+        # 确保目录存在
+        mkdir -p "${CONFIG_DIR}"
+        tee "${CONFIG_DIR}/liaison-edge.yaml" > /dev/null <<EOF
 manager:
   dial:
     addrs:
@@ -238,11 +326,31 @@ log:
   maxsize: 100
   maxrolls: 10
 EOF
+    else
+        cat > "${CONFIG_DIR}/liaison-edge.yaml" <<EOF
+manager:
+  dial:
+    addrs:
+      - ${SERVER_EDGE_ADDR}
+    network: tcp
+    tls:
+      enable: true
+      insecure_skip_verify: true
+  auth:
+    access_key: "${ACCESS_KEY}"
+    secret_key: "${SECRET_KEY}"
+log:
+  level: info
+  file: ${LOG_DIR}/liaison-edge.log
+  maxsize: 100
+  maxrolls: 10
+EOF
+    fi
     echo -e "${GREEN}Edge will connect to: ${SERVER_EDGE_ADDR}${NC}"
 fi
 
 echo -e "${GREEN}Installation completed!${NC}"
-echo -e "${GREEN}Edge binary: ${BIN_DIR}/liaison-edge${NC}"
+echo -e "${GREEN}Edge binary: ${BIN_DIR}/${BINARY_NAME}${NC}"
 echo -e "${GREEN}Config file: ${CONFIG_DIR}/liaison-edge.yaml${NC}"
 echo ""
 
@@ -285,7 +393,7 @@ After=network.target
 Type=simple
 User=${CURRENT_USER}
 WorkingDirectory=${INSTALL_DIR}
-ExecStart=${BIN_DIR}/liaison-edge -c ${CONFIG_DIR}/liaison-edge.yaml
+ExecStart=${BIN_DIR}/${BINARY_NAME} -c "${CONFIG_DIR}/liaison-edge.yaml"
 Restart=always
 RestartSec=5s
 
@@ -301,14 +409,14 @@ EOF
                 ;;
             2)
                 echo -e "${YELLOW}使用 nohup 后台运行...${NC}"
-                nohup "${BIN_DIR}/liaison-edge" -c "${CONFIG_DIR}/liaison-edge.yaml" > "${LOG_DIR}/liaison-edge.log" 2>&1 &
+                nohup "${BIN_DIR}/${BINARY_NAME}" -c "${CONFIG_DIR}/liaison-edge.yaml" > "${LOG_DIR}/liaison-edge.log" 2>&1 &
                 PID=$!
                 echo -e "${GREEN}Edge 已在后台启动 (PID: $PID)${NC}"
                 ;;
             3)
                 echo -e "${YELLOW}使用 screen 会话运行...${NC}"
                 if command -v screen >/dev/null 2>&1; then
-                    screen -dmS liaison-edge "${BIN_DIR}/liaison-edge" -c "${CONFIG_DIR}/liaison-edge.yaml"
+                    screen -dmS liaison-edge "${BIN_DIR}/${BINARY_NAME}" -c "${CONFIG_DIR}/liaison-edge.yaml"
                     echo -e "${GREEN}Edge 已在 screen 会话中启动${NC}"
                     echo -e "${YELLOW}查看会话: screen -r liaison-edge${NC}"
                 else
@@ -358,7 +466,7 @@ EOF
     <string>com.liaison.edge</string>
     <key>ProgramArguments</key>
     <array>
-        <string>${BIN_DIR}/liaison-edge</string>
+        <string>${BIN_DIR}/${BINARY_NAME}</string>
         <string>-c</string>
         <string>${CONFIG_DIR}/liaison-edge.yaml</string>
     </array>
@@ -394,14 +502,14 @@ EOF
                 ;;
             2)
                 echo -e "${YELLOW}使用 nohup 后台运行...${NC}"
-                nohup "${BIN_DIR}/liaison-edge" -c "${CONFIG_DIR}/liaison-edge.yaml" > "${LOG_DIR}/liaison-edge.log" 2>&1 &
+                nohup "${BIN_DIR}/${BINARY_NAME}" -c "${CONFIG_DIR}/liaison-edge.yaml" > "${LOG_DIR}/liaison-edge.log" 2>&1 &
                 PID=$!
                 echo -e "${GREEN}Edge 已在后台启动 (PID: $PID)${NC}"
                 ;;
             3)
                 echo -e "${YELLOW}使用 screen 会话运行...${NC}"
                 if command -v screen >/dev/null 2>&1; then
-                    screen -dmS liaison-edge "${BIN_DIR}/liaison-edge" -c "${CONFIG_DIR}/liaison-edge.yaml"
+                    screen -dmS liaison-edge "${BIN_DIR}/${BINARY_NAME}" -c "${CONFIG_DIR}/liaison-edge.yaml"
                     echo -e "${GREEN}Edge 已在 screen 会话中启动${NC}"
                     echo -e "${YELLOW}查看会话: screen -r liaison-edge${NC}"
                 else
@@ -436,7 +544,7 @@ EOF
         case $choice in
             1)
                 echo -e "${YELLOW}使用 nohup 后台运行...${NC}"
-                nohup "${BIN_DIR}/liaison-edge.exe" -c "${CONFIG_DIR}/liaison-edge.yaml" > "${LOG_DIR}/liaison-edge.log" 2>&1 &
+                nohup "${BIN_DIR}/${BINARY_NAME}" -c "${CONFIG_DIR}/liaison-edge.yaml" > "${LOG_DIR}/liaison-edge.log" 2>&1 &
                 PID=$!
                 echo -e "${GREEN}Edge 已在后台启动 (PID: $PID)${NC}"
                 ;;
