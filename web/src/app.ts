@@ -10,7 +10,7 @@ if (process.env.NODE_ENV === 'development') {
     'findDOMNode is deprecated',
     'Static function can not consume context',
   ];
-  
+
   const shouldFilter = (args: any[]) => {
     const msg = args[0];
     if (typeof msg === 'string') {
@@ -21,12 +21,12 @@ if (process.env.NODE_ENV === 'development') {
 
   const originalWarn = console.warn;
   const originalError = console.error;
-  
+
   console.warn = (...args) => {
     if (shouldFilter(args)) return;
     originalWarn.apply(console, args);
   };
-  
+
   console.error = (...args) => {
     if (shouldFilter(args)) return;
     originalError.apply(console, args);
@@ -79,7 +79,7 @@ const handleLogout = async () => {
 };
 
 // 布局配置
-export const layout = () => {
+export const layout = ({ initialState }: any) => {
   const dropdownMenuItems = [
     {
       key: 'settings',
@@ -117,15 +117,11 @@ export const layout = () => {
     contentWidth: 'Fluid',
     colorPrimary: '#1890ff',
     siderWidth: 208,
-    title: React.createElement('span', {
-      style: {
-        color: '#1890ff',
-      },
-    }, 'Liaison'),
+    title: 'Liaison',
     avatarProps: {
       src: '/avatar.svg',
       size: 'small',
-      title: 'Admin',
+      title: initialState?.currentUser?.name || 'Admin',
       render: (_props: any, avatarChildren: React.ReactNode) => {
         return React.createElement(
           Dropdown,

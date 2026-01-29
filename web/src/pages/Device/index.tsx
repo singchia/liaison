@@ -77,6 +77,7 @@ const DevicePage: React.FC = () => {
     {
       title: '设备名称',
       dataIndex: 'name',
+      width: 200,
       ellipsis: true,
       fieldProps: {
         placeholder: '请输入设备名称',
@@ -109,7 +110,7 @@ const DevicePage: React.FC = () => {
     {
       title: '版本',
       dataIndex: 'version',
-      width: 100,
+      width: 180,
       search: false,
     },
     {
@@ -137,6 +138,7 @@ const DevicePage: React.FC = () => {
       title: '网卡',
       dataIndex: 'interfaces',
       search: false,
+      width: 250,
       ellipsis: true,
       render: (_, record) => {
         const interfaces = record.interfaces;
@@ -168,6 +170,7 @@ const DevicePage: React.FC = () => {
     {
       title: '描述',
       dataIndex: 'description',
+      width: 200,
       ellipsis: true,
       search: false,
     },
@@ -260,8 +263,8 @@ const DevicePage: React.FC = () => {
               { title: 'CPU', dataIndex: 'cpu', render: (cpu) => `${cpu} 核` },
               { title: '内存', dataIndex: 'memory', render: (memory) => formatMBSize(memory as number) },
               { title: '磁盘', dataIndex: 'disk', render: (disk) => formatMBSize(disk as number) },
-              { 
-                title: '网卡信息', 
+              {
+                title: '网卡信息',
                 dataIndex: 'interfaces',
                 render: (_, record) => {
                   const interfaces = record.interfaces;
@@ -271,8 +274,8 @@ const DevicePage: React.FC = () => {
                       {interfaces.map((iface, index) => {
                         if (!iface || !iface.name) return null;
                         // 过滤出 IPv4 地址
-                        const ipv4 = Array.isArray(iface.ip) 
-                          ? iface.ip.filter((ip: string) => ip && !ip.includes(':')) 
+                        const ipv4 = Array.isArray(iface.ip)
+                          ? iface.ip.filter((ip: string) => ip && !ip.includes(':'))
                           : [];
                         return (
                           <div key={index}>
