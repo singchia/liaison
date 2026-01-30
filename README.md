@@ -2,7 +2,7 @@
 
 # 🔗 Liaison
 
-**让网络马上通达，轻松连接分布在不同位置的设备与应用**
+**Network connectivity made simple - Easily connect devices and applications across different locations**
 
 [![Go](https://github.com/singchia/liaison/actions/workflows/go.yml/badge.svg)](https://github.com/singchia/liaison/actions/workflows/go.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/singchia/liaison)](https://goreportcard.com/report/github.com/singchia/liaison)
@@ -10,197 +10,197 @@
 [![GitHub stars](https://img.shields.io/github/stars/singchia/liaison?style=social)](https://github.com/singchia/liaison/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/singchia/liaison?style=social)](https://github.com/singchia/liaison/network/members)
 
-[English](./README_EN.md) | [中文](./README.md)
+[English](./README.md) | [中文](./README_ZH.md)
 
 ![Dashboard](docs/pages/dashboard.png)
 
-[快速开始](#-快速开始) • [特性](#-核心特性) • [使用场景](#-使用场景) • [文档](#-文档) • [贡献](#-贡献)
+[Quick Start](#-quick-start) • [Features](#-key-features) • [Use Cases](#-use-cases) • [Documentation](#-documentation) • [Contributing](#-contributing)
 
 </div>
 
 ---
 
-## ✨ 核心特性
+## ✨ Key Features
 
 <div align="center">
 
-| 🛡️ **安全可靠** | 🚀 **简单易用** | 🌐 **跨平台** | 🔍 **自动发现** |
+| 🛡️ **Secure & Reliable** | 🚀 **Easy to Use** | 🌐 **Cross-Platform** | 🔍 **Auto Discovery** |
 |:---:|:---:|:---:|:---:|
-| TLS 加密保障连接安全<br/>不暴露内网，随时开启关闭 | Web 界面操作<br/>秒级安装使用 | 支持 Linux/macOS/Windows<br/>x86_64 和 ARM64 | 自动发现设备应用<br/>无需手动配置 |
+| TLS encryption for secure connections<br/>No exposure of internal network, enable/disable anytime | Web-based interface<br/>Install and use in seconds | Supports Linux/macOS/Windows<br/>x86_64 and ARM64 | Auto-discover device applications<br/>Zero manual configuration |
 
 </div>
 
-### 🎯 为什么选择 Liaison？
+### 🎯 Why Choose Liaison?
 
-- **🔒 企业级安全** - TLS 加密传输，内网穿透方案，不暴露内网，安全可控
-- **⚡ 极速部署** - 通过 Web 界面即可完成所有操作，无需复杂配置，秒级安装使用
-- **🌍 全平台支持** - 支持 Linux、macOS、Windows 等多种操作系统和架构
-- **🤖 智能发现** - 自动发现设备上的应用和服务，零配置即可使用
-- **📊 可视化监控** - 实时监控设备状态、流量统计，一目了然
+- **🔒 Enterprise-Grade Security** - TLS encrypted transmission, internal network penetration solution, no internal network exposure, secure and controllable
+- **⚡ Lightning-Fast Deployment** - Complete all operations through the Web interface, no complex configuration, install and use in seconds
+- **🌍 Full Platform Support** - Supports Linux, macOS, Windows and multiple architectures
+- **🤖 Smart Discovery** - Automatically discover applications and services on devices, zero configuration required
+- **📊 Visual Monitoring** - Real-time device status and traffic statistics at a glance
 
 ---
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 📦 安装服务端
+### 📦 Install Server
 
-**1. 下载安装包**
+**1. Download Installation Package**
 
 ```bash
-# 下载最新版本
-wget https://github.com/singchia/liaison/releases/download/v1.2.2/liaison-v1.2.2-linux-amd64.tar.gz
+# Download latest version
+wget https://github.com/singchia/liaison/releases/download/v1.2.0/liaison-v1.2.0-linux-amd64.tar.gz
 
-# 解压
-tar -xzf liaison-v1.2.2-linux-amd64.tar.gz
-cd liaison-v1.2.2-linux-amd64
+# Extract
+tar -xzf liaison-v1.2.0-linux-amd64.tar.gz
+cd liaison-v1.2.0-linux-amd64
 ```
 
-**2. 运行安装脚本**
+**2. Run Installation Script**
 
 ```bash
 sudo ./install.sh
 ```
 
-安装过程中会提示输入公网地址或域名，30 秒内未输入将自动使用检测到的公网 IP。
+During installation, you'll be prompted to enter a public IP address or domain name. If no input is provided within 30 seconds, the detected public IP will be used automatically.
 
-**3. 访问 Web 控制台**
+**3. Access Web Console**
 
-安装完成后，访问 `https://你的公网IP` 即可进入 Web 控制台。
+After installation, visit `https://your-public-ip` to access the Web console.
 
-> 💡 **提示**: 默认管理员账号密码请查看安装脚本输出或配置文件
+> 💡 **Tip**: Default admin credentials can be found in the installation script output or configuration file
 
-### 🔌 安装连接器
+### 🔌 Install Connector
 
-**1. 创建连接器**
+**1. Create Connector**
 
-在 Web 控制台中创建连接器，获取 `Access Key` 和 `Secret Key`。
+Create a connector in the Web console and obtain `Access Key` and `Secret Key`.
 
-**2. 在目标设备上安装**
+**2. Install on Target Device**
 
 **Linux/macOS:**
 ```bash
-curl -sSL https://你的服务地址/install.sh | bash -s -- \
+curl -sSL https://your-server-address/install.sh | bash -s -- \
   --access-key=YOUR_ACCESS_KEY \
   --secret-key=YOUR_SECRET_KEY
 ```
 
 **Windows:**
 ```powershell
-# 下载安装脚本
-Invoke-WebRequest -Uri "https://你的服务地址/install.ps1" -OutFile "install.ps1"
+# Download installation script
+Invoke-WebRequest -Uri "https://your-server-address/install.ps1" -OutFile "install.ps1"
 
-# 运行安装
+# Run installation
 .\install.ps1 -AccessKey "YOUR_ACCESS_KEY" -SecretKey "YOUR_SECRET_KEY"
 ```
 
-**3. 等待自动连接**
+**3. Wait for Auto Connection**
 
-等待几秒钟，设备会自动出现在控制台中，无需额外配置！
+Wait a few seconds, and the device will automatically appear in the console without additional configuration!
 
 ---
 
-## 📋 系统要求
+## 📋 System Requirements
 
-| 组件 | 要求 |
+| Component | Requirements |
 |:---|:---|
-| **服务端** | Linux 系统（推荐 Ubuntu 20.04+ 或 CentOS 7+） |
-| **连接器** | Linux / macOS / Windows（支持 x86_64 和 ARM64 架构） |
-| **浏览器** | Chrome 90+, Firefox 88+, Safari 14+, Edge 90+ |
+| **Server** | Linux system (Ubuntu 20.04+ or CentOS 7+ recommended) |
+| **Connector** | Linux / macOS / Windows (x86_64 and ARM64 architectures supported) |
+| **Browser** | Chrome 90+, Firefox 88+, Safari 14+, Edge 90+ |
 
 ---
 
-## 🏗️ 架构说明
+## 🏗️ Architecture
 
 <div align="center">
 
 ![Architecture](docs/diagrams/liaison.png)
 
-**Liaison 采用中心化架构，通过 Frontier 服务统一管理所有连接器**
+**Liaison uses a centralized architecture, with Frontier service managing all connectors**
 
 </div>
 
-### 核心组件
+### Core Components
 
-- **Manager** - 管理中心，提供 Web 界面和 API
-- **Frontier** - 连接器网关，处理所有连接器的连接和通信
-- **Edge** - 连接器客户端，部署在目标设备上
+- **Manager** - Management center, provides Web interface and API
+- **Frontier** - Connector gateway, handles all connector connections and communications
+- **Edge** - Connector client, deployed on target devices
 
 ---
 
-## 💡 使用场景
+## 💡 Use Cases
 
 <div align="center">
 
-| 🏠 **远程办公** | 📦 **NAS 伴侣** | 🏢 **多机房部署** | ⚡ **边缘计算** |
+| 🏠 **Remote Work** | 📦 **NAS Companion** | 🏢 **Multi-Datacenter** | ⚡ **Edge Computing** |
 |:---:|:---:|:---:|:---:|
-| 连接办公室和家中的设备<br/>随时随地访问 | 随时从互联网访问<br/>家庭 NAS | 统一连接分布在不同<br/>机房的服务器 | 连接和监控边缘设备<br/>上的应用和服务 |
+| Connect office and home devices<br/>Access anytime, anywhere | Access home NAS<br/>from the internet | Unified connection of servers<br/>across different datacenters | Connect and monitor applications<br/>and services on edge devices |
 
 </div>
 
-### 典型应用
+### Typical Applications
 
-- 🏡 **家庭网络** - 访问家庭 NAS、智能家居设备
-- 💼 **远程开发** - 连接办公室服务器，远程开发调试
-- 🏢 **企业内网** - 安全访问内网服务，不暴露内网
-- 🌐 **多地域部署** - 统一管理分布在不同地区的设备
-- 🔧 **运维管理** - 远程管理服务器，监控设备状态
+- 🏡 **Home Network** - Access home NAS, smart home devices
+- 💼 **Remote Development** - Connect to office servers, remote development and debugging
+- 🏢 **Enterprise Intranet** - Securely access internal network services without exposing the intranet
+- 🌐 **Multi-Region Deployment** - Unified management of devices distributed across different regions
+- 🔧 **Operations Management** - Remote server management, device status monitoring
 
 ---
 
-## 📸 功能展示
+## 📸 Feature Showcase
 
 <div align="center">
 
-### 仪表盘
+### Dashboard
 ![Dashboard](docs/pages/dashboard.png)
 
-### 设备管理
+### Device Management
 ![Device](docs/pages/device.png)
 
-### 应用管理
+### Application Management
 ![Application](docs/pages/application.png)
 
-### 代理配置
+### Proxy Configuration
 ![Proxy](docs/pages/proxy.png)
 
-### 连接器管理
+### Connector Management
 ![Connector](docs/pages/connector.png)
 
 </div>
 
 ---
 
-## 📚 文档
+## 📚 Documentation
 
-- [业务流程图](./docs/biz_sequence.md)
-- [API 文档](./docs/swagger/)
-- [安装指南](./dist/liaison/README.md)
-- [连接器安装](./dist/edge/README.md)
-
----
-
-## 🤝 贡献
-
-我们欢迎所有形式的贡献！
-
-- 🐛 [报告 Bug](https://github.com/singchia/liaison/issues/new?template=bug_report.md)
-- 💡 [提出建议](https://github.com/singchia/liaison/issues/new?template=feature_request.md)
-- 📝 [提交 PR](https://github.com/singchia/liaison/pulls)
-- 📖 [改进文档](https://github.com/singchia/liaison/issues/new?template=documentation.md)
-
-### 贡献指南
-
-1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
+- [Business Flow Diagram](./docs/biz_sequence.md)
+- [API Documentation](./docs/swagger/)
+- [Installation Guide](./dist/liaison/README.md)
+- [Connector Installation](./dist/edge/README.md)
 
 ---
 
-## 📄 许可证
+## 🤝 Contributing
 
-本项目采用 [Apache License 2.0](LICENSE) 许可证。
+We welcome all forms of contributions!
+
+- 🐛 [Report Bug](https://github.com/singchia/liaison/issues/new?template=bug_report.md)
+- 💡 [Suggest Feature](https://github.com/singchia/liaison/issues/new?template=feature_request.md)
+- 📝 [Submit PR](https://github.com/singchia/liaison/pulls)
+- 📖 [Improve Documentation](https://github.com/singchia/liaison/issues/new?template=documentation.md)
+
+### Contribution Guidelines
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the [Apache License 2.0](LICENSE).
 
 ```
 Copyright 2026 Liaison Contributors
@@ -226,15 +226,15 @@ limitations under the License.
 
 ---
 
-## 🙏 致谢
+## 🙏 Acknowledgments
 
-感谢所有为 Liaison 做出贡献的开发者！
+Thanks to all developers who have contributed to Liaison!
 
 ---
 
 <div align="center">
 
-**如果这个项目对你有帮助，请给一个 ⭐ Star！**
+**If this project helps you, please give it a ⭐ Star!**
 
 Made with ❤️ by [Liaison Contributors](https://github.com/singchia/liaison/graphs/contributors)
 
