@@ -154,20 +154,24 @@ fi
 
 # Copy frontend files
 echo -e "${YELLOW}Copying frontend files...${NC}"
-if [ -d "web/dist" ] && [ "$(ls -A web/dist 2>/dev/null)" ]; then
-    # Use rsync if available (best option for excluding files)
-    if command -v rsync >/dev/null 2>&1; then
-        rsync -av --exclude='._*' --exclude='.DS_Store' web/dist/ "$PACK_DIR/web/" 2>/dev/null
-    else
-        # Fallback: copy and then clean up (COPYFILE_DISABLE is already exported)
-        cp -r web/dist/* "$PACK_DIR/web/" 2>/dev/null || cp -r web/dist/* "$PACK_DIR/web/" 2>/dev/null
-        find "$PACK_DIR/web" -name "._*" -delete 2>/dev/null || true
-        find "$PACK_DIR/web" -name ".DS_Store" -delete 2>/dev/null || true
-    fi
-    echo -e "${GREEN}Frontend files copied${NC}"
-else
-    echo -e "${YELLOW}Warning: web/dist is empty or not found, skipping frontend files${NC}"
+if [ ! -d "web/dist" ]; then
+    echo -e "${RED}Error: web/dist directory not found. Please run 'make build-web' first.${NC}"
+    exit 1
 fi
+if [ ! "$(ls -A web/dist 2>/dev/null)" ]; then
+    echo -e "${RED}Error: web/dist directory is empty. Please run 'make build-web' first.${NC}"
+    exit 1
+fi
+# Use rsync if available (best option for excluding files)
+if command -v rsync >/dev/null 2>&1; then
+    rsync -av --exclude='._*' --exclude='.DS_Store' web/dist/ "$PACK_DIR/web/" 2>/dev/null
+else
+    # Fallback: copy and then clean up (COPYFILE_DISABLE is already exported)
+    cp -r web/dist/* "$PACK_DIR/web/" 2>/dev/null || cp -r web/dist/* "$PACK_DIR/web/" 2>/dev/null
+    find "$PACK_DIR/web" -name "._*" -delete 2>/dev/null || true
+    find "$PACK_DIR/web" -name ".DS_Store" -delete 2>/dev/null || true
+fi
+echo -e "${GREEN}Frontend files copied${NC}"
 
 # Copy configuration templates
 echo -e "${YELLOW}Copying configuration templates...${NC}"
