@@ -4,6 +4,7 @@
   min-height: 100vh;
   overflow: auto;
   background: #f0f2f5;
+  position: relative;
 }
 
 .login-content {
@@ -40,12 +41,13 @@
 }
 
 .login-title {
-  font-size: 22px;
-  font-weight: 600;
-  color: #1890ff;
+  font-size: 28px;
+  font-weight: 700;
+  color: #1677ff;
+  letter-spacing: -0.5px;
   
   @media screen and (max-width: 576px) {
-    font-size: 18px;
+    font-size: 24px;
   }
 }
 
@@ -95,12 +97,12 @@
     height: 44px;
     
     &:hover {
-      border-color: #1890ff;
+      border-color: #1677ff;
     }
     
     &.ant-input-affix-wrapper-focused {
-      border-color: #1890ff;
-      box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+      border-color: #1677ff;
+      box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1);
     }
   }
   
@@ -117,21 +119,21 @@
     border-radius: 8px;
     font-size: 16px;
     font-weight: 500;
-    background: #1890ff;
+    background: #1677ff;
     border: none;
     transition: all 0.3s;
-    box-shadow: 0 2px 8px rgba(24, 144, 255, 0.2);
+    box-shadow: 0 2px 8px rgba(22, 119, 255, 0.2);
     
     &:hover {
       background: #40a9ff;
-      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+      box-shadow: 0 4px 12px rgba(22, 119, 255, 0.3);
       transform: translateY(-1px);
     }
     
     &:active {
-      background: #096dd9;
+      background: #0958d9;
       transform: translateY(0);
-      box-shadow: 0 2px 6px rgba(24, 144, 255, 0.2);
+      box-shadow: 0 2px 6px rgba(22, 119, 255, 0.2);
     }
   }
   
