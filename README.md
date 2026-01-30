@@ -25,11 +25,11 @@
 
 ### 安装服务端
 
-1. 下载安装包 [liaison-v1.2.0-linux-amd64.tar.gz](https://github.com/singchia/liaison/releases/download/v1.2.0/liaison-v1.2.0-linux-amd64.tar.gz) 并解压
+1. 下载安装包 [liaison-v1.2.1-linux-amd64.tar.gz](https://github.com/singchia/liaison/releases/download/v1.2.1/liaison-v1.2.1-linux-amd64.tar.gz) 并解压
 2. 进入解压后的目录，运行安装脚本：
    ```bash
-   tar -xzf liaison-v1.2.0-linux-amd64.tar.gz
-   cd liaison-v1.2.0-linux-amd64
+   tar -xzf liaison-v1.2.1-linux-amd64.tar.gz
+   cd liaison-v1.2.1-linux-amd64
    sudo ./install.sh
    ```
 3. 访问 Web 控制台（默认地址：https://公网IP）
@@ -75,7 +75,7 @@ Apache License 2.0
 
 ## 版本
 
-当前版本: v1.2.0
+当前版本: v1.2.1
 
 ---
 
