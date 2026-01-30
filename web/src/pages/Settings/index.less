@@ -29,6 +29,23 @@
 
 .settings-section {
   // max-width: 600px;
+  
+  :global {
+    .ant-descriptions {
+      max-width: 100%;
+    }
+    
+    .ant-descriptions-item-content {
+      max-width: none !important;
+      min-width: 0;
+      overflow: visible;
+    }
+    
+    .ant-descriptions-item-label {
+      width: 80px;
+      min-width: 80px;
+    }
+  }
 }
 
 .user-profile {

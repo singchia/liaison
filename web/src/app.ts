@@ -1,9 +1,13 @@
 import { history, RequestConfig } from '@umijs/max';
-import { Dropdown, message } from 'antd';
-import { LogoutOutlined, SettingOutlined } from '@ant-design/icons';
+import { Dropdown, message, Typography, Tooltip } from 'antd';
+import { LogoutOutlined, SettingOutlined, GithubOutlined, BugOutlined } from '@ant-design/icons';
 import React from 'react';
 import { getCurrentUser, logout } from '@/services/api';
+import { APP_NAME, GITHUB_URL } from '@/constants';
 import './global.less';
+
+const { Text, Link } = Typography;
+const GITHUB_ISSUES_URL = 'https://github.com/singchia/liaison/issues/new';
 
 if (process.env.NODE_ENV === 'development') {
   const filterMessages = [
@@ -88,13 +92,21 @@ export const layout = ({ initialState }: any) => {
       onClick: () => history.push('/settings'),
     },
     {
-      type: 'divider' as const,
-    },
-    {
       key: 'logout',
       icon: React.createElement(LogoutOutlined),
       label: '退出登录',
       onClick: handleLogout,
+    },
+    {
+      type: 'divider' as const,
+    },
+    {
+      key: 'report',
+      icon: React.createElement(BugOutlined),
+      label: '报告问题',
+      onClick: () => {
+        window.open(GITHUB_ISSUES_URL, '_blank');
+      },
     },
   ];
 
@@ -149,6 +161,126 @@ export const layout = ({ initialState }: any) => {
       rotate: -22,
       fontStyle: 'normal',
       fontWeight: 'normal',
+    },
+    footerRender: () => {
+      return React.createElement(
+        'div',
+        {
+          className: 'global-footer',
+          style: {
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            textAlign: 'center',
+            padding: '16px 24px',
+            backgroundColor: 'transparent',
+            zIndex: 100,
+            color: 'rgba(0, 0, 0, 0.45)',
+          },
+        },
+        React.createElement(
+          'div',
+          {
+            style: {
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 8,
+              flexWrap: 'wrap',
+            },
+          },
+          React.createElement(Text, { type: 'secondary', style: { fontSize: 13 } }, `© 2026 ${APP_NAME}. All rights reserved.`),
+          React.createElement(
+            Link,
+            {
+              href: GITHUB_URL,
+              target: '_blank',
+              rel: 'noopener noreferrer',
+              style: {
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                color: 'rgba(0, 0, 0, 0.45)',
+                fontSize: 13,
+                transition: 'color 0.3s',
+                textDecoration: 'none',
+              },
+              onMouseEnter: (e: any) => {
+                e.currentTarget.style.color = '#1677ff';
+              },
+              onMouseLeave: (e: any) => {
+                e.currentTarget.style.color = 'rgba(0, 0, 0, 0.45)';
+              },
+            },
+            React.createElement('img', {
+              src: '/github.svg',
+              alt: 'GitHub',
+              style: {
+                width: 18,
+                height: 18,
+                verticalAlign: 'middle',
+              },
+            }),
+            React.createElement('span', null, 'Github')
+          ),
+          React.createElement(
+            Tooltip,
+            {
+              title: React.createElement('img', {
+                src: '/wechat.png',
+                alt: '微信二维码',
+                style: {
+                  width: 200,
+                  height: 200,
+                  display: 'block',
+                },
+              }),
+              placement: 'top',
+              overlayStyle: {
+                padding: 0,
+              },
+              overlayInnerStyle: {
+                padding: 8,
+                backgroundColor: '#fff',
+                borderRadius: 8,
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              },
+            },
+            React.createElement(
+              'div',
+              {
+                style: {
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  cursor: 'pointer',
+                  color: 'rgba(0, 0, 0, 0.45)',
+                  fontSize: 13,
+                },
+              },
+              React.createElement('img', {
+                src: '/wechat.svg',
+                alt: 'WeChat',
+                style: {
+                  width: 18,
+                  height: 18,
+                  verticalAlign: 'middle',
+                  opacity: 0.7,
+                  transition: 'opacity 0.3s',
+                },
+                onMouseEnter: (e: any) => {
+                  e.currentTarget.style.opacity = '1';
+                },
+                onMouseLeave: (e: any) => {
+                  e.currentTarget.style.opacity = '0.7';
+                },
+              }),
+              React.createElement('span', null, 'WeChat')
+            )
+          )
+        )
+      );
     },
   };
 };

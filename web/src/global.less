@@ -26,6 +26,7 @@
     padding: 16px 32px 16px 0 !important;
   }
   
+  
   // 水印样式优化
   .ant-pro-layout-watermark {
     pointer-events: none;
@@ -35,6 +36,30 @@
       letter-spacing: 0.5px;
       text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
     }
+  }
+  
+  // 页脚样式优化 - 固定在底部，融入页面
+  .ant-pro-layout-footer {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: transparent !important;
+    border-top: none !important;
+    padding: 16px 24px !important;
+    z-index: 100 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+  
+  // 为内容区域添加底部 padding，避免内容被固定页脚遮挡
+  .ant-pro-layout-content {
+    padding-bottom: 80px !important;
+  }
+  
+  // 全局页脚样式 - 融入页面
+  .global-footer {
+    box-shadow: none;
   }
   
   // 搜索区最大宽度限制，避免大屏时零散
