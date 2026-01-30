@@ -115,9 +115,19 @@ export const layout = ({ initialState }: any) => {
     fixSiderbar: true,
     navTheme: 'light',
     contentWidth: 'Fluid',
-    colorPrimary: '#1890ff',
-    siderWidth: 208,
+    colorPrimary: '#1677ff', // 更现代的蓝色
+    siderWidth: 220,
     title: 'Liaison',
+    token: {
+      // 现代化的设计 token
+      colorBgContainer: '#ffffff',
+      colorBgElevated: '#fafafa',
+      borderRadius: 8,
+      wireframe: false,
+      // 更好的间距
+      sizeStep: 4,
+      sizeUnit: 4,
+    },
     avatarProps: {
       src: '/avatar.svg',
       size: 'small',
@@ -133,9 +143,9 @@ export const layout = ({ initialState }: any) => {
     waterMarkProps: {
       content: 'Liaison',
       fontSize: 14,
-      fontColor: 'rgba(0, 0, 0, 0.06)',
-      gapX: 100,
-      gapY: 100,
+      fontColor: 'rgba(0, 0, 0, 0.04)',
+      gapX: 120,
+      gapY: 120,
       rotate: -22,
       fontStyle: 'normal',
       fontWeight: 'normal',
