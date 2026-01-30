@@ -10,7 +10,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/singchia/liaison?style=social)](https://github.com/singchia/liaison/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/singchia/liaison?style=social)](https://github.com/singchia/liaison/network/members)
 
-[English](./README.md) | [中文](./README.md)
+[English](./README_EN.md) | [中文](./README.md)
 
 ![Dashboard](docs/pages/dashboard.png)
 
@@ -48,11 +48,11 @@
 
 ```bash
 # 下载最新版本
-wget https://github.com/singchia/liaison/releases/download/v1.2.0/liaison-v1.2.0-linux-amd64.tar.gz
+wget https://github.com/singchia/liaison/releases/download/v1.2.2/liaison-v1.2.2-linux-amd64.tar.gz
 
 # 解压
-tar -xzf liaison-v1.2.0-linux-amd64.tar.gz
-cd liaison-v1.2.0-linux-amd64
+tar -xzf liaison-v1.2.2-linux-amd64.tar.gz
+cd liaison-v1.2.2-linux-amd64
 ```
 
 **2. 运行安装脚本**
