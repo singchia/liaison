@@ -411,22 +411,41 @@ edge-package-windows-amd64: package-edge-windows-amd64
 build-web:
 	@echo "Building frontend..."
 	@if [ ! -d "web" ]; then \
-		echo "⚠️  web directory not found, skipping frontend build"; \
-		exit 0; \
+		echo "❌ Error: web directory not found"; \
+		exit 1; \
 	fi
-	@cd web && \
-	if [ ! -f "package.json" ]; then \
-		echo "⚠️  package.json not found, skipping frontend build"; \
-		exit 0; \
-	fi && \
-	export PNPM_HOME="$$HOME/.local/share/pnpm" 2>/dev/null || true && \
-	export PATH="$$PNPM_HOME:$$PATH" 2>/dev/null || true && \
-	pnpm install && \
-	pnpm run build
-	@if [ -d "web/dist" ]; then \
-		echo "✅ Frontend built in web/dist/"; \
+	@if [ ! -f "web/package.json" ]; then \
+		echo "❌ Error: web/package.json not found"; \
+		exit 1; \
+	fi
+	@echo "Cleaning old build artifacts..."
+	@rm -rf web/dist
+	@( \
+		cd web && \
+		export PNPM_HOME="$$HOME/.local/share/pnpm" 2>/dev/null || true && \
+		export PATH="$$PNPM_HOME:$$PATH" 2>/dev/null || true && \
+		echo "Installing dependencies..." && \
+		pnpm install || (echo "❌ Error: pnpm install failed" && exit 1) && \
+		echo "Building frontend..." && \
+		pnpm run build || (echo "❌ Error: pnpm run build failed" && exit 1) && \
+		echo "Build completed, checking output..." && \
+		if [ -d "dist" ] && [ "$$(ls -A dist 2>/dev/null)" ]; then \
+			echo "✅ Build output found in dist/"; \
+			ls -1 dist | head -5; \
+		else \
+			echo "❌ Error: dist directory not found or empty in web/"; \
+			ls -la . | head -10; \
+			exit 1; \
+		fi \
+	) || (echo "❌ Error: Frontend build failed" && exit 1)
+	@if [ -d "web/dist" ] && [ "$$(ls -A web/dist 2>/dev/null)" ]; then \
+		echo "✅ Frontend built successfully in web/dist/"; \
+		echo "   Build output: $$(ls -1 web/dist | head -5 | tr '\n' ' ')"; \
 	else \
-		echo "⚠️  web/dist not found after build"; \
+		echo "❌ Error: web/dist not found or empty after build"; \
+		echo "   Checking web directory contents..."; \
+		ls -la web/ | head -10 || true; \
+		exit 1; \
 	fi
 
 # ============================================================================
