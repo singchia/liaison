@@ -15,14 +15,18 @@ import {
   UserOutlined,
   LockOutlined,
   SafetyOutlined,
+  GithubOutlined,
+  InfoCircleOutlined,
 } from '@ant-design/icons';
 import { useState } from 'react';
 import { useModel } from '@umijs/max';
 import { changePassword } from '@/services/api';
 import { executeAction } from '@/utils/request';
+import { APP_NAME } from '@/constants';
 import './index.less';
 
-const { Title, Text } = Typography;
+const { Title, Text, Link } = Typography;
+const GITHUB_URL = 'https://github.com/singchia/liaison';
 
 const SettingsPage: React.FC = () => {
   const { message } = App.useApp();
@@ -205,6 +209,50 @@ const SettingsPage: React.FC = () => {
                 </Button>
               </Form.Item>
             </Form>
+          </Card>
+        </div>
+      ),
+    },
+    {
+      key: 'about',
+      label: (
+        <span>
+          <InfoCircleOutlined />
+          关于
+        </span>
+      ),
+      children: (
+        <div className="settings-section">
+          <Card variant="borderless">
+            <Title level={4}>关于 {APP_NAME}</Title>
+            <Divider />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+                <span style={{ fontWeight: 500, minWidth: 'fit-content', whiteSpace: 'nowrap' }}>产品名称:</span>
+                <span>{APP_NAME}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+                <span style={{ fontWeight: 500, minWidth: 'fit-content', whiteSpace: 'nowrap' }}>GitHub:</span>
+                <Link 
+                  href={GITHUB_URL} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{ 
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    wordBreak: 'break-all',
+                    flex: 1
+                  }}
+                >
+                  <GithubOutlined style={{ marginRight: 8, flexShrink: 0 }} />
+                  <span>{GITHUB_URL}</span>
+                </Link>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+                <span style={{ fontWeight: 500, minWidth: 'fit-content', whiteSpace: 'nowrap' }}>许可证:</span>
+                <span>Apache License 2.0</span>
+              </div>
+            </div>
           </Card>
         </div>
       ),

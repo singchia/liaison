@@ -1,10 +1,12 @@
-import { LockOutlined, UserOutlined } from '@ant-design/icons';
+import { LockOutlined, UserOutlined, GithubOutlined } from '@ant-design/icons';
 import { LoginForm, ProFormText } from '@ant-design/pro-components';
 import { history, useModel } from '@umijs/max';
 import { App } from 'antd';
 import { login } from '@/services/api';
 import { APP_NAME } from '@/constants';
 import './index.less';
+
+const GITHUB_URL = 'https://github.com/singchia/liaison';
 
 const Login: React.FC = () => {
   const { message } = App.useApp();
@@ -93,7 +95,29 @@ const Login: React.FC = () => {
         </LoginForm>
         
         <div className="login-footer">
-          <p>© 2026 {APP_NAME}. All rights reserved.</p>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span>© 2026 {APP_NAME}. All rights reserved.</span>
+              <a
+                href={GITHUB_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ 
+                  color: '#1677ff',
+                  textDecoration: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  transition: 'opacity 0.3s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+              >
+                <GithubOutlined />
+                <span>GitHub</span>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
