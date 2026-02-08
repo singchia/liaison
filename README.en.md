@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🔗 Liaison
+# Liaison
 
 **Network connectivity made simple - Easily connect devices and applications across different locations**
 

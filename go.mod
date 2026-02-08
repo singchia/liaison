@@ -2,10 +2,6 @@ module github.com/singchia/liaison
 
 go 1.24.0
 
-replace github.com/singchia/frontier => ../frontier
-
-replace github.com/singchia/geminio => ../geminio
-
 require (
 	github.com/go-kratos/kratos/v2 v2.7.2
 	github.com/golang-jwt/jwt/v5 v5.3.0
@@ -13,8 +9,8 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/pion/transport/v2 v2.2.10
 	github.com/shirou/gopsutil v3.21.11+incompatible
-	github.com/singchia/frontier v1.2.0-rc.1
-	github.com/singchia/geminio v1.1.9-rc.1
+	github.com/singchia/frontier v1.2.2
+	github.com/singchia/geminio v1.2.0
 	github.com/stretchr/testify v1.11.1
 	github.com/swaggo/swag v1.16.5
 	github.com/yusufpapurcu/wmi v1.2.4

@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🔗 Liaison
+# Liaison
 
 **让网络马上通达，轻松连接分布在不同位置的设备与应用**
 
