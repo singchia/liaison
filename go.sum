@@ -82,10 +82,6 @@ github.com/rogpeppe/go-internal v1.12.0 h1:exVL4IDcn6na9z1rAb56Vxr+CgyK3nn3O+epU
 github.com/rogpeppe/go-internal v1.12.0/go.mod h1:E+RYuTGaKKdloAfM02xzb0FW3Paa99yedzYV+kq4uf4=
 github.com/shirou/gopsutil v3.21.11+incompatible h1:+1+c1VGhc88SSonWP6foOcLhvnKlUeu/erjjvaPEYiI=
 github.com/shirou/gopsutil v3.21.11+incompatible/go.mod h1:5b4v6he4MtMOwMlS0TUMTu2PcXUg8+E1lC7eC3UO/RA=
-github.com/singchia/frontier v1.2.0-rc.1 h1:7ihCeCG/nii1chYzbahQ9y9R8j3zZJnhv258b8JDAgA=
-github.com/singchia/frontier v1.2.0-rc.1/go.mod h1:GzXG3youEU3nvBX5fU/7vVsscQMx/xMmm6gCcfsh+RQ=
-github.com/singchia/geminio v1.1.8-rc.1 h1:zaa3yVp9aqrZ0WQ/MY7FxwDCFl59LWMo3nTERmSzLpg=
-github.com/singchia/geminio v1.1.8-rc.1/go.mod h1:LkgZj4Ddja97vP7NWQk7TffFLZAosHe/PZtyW8vnFBQ=
 github.com/singchia/go-timer/v2 v2.0.3/go.mod h1:PgkEQc6io8slCUiT5rHzWKU4/P2HXHWk3WWfijZXAf4=
 github.com/singchia/go-timer/v2 v2.2.1 h1:gJucmL99fkuNzGk2AfNPFpa1X3/4+aGO21KkjFAG624=
 github.com/singchia/go-timer/v2 v2.2.1/go.mod h1:PgkEQc6io8slCUiT5rHzWKU4/P2HXHWk3WWfijZXAf4=

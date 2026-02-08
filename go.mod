@@ -2,6 +2,10 @@ module github.com/singchia/liaison
 
 go 1.24.0
 
+replace github.com/singchia/frontier => ../frontier
+
+replace github.com/singchia/geminio => ../geminio
+
 require (
 	github.com/go-kratos/kratos/v2 v2.7.2
 	github.com/golang-jwt/jwt/v5 v5.3.0
@@ -10,9 +14,10 @@ require (
 	github.com/pion/transport/v2 v2.2.10
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/singchia/frontier v1.2.0-rc.1
-	github.com/singchia/geminio v1.1.8-rc.1
+	github.com/singchia/geminio v1.1.9-rc.1
 	github.com/stretchr/testify v1.11.1
 	github.com/swaggo/swag v1.16.5
+	github.com/yusufpapurcu/wmi v1.2.4
 	golang.org/x/crypto v0.45.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240304212257-790db918fca8
 	google.golang.org/grpc v1.62.1
@@ -55,7 +60,6 @@ require (
 	github.com/singchia/yafsm v1.0.1 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
-	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	golang.org/x/mod v0.29.0 // indirect
 	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/sync v0.18.0 // indirect

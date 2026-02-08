@@ -54,7 +54,7 @@ func NewFrontierBound(conf *config.Configuration) (FrontierBound, error) {
 	}
 	opt := client.NewEndOptions()
 	opt.SetMeta(data)
-	opt.SetBufferSize(8192, 8192)
+	opt.SetBufferSize(1024, 1024)
 
 	dialer := func() (net.Conn, error) {
 		conn, err := utils.Dial(&dial, rand.Intn(len(dial.Addrs)))
