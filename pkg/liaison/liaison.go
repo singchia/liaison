@@ -3,6 +3,7 @@ package liaison
 import (
 	"fmt"
 	"net/http"
+	_ "net/http/pprof"
 	"runtime"
 
 	"github.com/singchia/liaison/pkg/entry"

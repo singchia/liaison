@@ -19,8 +19,8 @@ type FrontierBound interface {
 }
 
 type frontierBound struct {
-	repo            repo.Repo
-	svc             service.Service
+	repo             repo.Repo
+	svc              service.Service
 	trafficCollector interface {
 		RecordTraffic(proxyID, applicationID uint, bytesIn, bytesOut int64)
 	}
@@ -34,14 +34,14 @@ func NewFrontierBound(conf *config.Configuration, repo repo.Repo, trafficCollect
 		return nil, errors.New("dial addr is empty")
 	}
 	fb := &frontierBound{
-		repo:            repo,
+		repo:             repo,
 		trafficCollector: trafficCollector,
 	}
 
 	dialer := func() (net.Conn, error) {
 		return utils.Dial(&dial, rand.Intn(len(dial.Addrs)))
 	}
-	svc, err := service.NewService(dialer, service.OptionServiceLog(log.DefaultLog))
+	svc, err := service.NewService(dialer, service.OptionServiceLog(log.DefaultLog), service.OptionServiceBufferSize(1024, 1024))
 	if err != nil {
 		log.Errorf("new service error: %s", err)
 		return nil, err

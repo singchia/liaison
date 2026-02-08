@@ -1,0 +1,134 @@
+# Makefile.local - 本地开发/测试版本配置
+# 用于支持本地 replace 模块（frontier, geminio）
+# 
+# 使用方法：
+#   make -f Makefile.local build-liaison-linux
+#   make -f Makefile.local build-edge-linux
+#   make -f Makefile.local build-linux
+#
+# 注意：此文件需要 ../frontier 和 ../geminio 目录存在
+
+# 继承主 Makefile
+include Makefile
+
+# 扩展 Docker volume 以支持本地 replace 模块
+# 获取父目录路径
+PARENT_DIR := $(shell dirname $(shell pwd))
+FRONTIER_DIR := $(PARENT_DIR)/frontier
+GEMINIO_DIR := $(PARENT_DIR)/geminio
+
+# 检查本地模块是否存在
+check-local-modules:
+	@if [ ! -d "$(FRONTIER_DIR)" ]; then \
+		echo "❌ Error: frontier module not found at $(FRONTIER_DIR)"; \
+		exit 1; \
+	fi
+	@if [ ! -d "$(GEMINIO_DIR)" ]; then \
+		echo "❌ Error: geminio module not found at $(GEMINIO_DIR)"; \
+		exit 1; \
+	fi
+	@echo "✅ Local modules found:"
+	@echo "   - frontier: $(FRONTIER_DIR)"
+	@echo "   - geminio: $(GEMINIO_DIR)"
+
+# 扩展 DOCKER_VOLUME 以包含父目录
+# 这样 Docker 容器可以访问 ../frontier 和 ../geminio
+DOCKER_VOLUME := -v "$(shell pwd):/build" -v "$(PARENT_DIR):/parent"
+DOCKER_BASE := docker run --rm $(DOCKER_VOLUME) $(DOCKER_WORKDIR)
+
+# 重写 docker-build-cgo 函数，在构建前检查本地模块
+# 在容器内创建符号链接，使 ../frontier 和 ../geminio 指向正确的位置
+define docker-build-cgo
+	@echo "Building $(4) for $(2)-$(3) using Docker (with local modules)..."
+	@mkdir -p ./bin
+	@if [ ! -d "$(FRONTIER_DIR)" ]; then \
+		echo "❌ Error: frontier module not found at $(FRONTIER_DIR)"; \
+		exit 1; \
+	fi
+	@if [ ! -d "$(GEMINIO_DIR)" ]; then \
+		echo "❌ Error: geminio module not found at $(GEMINIO_DIR)"; \
+		exit 1; \
+	fi
+	@echo "✅ Local modules found:"
+	@echo "   - frontier: $(FRONTIER_DIR)"
+	@echo "   - geminio: $(GEMINIO_DIR)"
+	@$(DOCKER_BASE) \
+		--platform $(1) \
+		-e CGO_ENABLED=1 \
+		-e GOOS=$(2) \
+		-e GOARCH=$(3) \
+		-e GOTOOLCHAIN=auto \
+		$(DOCKER_IMAGE) sh -c "\
+			apt-get update -qq && \
+			DEBIAN_FRONTEND=noninteractive apt-get install -y -qq gcc libc6-dev libsqlite3-dev >/dev/null 2>&1 && \
+			go env -w GOTOOLCHAIN=auto && \
+			cd /build && \
+			ln -sf /parent/frontier ../frontier 2>/dev/null || true && \
+			ln -sf /parent/geminio ../geminio 2>/dev/null || true && \
+			go mod download && \
+			CC=gcc CGO_ENABLED=1 go build $(GO_BUILD_FLAGS) -o ./bin/$(4) $(5)"
+	@chmod +x ./bin/$(4)
+	@echo "✅ Built: ./bin/$(4)"
+endef
+
+# 重写 docker-build-no-cgo 函数
+define docker-build-no-cgo
+	@echo "Building $(4) for $(2)-$(3) using Docker (with local modules)..."
+	@mkdir -p ./bin
+	@if [ ! -d "$(FRONTIER_DIR)" ]; then \
+		echo "❌ Error: frontier module not found at $(FRONTIER_DIR)"; \
+		exit 1; \
+	fi
+	@if [ ! -d "$(GEMINIO_DIR)" ]; then \
+		echo "❌ Error: geminio module not found at $(GEMINIO_DIR)"; \
+		exit 1; \
+	fi
+	@echo "✅ Local modules found:"
+	@echo "   - frontier: $(FRONTIER_DIR)"
+	@echo "   - geminio: $(GEMINIO_DIR)"
+	@$(DOCKER_BASE) \
+		--platform $(1) \
+		-e GOOS=$(2) \
+		-e GOARCH=$(3) \
+		-e GOTOOLCHAIN=auto \
+		$(DOCKER_IMAGE) sh -c "\
+			go env -w GOTOOLCHAIN=auto && \
+			cd /build && \
+			ln -sf /parent/frontier ../frontier 2>/dev/null || true && \
+			ln -sf /parent/geminio ../geminio 2>/dev/null || true && \
+			go mod download && \
+			CGO_ENABLED=0 go build $(GO_BUILD_FLAGS) -o ./bin/$(4) $(5)"
+	@chmod +x ./bin/$(4)
+	@echo "✅ Built: ./bin/$(4)"
+endef
+
+# 重写 Windows 构建目标（它直接使用 DOCKER_BASE，不使用函数）
+.PHONY: build-edge-windows-amd64
+build-edge-windows-amd64: docker-image
+	@echo "Building liaison-edge for windows-amd64 (with local modules)..."
+	@mkdir -p ./bin
+	@if [ ! -d "$(FRONTIER_DIR)" ]; then \
+		echo "❌ Error: frontier module not found at $(FRONTIER_DIR)"; \
+		exit 1; \
+	fi
+	@if [ ! -d "$(GEMINIO_DIR)" ]; then \
+		echo "❌ Error: geminio module not found at $(GEMINIO_DIR)"; \
+		exit 1; \
+	fi
+	@echo "✅ Local modules found:"
+	@echo "   - frontier: $(FRONTIER_DIR)"
+	@echo "   - geminio: $(GEMINIO_DIR)"
+	@$(DOCKER_BASE) \
+		--platform linux/amd64 \
+		-e CGO_ENABLED=1 \
+		-e GOOS=windows \
+		-e GOARCH=amd64 \
+		-e GOTOOLCHAIN=auto \
+		$(DOCKER_IMAGE) sh -c "\
+			go env -w GOTOOLCHAIN=auto && \
+			cd /build && \
+			ln -sf /parent/frontier ../frontier 2>/dev/null || true && \
+			ln -sf /parent/geminio ../geminio 2>/dev/null || true && \
+			go mod download && \
+			CGO_ENABLED=1 go build $(GO_BUILD_FLAGS) -o ./bin/liaison-edge-windows-amd64.exe cmd/edge/main.go"
+	@echo "✅ Built: ./bin/liaison-edge-windows-amd64.exe"
