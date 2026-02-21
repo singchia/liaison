@@ -1,6 +1,8 @@
 
 # <img src="website/assets/favicon.svg" alt="" width="48" style="vertical-align: middle;" /> Liaison
 
+[English](./README.en.md) | [中文](./README.md)
+
 [![Go](https://github.com/singchia/liaison/actions/workflows/go.yml/badge.svg)](https://github.com/singchia/liaison/actions/workflows/go.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/singchia/liaison)](https://goreportcard.com/report/github.com/singchia/liaison)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -8,8 +10,6 @@
 [![版本](https://img.shields.io/badge/Version-v1.2.6-green)](#)
 
 > **网络马上通达，轻松连接分布在不同位置的设备与应用**
-
-[English](./README.en.md) | [中文](./README.md)
 
 ![Dashboard](docs/pages/home.png)
 
@@ -20,7 +20,7 @@
 
 ## 📖 项目简介
 
-Liaison 是一个企业级的内网穿透和远程连接解决方案，采用中心化架构设计，通过 Frontier 服务统一管理所有连接器（Edge）。它提供了完整的 Web 管理界面，支持自动发现设备应用，实时流量统计，以及安全的 TLS 加密传输。
+Liaison 是一个企业级的内网穿透和远程连接解决方案，采用中心化架构设计，通过 Frontier 服务统一管理所有连接器（Edge）。它提供了完整的产品功能，支持自动发现设备应用，实时流量统计，以及安全的 TLS 加密传输。
 
 本项目主要解决以下问题：
 
@@ -124,11 +124,10 @@ sudo ./install.sh
 
 ## 📸 功能展示
 
-| 仪表盘 | 设备管理 |
+| 设备管理 | 应用管理 |
 |:---:|:---:|
-| **仪表盘**<br/>![Dashboard](docs/pages/dashboard.png) | **设备管理**<br/>![Device](docs/pages/device.png) |
-| **应用管理**<br/>![Application](docs/pages/application.png) | **代理配置**<br/>![Proxy](docs/pages/proxy.png) |
-| **连接器管理**<br/>![Connector](docs/pages/connector.png) | |
+| **设备管理**<br/>![Device](docs/pages/device.png) | **应用管理**<br/>![Application](docs/pages/application.png) |
+| **代理配置**<br/>![Proxy](docs/pages/proxy.png) | **连接器管理**<br/>![Connector](docs/pages/connector.png) |
 
 ---
 
