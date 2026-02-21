@@ -13,28 +13,29 @@
 
 ![Dashboard](docs/pages/home.png)
 
-[快速开始](#-快速开始) • [特性](#-核心特性) • [使用场景](#-使用场景) • [文档](#-文档) • [贡献](#-贡献)
+[快速开始](#-快速开始) • [简介](#-项目简介) • [使用场景](#-使用场景) • [文档](#-文档) • [贡献](#-贡献)
 
 
 ---
 
-## ✨ 核心特性
+## 📖 项目简介
 
-<div align="center">
+Liaison 是一个企业级的内网穿透和远程连接解决方案，采用中心化架构设计，通过 Frontier 服务统一管理所有连接器（Edge）。它提供了完整的 Web 管理界面，支持自动发现设备应用，实时流量统计，以及安全的 TLS 加密传输。
 
-| 🛡️ **安全可靠** | 🚀 **简单易用** | 🌐 **跨平台** | 🔍 **自动发现** |
-|:---:|:---:|:---:|:---:|
-| TLS 加密保障连接安全<br/>不暴露内网，随时开启关闭 | Web 界面操作<br/>秒级安装使用 | 支持 Linux/macOS/Windows<br/>x86_64 和 ARM64 | 自动发现设备应用<br/>无需手动配置 |
+本项目主要解决以下问题：
 
-</div>
+- **内网穿透难题**：无需复杂配置，即可从公网访问内网设备和服务
+- **多设备管理**：统一管理分布在不同位置的设备，支持 Linux/macOS/Windows 全平台
+- **安全连接**：TLS 加密保障连接安全，不暴露内网，随时开启关闭
+- **流量监控**：实时监控设备状态、流量统计，为运维和容量评估提供数据依据
+- **应用代理**：支持 TCP、HTTP/HTTPS、WebSocket 等多种协议的应用代理
 
-### 🎯 为什么选择 Liaison？
-
-- **🔒 企业级安全** - TLS 加密传输，内网穿透方案，不暴露内网，安全可控
-- **⚡ 极速部署** - 通过 Web 界面即可完成所有操作，无需复杂配置，秒级安装使用
-- **🌍 全平台支持** - 支持 Linux、macOS、Windows 等多种操作系统和架构
-- **🤖 智能发现** - 自动发现设备上的应用和服务，零配置即可使用
-- **📊 可视化监控** - 实时监控设备状态、流量统计，一目了然
+适用场景：
+- 🏠 **家庭网络** - 访问家庭 NAS、智能家居设备
+- 💼 **远程开发** - 连接办公室服务器，远程开发调试
+- 🏢 **企业内网** - 安全访问内网服务，不暴露内网
+- 🌐 **多地域部署** - 统一管理分布在不同地区的设备
+- 🔧 **运维管理** - 远程管理服务器，监控设备状态
 
 ---
 
@@ -123,24 +124,11 @@ sudo ./install.sh
 
 ## 📸 功能展示
 
-<div align="center">
-
-### 仪表盘
-![Dashboard](docs/pages/dashboard.png)
-
-### 设备管理
-![Device](docs/pages/device.png)
-
-### 应用管理
-![Application](docs/pages/application.png)
-
-### 代理配置
-![Proxy](docs/pages/proxy.png)
-
-### 连接器管理
-![Connector](docs/pages/connector.png)
-
-</div>
+| 仪表盘 | 设备管理 |
+|:---:|:---:|
+| **仪表盘**<br/>![Dashboard](docs/pages/dashboard.png) | **设备管理**<br/>![Device](docs/pages/device.png) |
+| **应用管理**<br/>![Application](docs/pages/application.png) | **代理配置**<br/>![Proxy](docs/pages/proxy.png) |
+| **连接器管理**<br/>![Connector](docs/pages/connector.png) | |
 
 ---
 
@@ -148,8 +136,6 @@ sudo ./install.sh
 
 - [业务流程图](./docs/biz_sequence.md)
 - [API 文档](./docs/swagger/)
-- [安装指南](./dist/liaison/README.md)
-- [连接器安装](./dist/edge/README.md)
 
 ---
 
@@ -175,22 +161,6 @@ sudo ./install.sh
 ## 📄 许可证
 
 本项目采用 [Apache License 2.0](LICENSE) 许可证。
-
-```
-Copyright 2026 Liaison Contributors
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-```
 
 ---
 
