@@ -6,19 +6,19 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/singchia/liaison)](https://goreportcard.com/report/github.com/singchia/liaison)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Tech](https://img.shields.io/badge/Tech-Go%20%7C%20TypeScript%20%7C%20React-blue)](#)
-[![Version](https://img.shields.io/badge/Version-v1.2.6-green)](#)
+[![Version](https://img.shields.io/badge/Version-v1.3.0-green)](#)
 
 > **Network connectivity made simple — Easily connect devices and applications across different locations**
 
-![Dashboard](docs/pages/home.png)
+![Dashboard](docs/pages/home_en.png)
 
-[Quick Start](#quick-start) • [Introduction](#introduction) • [Use Cases](#use-cases) • [Documentation](#documentation) • [Contributing](#contributing)
+[Quick Start](#quick-start) • [Introduction](#introduction) • [Documentation](#documentation) • [Contributing](#contributing)
 
 ---
 
 ## Introduction
 
-Liaison is an enterprise-grade intranet penetration and remote connectivity solution with a centralized architecture. The Frontier service manages all connectors (Edge) and provides a full product experience: auto-discovery of device applications, real-time traffic statistics, and secure TLS transport.
+Liaison is an enterprise-grade application access solution that does not expose any internal ports and can be enabled or disabled at any time. It provides full product features: auto-discovery of device applications, real-time traffic statistics, and secure TLS-encrypted transport.
 
 This project addresses:
 
@@ -30,11 +30,13 @@ This project addresses:
 
 Use cases:
 
-- **Home network** — Access home NAS, smart home devices
-- **Remote development** — Connect to office servers, remote debug
-- **Enterprise intranet** — Secure access to internal services without exposing the network
-- **Multi-region deployment** — Manage devices across regions from one place
-- **Operations** — Remote server management and device monitoring
+<div align="center">
+
+| **💼 Remote Work & Dev** | **🧑‍💻 Personal Studio** | **🏠 Home Network / NAS** | **🌐 Multi-datacenter / Multi-region** | **⚡ Edge & Ops** |
+|:---:|:---:|:---:|:---:|:---:|
+| Connect office and home devices for remote development and debugging | Securely connect workstations and private environments with unified device management | Access home NAS and smart-home services from the public internet | Unified connectivity for servers and applications across regions and datacenters | Connect and monitor edge applications with remote health and traffic checks |
+
+</div>
 
 ---
 
@@ -45,9 +47,9 @@ Use cases:
 **1. Download**
 
 ```bash
-wget https://github.com/singchia/liaison/releases/download/v1.2.6/liaison-v1.2.6-linux-amd64.tar.gz
-tar -xzf liaison-v1.2.6-linux-amd64.tar.gz
-cd liaison-v1.2.6-linux-amd64
+wget https://github.com/singchia/liaison/releases/download/v1.3.0/liaison-v1.3.0-linux-amd64.tar.gz
+tar -xzf liaison-v1.3.0-linux-amd64.tar.gz
+cd liaison-v1.3.0-linux-amd64
 ```
 
 **2. Run install script**
@@ -82,27 +84,15 @@ Visit `https://your-public-ip` to access the Web console.
 
 ## Architecture
 
-![Architecture](docs/diagrams/liaison.png)
+<img src="./docs/diagrams/liaison.png" width="80%">
 
 Liaison uses a centralized architecture with Frontier managing all connectors.
 
 **Components**
 
-- **Manager** — Web UI and API
+- **Liaison** — Web UI and API, Entries for applications
 - **Frontier** — Connector gateway for connections and traffic
 - **Edge** — Connector client on target devices
-
----
-
-## Use Cases
-
-| **Remote work** | **NAS** | **Multi-datacenter** | **Edge** |
-|:---:|:---:|:---:|:---:|
-| Connect office and home devices | Access home NAS from the internet | Unified connection across datacenters | Connect and monitor edge apps |
-
-**Typical use**
-
-- Home network, remote development, enterprise intranet, multi-region deployment, operations and monitoring
 
 ---
 
@@ -110,10 +100,10 @@ Liaison uses a centralized architecture with Frontier managing all connectors.
 
 | Feature | Screenshot |
 |:---:|:---:|
-| Device Management | ![Device](docs/pages/device.png) |
-| Application Management | ![Application](docs/pages/application.png) |
-| Proxy Configuration | ![Proxy](docs/pages/proxy.png) |
-| Connector Management | ![Connector](docs/pages/connector.png) |
+| Device Management | ![Device](docs/pages/device_en.png) |
+| Application Management | ![Application](docs/pages/application_en.png) |
+| Proxy Configuration | ![Proxy](docs/pages/proxy_en.png) |
+| Edge Management | ![Edge](docs/pages/edge.png) |
 
 ---
 
