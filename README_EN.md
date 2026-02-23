@@ -12,7 +12,7 @@
 
 ![Dashboard](docs/pages/home_en.png)
 
-[Quick Start](#quick-start) • [Introduction](#introduction) • [Use Cases](#use-cases) • [Documentation](#documentation) • [Contributing](#contributing)
+[Quick Start](#quick-start) • [Introduction](#introduction) • [Documentation](#documentation) • [Contributing](#contributing)
 
 ---
 
@@ -30,11 +30,13 @@ This project addresses:
 
 Use cases:
 
-- **Home network** — Access home NAS, smart home devices
-- **Remote development** — Connect to office servers, remote debug
-- **Enterprise intranet** — Secure access to internal services without exposing the network
-- **Multi-region deployment** — Manage devices across regions from one place
-- **Operations** — Remote server management and device monitoring
+<div align="center">
+
+| **💼 Remote Work & Dev** | **🧑‍💻 Personal Studio** | **🏠 Home Network / NAS** | **🌐 Multi-datacenter / Multi-region** | **⚡ Edge & Ops** |
+|:---:|:---:|:---:|:---:|:---:|
+| Connect office and home devices for remote development and debugging | Securely connect workstations and private environments with unified device management | Access home NAS and smart-home services from the public internet | Unified connectivity for servers and applications across regions and datacenters | Connect and monitor edge applications with remote health and traffic checks |
+
+</div>
 
 ---
 
@@ -88,21 +90,9 @@ Liaison uses a centralized architecture with Frontier managing all connectors.
 
 **Components**
 
-- **Liaison** — Web UI and API, Entry for applications
+- **Liaison** — Web UI and API, Entries for applications
 - **Frontier** — Connector gateway for connections and traffic
 - **Edge** — Connector client on target devices
-
----
-
-## Use Cases
-
-| **💼 Remote Work & Dev** | **🧑‍💻 Personal Studio** | **🏠 Home Network / NAS** | **🌐 Multi-datacenter / Multi-region** | **⚡ Edge & Ops** |
-|:---:|:---:|:---:|:---:|:---:|
-| Connect office and home devices for remote development and debugging | Securely connect workstations and private environments with unified device management | Access home NAS and smart-home services from the public internet | Unified connectivity for servers and applications across regions and datacenters | Connect and monitor edge applications with remote health and traffic checks |
-
-**Typical use**
-
-- Home network, personal studio, remote development, enterprise intranet, multi-region deployment, operations and monitoring
 
 ---
 
