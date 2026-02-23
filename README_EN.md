@@ -82,7 +82,7 @@ Visit `https://your-public-ip` to access the Web console.
 
 ## Architecture
 
-![Architecture](docs/diagrams/liaison.png)
+<img src="./docs/diagram/liaison.png" width="80%">
 
 Liaison uses a centralized architecture with Frontier managing all connectors.
 

@@ -88,7 +88,7 @@ sudo ./install.sh
 
 <div align="center">
 
-![Architecture](docs/diagrams/liaison.png)
+<img src="./docs/diagram/liaison.png" width="80%">
 
 **Liaison 采用中心化架构，通过 Frontier 服务统一管理所有连接器**
 
