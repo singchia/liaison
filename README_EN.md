@@ -88,7 +88,7 @@ Liaison uses a centralized architecture with Frontier managing all connectors.
 
 **Components**
 
-- **Manager** — Web UI and API
+- **Liaison** — Web UI and API, Entry for applications
 - **Frontier** — Connector gateway for connections and traffic
 - **Edge** — Connector client on target devices
 
@@ -96,13 +96,13 @@ Liaison uses a centralized architecture with Frontier managing all connectors.
 
 ## Use Cases
 
-| **Remote work** | **NAS** | **Multi-datacenter** | **Edge** |
-|:---:|:---:|:---:|:---:|
-| Connect office and home devices | Access home NAS from the internet | Unified connection across datacenters | Connect and monitor edge apps |
+| **💼 Remote Work & Dev** | **🧑‍💻 Personal Studio** | **🏠 Home Network / NAS** | **🌐 Multi-datacenter / Multi-region** | **⚡ Edge & Ops** |
+|:---:|:---:|:---:|:---:|:---:|
+| Connect office and home devices for remote development and debugging | Securely connect workstations and private environments with unified device management | Access home NAS and smart-home services from the public internet | Unified connectivity for servers and applications across regions and datacenters | Connect and monitor edge applications with remote health and traffic checks |
 
 **Typical use**
 
-- Home network, remote development, enterprise intranet, multi-region deployment, operations and monitoring
+- Home network, personal studio, remote development, enterprise intranet, multi-region deployment, operations and monitoring
 
 ---
 
