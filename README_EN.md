@@ -18,7 +18,7 @@
 
 ## Introduction
 
-Liaison is an enterprise-grade intranet penetration and remote connectivity solution with a centralized architecture. The Frontier service manages all connectors (Edge) and provides a full product experience: auto-discovery of device applications, real-time traffic statistics, and secure TLS transport.
+Liaison is an enterprise-grade application access solution that does not expose any internal ports and can be enabled or disabled at any time. It provides full product features: auto-discovery of device applications, real-time traffic statistics, and secure TLS-encrypted transport.
 
 This project addresses:
 
