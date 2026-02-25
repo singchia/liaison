@@ -107,7 +107,7 @@ Liaison uses a centralized architecture with Frontier managing all connectors.
 | Device Management | ![Device](docs/pages/device_en.png) |
 | Application Management | ![Application](docs/pages/application_en.png) |
 | Proxy Configuration | ![Proxy](docs/pages/proxy_en.png) |
-| Edge Management | ![Edge](docs/pages/edge.png) |
+| Edge Management | ![Edge](docs/pages/edge_en.png) |
 
 ---
 
