@@ -6,7 +6,7 @@ English | [中文](./README_CN.md)
 [![Go Report Card](https://goreportcard.com/badge/github.com/liaisonio/liaison)](https://goreportcard.com/report/github.com/liaisonio/liaison)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Tech](https://img.shields.io/badge/Tech-Go%20%7C%20TypeScript%20%7C%20React-blue)](#)
-[![Version](https://img.shields.io/badge/Version-v1.3.1-green)](#)
+[![Version](https://img.shields.io/badge/Version-v1.4.0-green)](#)
 
 > **Connector-powered access to devices and apps behind NAT**
 
@@ -51,9 +51,9 @@ Use cases:
 **1. Download**
 
 ```bash
-wget https://github.com/liaisonio/liaison/releases/download/v1.3.1/liaison-v1.3.1-linux-amd64.tar.gz
-tar -xzf liaison-v1.3.1-linux-amd64.tar.gz
-cd liaison-v1.3.1-linux-amd64
+wget https://github.com/liaisonio/liaison/releases/download/v1.4.0/liaison-v1.4.0-linux-amd64.tar.gz
+tar -xzf liaison-v1.4.0-linux-amd64.tar.gz
+cd liaison-v1.4.0-linux-amd64
 ```
 
 **2. Run install script**
