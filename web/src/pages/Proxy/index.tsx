@@ -9,7 +9,7 @@ import {
   ProFormTextArea,
   ProTable,
 } from '@ant-design/pro-components';
-import { Space, Tag, Typography, Switch, Alert, Tooltip, message, Button } from 'antd';
+import { Space, Tag, Typography, Switch, Alert, Tooltip, message, Button, Modal, Select, Spin, Popconfirm } from 'antd';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { useRef, useState, useEffect } from 'react';
 import { useSearchParams, useLocation } from '@umijs/max';
@@ -19,6 +19,9 @@ import {
   updateProxy,
   deleteProxy,
   getApplicationList,
+  getProxyFirewall,
+  upsertProxyFirewall,
+  deleteProxyFirewall,
 } from '@/services/api';
 import { executeAction, tableRequest } from '@/utils/request';
 import { CreateButton, EditLink, DeleteLink } from '@/components/TableButtons';
@@ -43,6 +46,79 @@ const ProxyPage: React.FC = () => {
   const [applicationMap, setApplicationMap] = useState<Map<number, API.Application>>(new Map());
   const [selectedApplicationId, setSelectedApplicationId] = useState<number | undefined>();
   const hasProcessedUrlRef = useRef(false); // 使用 ref 跟踪是否已处理过 URL 参数
+
+  // 防火墙 Modal 状态
+  const [firewallModalVisible, setFirewallModalVisible] = useState(false);
+  const [firewallProxy, setFirewallProxy] = useState<API.Proxy | undefined>();
+  const [firewallCidrs, setFirewallCidrs] = useState<string[]>([]);
+  const [firewallUpdatedAt, setFirewallUpdatedAt] = useState<string>('');
+  const [firewallLoading, setFirewallLoading] = useState(false);
+  const [firewallSaving, setFirewallSaving] = useState(false);
+
+  // CIDR 校验：v4 (e.g. 10.0.0.0/8) 或 v6 (包含冒号)。宽松匹配，后端会最终判定。
+  const isValidCidr = (s: string): boolean => {
+    if (!s) return false;
+    const v4 = /^(\d{1,3}\.){3}\d{1,3}\/\d{1,2}$/;
+    return v4.test(s) || (s.includes(':') && s.includes('/'));
+  };
+
+  const openFirewallModal = async (proxy: API.Proxy) => {
+    setFirewallProxy(proxy);
+    setFirewallCidrs([]);
+    setFirewallUpdatedAt('');
+    setFirewallModalVisible(true);
+    setFirewallLoading(true);
+    try {
+      const res = await getProxyFirewall(proxy.id);
+      if (res.code === 200 && res.data) {
+        // 后端：没有规则时返回 ["0.0.0.0/0"] + updated_at 空，此时 UI 显示「未设置」
+        const hasRule = !!res.data.updated_at;
+        setFirewallCidrs(hasRule ? (res.data.allowed_cidrs || []) : []);
+        setFirewallUpdatedAt(res.data.updated_at || '');
+      }
+    } catch (err: any) {
+      message.error(err?.message || tr('加载防火墙规则失败', 'Failed to load firewall rule'));
+    } finally {
+      setFirewallLoading(false);
+    }
+  };
+
+  const handleFirewallSave = async () => {
+    if (!firewallProxy) return;
+    const invalid = firewallCidrs.find((c) => !isValidCidr(c));
+    if (invalid) {
+      message.error(tr(`无效 CIDR：${invalid}`, `Invalid CIDR: ${invalid}`));
+      return;
+    }
+    setFirewallSaving(true);
+    await executeAction(
+      () => upsertProxyFirewall(firewallProxy.id, { allowed_cidrs: firewallCidrs }),
+      {
+        successMessage:
+          firewallCidrs.length === 0
+            ? tr('已保存（空规则=拒绝全部）', 'Saved (empty rule = deny all)')
+            : tr('已保存', 'Saved'),
+        errorMessage: tr('保存失败', 'Failed to save'),
+        onSuccess: () => {
+          setFirewallModalVisible(false);
+        },
+      },
+    );
+    setFirewallSaving(false);
+  };
+
+  const handleFirewallReset = async () => {
+    if (!firewallProxy) return;
+    await executeAction(() => deleteProxyFirewall(firewallProxy.id), {
+      successMessage: tr('已恢复为放行全部', 'Reset to allow-all'),
+      errorMessage: tr('操作失败', 'Operation failed'),
+      onSuccess: () => {
+        setFirewallCidrs([]);
+        setFirewallUpdatedAt('');
+        setFirewallModalVisible(false);
+      },
+    });
+  };
 
   // 从 URL 查询参数中读取 application_id、application_name 和 autoCreate（只执行一次）
   useEffect(() => {
@@ -364,6 +440,14 @@ const ProxyPage: React.FC = () => {
               setCurrentRow(record);
               setEditModalVisible(true);
             }} />
+            <Button
+              type="link"
+              size="small"
+              style={{ padding: 0, height: 'auto' }}
+              onClick={() => openFirewallModal(record)}
+            >
+              {tr('防火墙', 'Firewall')}
+            </Button>
             <DeleteLink
               title="确定要删除这个访问吗？"
               onConfirm={() => handleDelete(record.id)}
@@ -493,6 +577,86 @@ const ProxyPage: React.FC = () => {
           placeholder={tr('请输入访问描述', 'Please input description')}
         />
       </ModalForm>
+
+      <Modal
+        title={
+          firewallProxy
+            ? tr(`防火墙 — ${firewallProxy.name}`, `Firewall — ${firewallProxy.name}`)
+            : tr('防火墙', 'Firewall')
+        }
+        open={firewallModalVisible}
+        onCancel={() => setFirewallModalVisible(false)}
+        width={560}
+        destroyOnClose
+        footer={[
+          <Popconfirm
+            key="reset"
+            title={tr('恢复为放行全部？', 'Reset to allow-all?')}
+            description={tr(
+              '删除规则后，任何来源 IP 都能访问此代理。',
+              'After removal, any source IP can reach this proxy.',
+            )}
+            okText={tr('确认', 'Confirm')}
+            cancelText={tr('取消', 'Cancel')}
+            onConfirm={handleFirewallReset}
+            disabled={!firewallUpdatedAt}
+          >
+            <Button danger disabled={!firewallUpdatedAt}>
+              {tr('恢复默认', 'Reset')}
+            </Button>
+          </Popconfirm>,
+          <Button key="cancel" onClick={() => setFirewallModalVisible(false)}>
+            {tr('取消', 'Cancel')}
+          </Button>,
+          <Button
+            key="save"
+            type="primary"
+            loading={firewallSaving}
+            onClick={handleFirewallSave}
+          >
+            {tr('保存', 'Save')}
+          </Button>,
+        ]}
+      >
+        {firewallLoading ? (
+          <div style={{ textAlign: 'center', padding: 40 }}>
+            <Spin />
+          </div>
+        ) : (
+          <>
+            <Alert
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+              message={
+                firewallUpdatedAt
+                  ? `${tr('规则上次修改：', 'Rule last updated: ')} ${firewallUpdatedAt}`
+                  : tr('当前未设置规则 —— 放行全部来源。', 'No rule set — currently allowing all sources.')
+              }
+              description={
+                <div style={{ fontSize: 12 }}>
+                  {tr(
+                    '填写允许访问此代理的源 IP CIDR。留空保存 = 拒绝全部；点「恢复默认」= 放行全部。HTTP / TCP 代理均在 Accept 时按 L4 过滤。',
+                    'Enter source-IP CIDRs allowed to reach this proxy. Save with empty list = deny all; click Reset = allow all. Both HTTP and TCP proxies are filtered at Accept.',
+                  )}
+                </div>
+              }
+            />
+            <Select
+              mode="tags"
+              style={{ width: '100%' }}
+              value={firewallCidrs}
+              onChange={(vs: string[]) => setFirewallCidrs(vs.map((v) => v.trim()).filter(Boolean))}
+              placeholder={tr('例如：10.0.0.0/8', 'e.g. 10.0.0.0/8')}
+              tokenSeparators={[',', ' ', '\n']}
+              open={false}
+            />
+            <div style={{ marginTop: 8, fontSize: 12, color: 'rgba(0,0,0,0.45)' }}>
+              {tr('输入后按回车或逗号分隔。', 'Press Enter or comma to separate.')}
+            </div>
+          </>
+        )}
+      </Modal>
     </PageContainer>
   );
 };
