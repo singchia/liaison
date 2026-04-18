@@ -58,6 +58,13 @@ func NewWebServer(conf *config.Configuration, controlPlane controlplane.ControlP
 	srv := kratoshttp.NewServer(opts...)
 	v1.RegisterLiaisonServiceHTTPServer(srv, web)
 
+	// PAT 管理
+	srv.HandleFunc("/api/v1/iam/tokens", web.handleTokensHTTP)
+	srv.HandleFunc("/api/v1/iam/tokens/{id}", web.handleTokenByIDHTTP)
+
+	// 代理防火墙
+	srv.HandleFunc("/api/v1/proxies/{id}/firewall", web.handleFirewallHTTP)
+
 	// 文件服务
 	err = web.serveFiles(conf, srv)
 	if err != nil {

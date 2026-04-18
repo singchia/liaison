@@ -22,12 +22,21 @@ import (
 	"github.com/liaisonio/liaison/pkg/proto"
 )
 
+// firewallChecker is the minimal contract the HTTP server needs from the
+// firewall package to gate incoming connections. Decoupling via interface
+// keeps this package test-friendly and avoids a hard import in tests.
+type firewallChecker interface {
+	CheckAddr(proxyID int, addr net.Addr) bool
+}
+
 // Server HTTP/HTTPS 反向代理服务器
 type Server struct {
 	mu             sync.RWMutex
 	proxies        map[int]*httpProxy // id -> proxy
 	proxiesIdxPort map[int]int        // port -> id
 	frontierBound  frontierbound.FrontierBound
+	// 可选的防火墙：有则在 Accept 后做 CIDR 检查
+	firewall firewallChecker
 	// 流量统计器（可选，如果设置了则统计流量）
 	trafficCollector interface {
 		RecordTraffic(proxyID, applicationID uint, bytesIn, bytesOut int64)
@@ -74,6 +83,13 @@ func (s *Server) SetTrafficCollector(collector interface {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.trafficCollector = collector
+}
+
+// SetFirewall 注入防火墙检查器。nil 等同于不启用防火墙。
+func (s *Server) SetFirewall(fw firewallChecker) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.firewall = fw
 }
 
 // CreateProxy 创建 HTTP/HTTPS 代理
@@ -299,6 +315,17 @@ func (p *httpProxy) serve(s *Server, protoproxy *proto.Proxy) {
 				log.Errorf("failed to accept connection: %s", err)
 				continue
 			}
+		}
+
+		// 防火墙：在连接真正进入处理前按代理 ID 做 CIDR 检查，
+		// 不通过直接断开，连代理协议都不握手。
+		s.mu.RLock()
+		fw := s.firewall
+		s.mu.RUnlock()
+		if fw != nil && !fw.CheckAddr(protoproxy.ID, conn.RemoteAddr()) {
+			log.Infof("firewall: rejected %s for http proxy %d", conn.RemoteAddr(), protoproxy.ID)
+			_ = conn.Close()
+			continue
 		}
 
 		// 为每个连接启动 goroutine

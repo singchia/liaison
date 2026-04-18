@@ -7,6 +7,7 @@ import (
 
 	"github.com/jumboframes/armorigo/log"
 	v1 "github.com/liaisonio/liaison/api/v1"
+	"github.com/liaisonio/liaison/pkg/entry/firewall"
 	"github.com/liaisonio/liaison/pkg/entry/frontierbound"
 	"github.com/liaisonio/liaison/pkg/entry/http"
 	"github.com/liaisonio/liaison/pkg/entry/transport"
@@ -16,9 +17,10 @@ import (
 )
 
 type Entry struct {
-	gatekeeper   *transport.Gatekeeper
-	httpServer   *http.Server
-	proxyManager proto.ProxyManager
+	gatekeeper      *transport.Gatekeeper
+	httpServer      *http.Server
+	proxyManager    proto.ProxyManager
+	firewallManager *firewall.Manager
 	// liaison manager
 	manager controlplane.ControlPlane
 }
@@ -46,6 +48,11 @@ func NewEntry(conf *config.Configuration, manager controlplane.ControlPlane, tra
 		httpServer.SetTrafficCollector(trafficCollector)
 	}
 
+	// 创建防火墙管理器（in-memory CIDR 注册表），共享给两个数据面
+	firewallManager := firewall.NewManager()
+	gatekeeper.SetFirewall(firewallManager)
+	httpServer.SetFirewall(firewallManager)
+
 	// 创建统一的 ProxyManager，根据应用类型路由到不同的服务器
 	proxyManager := &unifiedProxyManager{
 		gatekeeper: gatekeeper,
@@ -53,12 +60,14 @@ func NewEntry(conf *config.Configuration, manager controlplane.ControlPlane, tra
 		conf:       conf,
 	}
 	manager.RegisterProxyManager(proxyManager)
+	manager.RegisterFirewallManager(firewallManager)
 
 	entry := &Entry{
-		gatekeeper:   gatekeeper,
-		httpServer:   httpServer,
-		proxyManager: proxyManager,
-		manager:      manager,
+		gatekeeper:      gatekeeper,
+		httpServer:      httpServer,
+		proxyManager:    proxyManager,
+		firewallManager: firewallManager,
+		manager:         manager,
 	}
 
 	err = entry.pullProxyConfigs()

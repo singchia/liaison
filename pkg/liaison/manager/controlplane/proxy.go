@@ -17,6 +17,10 @@ func (cp *controlPlane) RegisterProxyManager(proxyManager proto.ProxyManager) {
 	cp.proxyManager = proxyManager
 }
 
+func (cp *controlPlane) RegisterFirewallManager(firewallManager proto.FirewallManager) {
+	cp.firewallManager = firewallManager
+}
+
 func (cp *controlPlane) CreateProxy(_ context.Context, req *v1.CreateProxyRequest) (*v1.CreateProxyResponse, error) {
 	// 查看是否有冲突
 	// 获取application

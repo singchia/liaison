@@ -18,6 +18,11 @@ import (
 	"github.com/liaisonio/liaison/pkg/proto"
 )
 
+// firewallChecker mirrors the minimal contract used by the TCP data plane.
+type firewallChecker interface {
+	CheckAddr(proxyID int, addr net.Addr) bool
+}
+
 // Gatekeeper 端口管理器，负责动态管理TCP端口监听
 type Gatekeeper struct {
 	mu             sync.RWMutex
@@ -28,6 +33,8 @@ type Gatekeeper struct {
 
 	// frontier
 	frontierBound frontierbound.FrontierBound
+	// 防火墙（可选，有则在 postAccept 阶段做 CIDR 检查）
+	firewall firewallChecker
 	// 流量统计器（可选，如果设置了则统计流量）
 	trafficCollector interface {
 		RecordTraffic(proxyID, applicationID uint, bytesIn, bytesOut int64)
@@ -63,6 +70,13 @@ func (m *Gatekeeper) SetTrafficCollector(collector interface {
 	RecordTraffic(proxyID, applicationID uint, bytesIn, bytesOut int64)
 }) {
 	m.trafficCollector = collector
+}
+
+// SetFirewall 注入防火墙检查器。
+func (m *Gatekeeper) SetFirewall(fw firewallChecker) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.firewall = fw
 }
 
 func (m *Gatekeeper) CreateProxy(ctx context.Context, protoproxy *proto.Proxy) error {
@@ -104,6 +118,13 @@ func (m *Gatekeeper) CreateProxy(ctx context.Context, protoproxy *proto.Proxy) e
 	}
 	// hook 函数
 	postAccept := func(clientAddr net.Addr, _ net.Addr) (custom interface{}, err error) {
+		m.mu.RLock()
+		fw := m.firewall
+		m.mu.RUnlock()
+		if fw != nil && !fw.CheckAddr(protoproxy.ID, clientAddr) {
+			log.Infof("firewall: rejected %s for tcp proxy %d", clientAddr, protoproxy.ID)
+			return nil, fmt.Errorf("source %s not allowed", clientAddr)
+		}
 		pc := &proxyContext{
 			edgeID:        protoproxy.EdgeID,
 			dst:           protoproxy.Dst,
