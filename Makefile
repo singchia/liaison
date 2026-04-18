@@ -491,9 +491,9 @@ update-version version:
 		exit 1; \
 	fi; \
 	echo "$$NEW_VERSION" > VERSION; \
-	for f in README.md README_EN.md website/index.html; do \
+	for f in README.md README_EN.md; do \
 		if [ -f "$$f" ]; then \
 			sed -E "s/v[0-9]+\.[0-9]+\.[0-9]+/$$NEW_VERSION/g" "$$f" > "$$f.tmp" && mv "$$f.tmp" "$$f"; \
 		fi; \
 	done; \
-	echo "✅ Updated version to $$NEW_VERSION in VERSION, README.md, README_EN.md, website/index.html"
+	echo "✅ Updated version to $$NEW_VERSION in VERSION, README.md, README_EN.md"
