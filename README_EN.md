@@ -1,4 +1,4 @@
-# <img src="website/assets/favicon.svg" alt="" width="48" style="vertical-align: middle;" /> Liaison
+# Liaison
 
 English | [中文](./README_CN.md)
 
@@ -51,9 +51,9 @@ Use cases:
 **1. Download**
 
 ```bash
-wget https://github.com/liaisonio/liaison/releases/download/v1.4.0/liaison-v1.4.0-linux-amd64.tar.gz
-tar -xzf liaison-v1.4.0-linux-amd64.tar.gz
-cd liaison-v1.4.0-linux-amd64
+wget https://github.com/liaisonio/liaison/releases/download/v1.4.0/liaison-1.4.0-linux-amd64.tar.gz
+tar -xzf liaison-1.4.0-linux-amd64.tar.gz
+cd liaison-1.4.0-linux-amd64
 ```
 
 **2. Run install script**
