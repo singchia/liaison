@@ -102,13 +102,19 @@ func (u *unifiedProxyManager) CreateProxy(ctx context.Context, protoproxy *proto
 }
 
 func (u *unifiedProxyManager) DeleteProxy(ctx context.Context, id int) error {
-	// 先尝试从 HTTP 服务器删除
-	err := u.httpServer.DeleteProxy(ctx, id)
-	if err == nil {
-		return nil
+	// 始终两个数据面都调一次——两者对「不在本 map 里的 id」都返回 nil，所以
+	// 双调是安全且必要的：老实现只要 httpServer 返回 nil 就退出，导致 TCP
+	// 代理永远走不到 gatekeeper，listener 不释放；再次启用时端口冲突，
+	// 「启用/关闭」都看起来失效。
+	httpErr := u.httpServer.DeleteProxy(ctx, id)
+	tcpErr := u.gatekeeper.DeleteProxy(ctx, id)
+	if httpErr != nil {
+		return httpErr
 	}
-	// 如果 HTTP 服务器中没有，尝试从 gatekeeper 删除
-	return u.gatekeeper.DeleteProxy(ctx, id)
+	if tcpErr != nil {
+		return tcpErr
+	}
+	return nil
 }
 
 // pullProxyConfigs 定期从manager同步Proxy配置
