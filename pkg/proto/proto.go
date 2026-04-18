@@ -26,6 +26,13 @@ type ProxyManager interface {
 	DeleteProxy(ctx context.Context, id int) error
 }
 
+// FirewallManager pushes per-proxy source-IP allowlists to the data plane.
+// An empty cidrs slice in Allow means "deny all"; Revoke restores allow-all.
+type FirewallManager interface {
+	Allow(proxyID int, cidrs []string) error
+	Revoke(proxyID int)
+}
+
 // manager <-> edge
 type Meta struct {
 	AccessKey string `json:"access_key"`

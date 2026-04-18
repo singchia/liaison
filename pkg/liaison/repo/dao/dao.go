@@ -102,6 +102,21 @@ type Dao interface {
 	ListTrafficMetrics(query *ListTrafficMetricsQuery) ([]*model.TrafficMetric, error)
 	GetTrafficMetricsByTimeRange(startTime, endTime time.Time, applicationIDs []uint) ([]*model.TrafficMetric, error)
 
+	// UserAPIToken (PAT) 相关方法
+	CreateUserAPIToken(tok *model.UserAPIToken) error
+	ListUserAPITokens(userID uint) ([]*model.UserAPIToken, error)
+	GetUserAPITokensByPrefix(prefix string) ([]*model.UserAPIToken, error)
+	RevokeUserAPIToken(userID, id uint) error
+	TouchUserAPIToken(id uint, ip string) error
+	CountUserAPITokens(userID uint) (int64, error)
+
+	// ProxyFirewallRule 相关方法
+	GetFirewallRuleByProxyID(proxyID uint) (*model.ProxyFirewallRule, error)
+	UpsertFirewallRule(rule *model.ProxyFirewallRule) error
+	DeleteFirewallRuleByProxyID(proxyID uint) error
+	ListFirewallRulesByUserID(userID uint) ([]*model.ProxyFirewallRule, error)
+	ListAllFirewallRules() ([]*model.ProxyFirewallRule, error)
+
 	// 资源清理
 	Close() error
 }
@@ -157,6 +172,8 @@ func (d *dao) initDB() error {
 		&model.Task{},
 		&model.User{},
 		&model.TrafficMetric{},
+		&model.UserAPIToken{},
+		&model.ProxyFirewallRule{},
 	)
 }
 

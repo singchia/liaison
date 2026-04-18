@@ -204,7 +204,7 @@ build-frontier-linux:
 		echo "✅ frontier binary already exists, skipping download"; \
 	else \
 		echo "Downloading frontier-linux-amd64 from GitHub releases..."; \
-		curl -L -o ./bin/frontier https://github.com/singchia/frontier/releases/download/v1.2.3-rc.1/frontier-linux-amd64 && \
+		curl -L -o ./bin/frontier https://github.com/singchia/frontier/releases/download/v1.2.3-rc.2/frontier-linux-amd64 && \
 		chmod +x ./bin/frontier && \
 		echo "✅ Downloaded: ./bin/frontier"; \
 	fi
@@ -491,9 +491,9 @@ update-version version:
 		exit 1; \
 	fi; \
 	echo "$$NEW_VERSION" > VERSION; \
-	for f in README.md README_EN.md website/index.html; do \
+	for f in README.md README_CN.md README_EN.md; do \
 		if [ -f "$$f" ]; then \
 			sed -E "s/v[0-9]+\.[0-9]+\.[0-9]+/$$NEW_VERSION/g" "$$f" > "$$f.tmp" && mv "$$f.tmp" "$$f"; \
 		fi; \
 	done; \
-	echo "✅ Updated version to $$NEW_VERSION in VERSION, README.md, README_EN.md, website/index.html"
+	echo "✅ Updated version to $$NEW_VERSION in VERSION, README.md, README_CN.md, README_EN.md"

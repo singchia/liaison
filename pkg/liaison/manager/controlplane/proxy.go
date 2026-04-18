@@ -17,6 +17,10 @@ func (cp *controlPlane) RegisterProxyManager(proxyManager proto.ProxyManager) {
 	cp.proxyManager = proxyManager
 }
 
+func (cp *controlPlane) RegisterFirewallManager(firewallManager proto.FirewallManager) {
+	cp.firewallManager = firewallManager
+}
+
 func (cp *controlPlane) CreateProxy(_ context.Context, req *v1.CreateProxyRequest) (*v1.CreateProxyResponse, error) {
 	// 查看是否有冲突
 	// 获取application
@@ -247,13 +251,22 @@ func (cp *controlPlane) UpdateProxy(_ context.Context, req *v1.UpdateProxyReques
 }
 
 func (cp *controlPlane) DeleteProxy(_ context.Context, req *v1.DeleteProxyRequest) (*v1.DeleteProxyResponse, error) {
-	err := cp.repo.DeleteProxy(uint(req.Id))
-	if err != nil {
-		return nil, err
+	proxyID := uint(req.Id)
+
+	// 停数据面（幂等）。没有在运行或 proxyManager 未注册时直接跳过。
+	if err := cp.proxyManager.DeleteProxy(context.Background(), int(proxyID)); err != nil {
+		log.Warnf("delete proxy runtime %d: %s", proxyID, err)
 	}
-	// 删除正在工作的代理
-	err = cp.proxyManager.DeleteProxy(context.Background(), int(req.Id))
-	if err != nil {
+	// 清理数据面防火墙状态
+	if cp.firewallManager != nil {
+		cp.firewallManager.Revoke(int(proxyID))
+	}
+	// 删除持久化的防火墙规则（如有）
+	if err := cp.repo.DeleteFirewallRuleByProxyID(proxyID); err != nil {
+		log.Warnf("delete firewall rule for proxy %d: %s", proxyID, err)
+	}
+	// 删除 proxy 本身
+	if err := cp.repo.DeleteProxy(proxyID); err != nil {
 		return nil, err
 	}
 	return &v1.DeleteProxyResponse{

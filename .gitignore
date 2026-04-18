@@ -49,3 +49,9 @@ certs/*.key
 certs/*.crt
 !certs/README.md
 !certs/generate_certs.sh
+
+# Build artifacts
+/liaison-v*.tar.gz
+/packages/
+/bin/
+/web/dist/

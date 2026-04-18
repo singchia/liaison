@@ -7,6 +7,7 @@ import (
 
 	"github.com/jumboframes/armorigo/log"
 	v1 "github.com/liaisonio/liaison/api/v1"
+	"github.com/liaisonio/liaison/pkg/entry/firewall"
 	"github.com/liaisonio/liaison/pkg/entry/frontierbound"
 	"github.com/liaisonio/liaison/pkg/entry/http"
 	"github.com/liaisonio/liaison/pkg/entry/transport"
@@ -16,9 +17,10 @@ import (
 )
 
 type Entry struct {
-	gatekeeper   *transport.Gatekeeper
-	httpServer   *http.Server
-	proxyManager proto.ProxyManager
+	gatekeeper      *transport.Gatekeeper
+	httpServer      *http.Server
+	proxyManager    proto.ProxyManager
+	firewallManager *firewall.Manager
 	// liaison manager
 	manager controlplane.ControlPlane
 }
@@ -46,6 +48,11 @@ func NewEntry(conf *config.Configuration, manager controlplane.ControlPlane, tra
 		httpServer.SetTrafficCollector(trafficCollector)
 	}
 
+	// 创建防火墙管理器（in-memory CIDR 注册表），共享给两个数据面
+	firewallManager := firewall.NewManager()
+	gatekeeper.SetFirewall(firewallManager)
+	httpServer.SetFirewall(firewallManager)
+
 	// 创建统一的 ProxyManager，根据应用类型路由到不同的服务器
 	proxyManager := &unifiedProxyManager{
 		gatekeeper: gatekeeper,
@@ -53,12 +60,14 @@ func NewEntry(conf *config.Configuration, manager controlplane.ControlPlane, tra
 		conf:       conf,
 	}
 	manager.RegisterProxyManager(proxyManager)
+	manager.RegisterFirewallManager(firewallManager)
 
 	entry := &Entry{
-		gatekeeper:   gatekeeper,
-		httpServer:   httpServer,
-		proxyManager: proxyManager,
-		manager:      manager,
+		gatekeeper:      gatekeeper,
+		httpServer:      httpServer,
+		proxyManager:    proxyManager,
+		firewallManager: firewallManager,
+		manager:         manager,
 	}
 
 	err = entry.pullProxyConfigs()
@@ -93,13 +102,19 @@ func (u *unifiedProxyManager) CreateProxy(ctx context.Context, protoproxy *proto
 }
 
 func (u *unifiedProxyManager) DeleteProxy(ctx context.Context, id int) error {
-	// 先尝试从 HTTP 服务器删除
-	err := u.httpServer.DeleteProxy(ctx, id)
-	if err == nil {
-		return nil
+	// 始终两个数据面都调一次——两者对「不在本 map 里的 id」都返回 nil，所以
+	// 双调是安全且必要的：老实现只要 httpServer 返回 nil 就退出，导致 TCP
+	// 代理永远走不到 gatekeeper，listener 不释放；再次启用时端口冲突，
+	// 「启用/关闭」都看起来失效。
+	httpErr := u.httpServer.DeleteProxy(ctx, id)
+	tcpErr := u.gatekeeper.DeleteProxy(ctx, id)
+	if httpErr != nil {
+		return httpErr
 	}
-	// 如果 HTTP 服务器中没有，尝试从 gatekeeper 删除
-	return u.gatekeeper.DeleteProxy(ctx, id)
+	if tcpErr != nil {
+		return tcpErr
+	}
+	return nil
 }
 
 // pullProxyConfigs 定期从manager同步Proxy配置

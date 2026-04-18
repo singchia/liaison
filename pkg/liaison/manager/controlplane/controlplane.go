@@ -37,7 +37,18 @@ type ControlPlane interface {
 
 	ListTrafficMetrics(ctx context.Context, req *v1.ListTrafficMetricsRequest) (*v1.ListTrafficMetricsResponse, error)
 
+	// Firewall
+	GetProxyFirewall(ctx context.Context, proxyID uint) (*FirewallData, error)
+	UpsertProxyFirewall(ctx context.Context, proxyID uint, cidrs []string) (*FirewallData, error)
+	DeleteProxyFirewall(ctx context.Context, proxyID uint) error
+
 	RegisterProxyManager(proxyManager proto.ProxyManager)
+	RegisterFirewallManager(firewallManager proto.FirewallManager)
+
+	// RestoreFirewallRules rehydrates the data-plane firewall allowlist from
+	// persisted rules. Call after the entry layer has finished starting
+	// its proxies.
+	RestoreFirewallRules()
 }
 
 func NewControlPlane(conf *config.Configuration, repo repo.Repo, frontierBound frontierbound.FrontierBound) (ControlPlane, error) {
@@ -59,5 +70,6 @@ type controlPlane struct {
 	frontierBound frontierbound.FrontierBound
 
 	// deps
-	proxyManager proto.ProxyManager
+	proxyManager    proto.ProxyManager
+	firewallManager proto.FirewallManager
 }
