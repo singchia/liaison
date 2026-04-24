@@ -48,7 +48,9 @@ Use cases:
 
 ## Quick Start
 
-### Install Server
+Pick one of the two server deployment options, then install a connector.
+
+### Install Server — Option 1: Binary + systemd
 
 **1. Download**
 
@@ -71,6 +73,54 @@ You will be prompted for a public IP or domain; if none is entered within 30 sec
 Visit `https://your-public-ip` to access the Web console.
 
 > **Tip:** Default admin credentials are shown in the install script output or config.
+
+### Install Server — Option 2: Docker Compose
+
+Requires Docker 20.10+ with the `docker compose` plugin. Ships `liaison` (Web console + API) and `frontier` (connector gateway) as two containers; the connector itself still installs natively on target hosts.
+
+#### 2a. Build from source (dev / online hosts)
+
+```bash
+git clone https://github.com/liaisonio/liaison.git && cd liaison
+make package            # builds binaries, web bundle, and edge installers
+make images             # builds liaison/liaison and liaison/frontier images
+
+cd deploy/docker
+cp .env.example .env
+# edit LIAISON_PUBLIC_HOST, MANAGER_PORT, FRONTIER_PORT to match your host
+vim .env
+
+docker compose up -d
+```
+
+#### 2b. Offline bundle (airgapped / mirrored hosts)
+
+On a host with Docker + the source tree, produce a self-contained tar.gz:
+
+```bash
+make package-docker     # emits liaison-<version>-docker-amd64.tar.gz
+```
+
+The bundle contains `docker save`-ed images, a release-mode `docker-compose.yaml` (no `build:` section), `.env.example` pinned to the image tag, and a `load.sh` helper. Ship the tar.gz to the target host, then:
+
+```bash
+tar -xzf liaison-1.4.0-docker-amd64.tar.gz
+cd liaison-1.4.0-docker-amd64
+./load.sh                # docker load both images
+cp .env.example .env
+vim .env                 # set LIAISON_PUBLIC_HOST, ports
+docker compose up -d
+```
+
+#### After `docker compose up`
+
+Grab the one-time admin password (printed **once** on first start):
+
+```bash
+docker compose logs liaison | grep -A5 "first-run credentials"
+```
+
+Open `https://<LIAISON_PUBLIC_HOST>:<MANAGER_PORT>` and log in with the printed password. Data (`data/`), TLS certs (`certs/`), and logs (`logs/`) are bind-mounted next to `docker-compose.yaml` for persistence. See [`deploy/docker/README.md`](deploy/docker/README.md) for reset / upgrade / reverse-proxy / custom-cert recipes.
 
 ### Install Connector
 

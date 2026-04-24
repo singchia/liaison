@@ -50,7 +50,9 @@ Liaison 是一个企业级应用访问解决方案，不暴露任何内网端口
 
 ## 🚀 快速开始
 
-### 📦 安装服务端
+服务端二选一,之后再安装连接器。
+
+### 📦 安装服务端 — 方式一：二进制 + systemd
 
 **1. 下载安装包并运行安装脚本**
 
@@ -71,6 +73,54 @@ sudo ./install.sh
 安装完成后，访问 `https://你的公网IP` 即可进入 Web 控制台。
 
 > 💡 **提示**: 默认管理员账号密码请查看安装脚本输出或配置文件
+
+### 🐳 安装服务端 — 方式二：Docker Compose
+
+需要 Docker 20.10+ 及 `docker compose` 插件。服务端以两个容器运行:`liaison`(Web 控制台 + API)和 `frontier`(连接器网关);连接器本身仍以原生方式安装到目标主机。
+
+#### 2a. 源码构建(开发机 / 有外网的主机)
+
+```bash
+git clone https://github.com/liaisonio/liaison.git && cd liaison
+make package            # 构建二进制、前端、edge 安装包
+make images             # 构建 liaison/liaison 和 liaison/frontier 镜像
+
+cd deploy/docker
+cp .env.example .env
+# 修改 LIAISON_PUBLIC_HOST、MANAGER_PORT、FRONTIER_PORT 匹配你的主机
+vim .env
+
+docker compose up -d
+```
+
+#### 2b. 离线分发包(内网 / 镜像主机)
+
+在有 Docker 和源码的构建机上产出一个自包含 tar.gz:
+
+```bash
+make package-docker     # 产出 liaison-<version>-docker-amd64.tar.gz
+```
+
+包里含 `docker save` 出来的镜像、release 版 `docker-compose.yaml`(无 `build:` 段)、预钉镜像 tag 的 `.env.example`、以及 `load.sh` 辅助脚本。把 tar.gz 拷贝到目标机:
+
+```bash
+tar -xzf liaison-1.4.0-docker-amd64.tar.gz
+cd liaison-1.4.0-docker-amd64
+./load.sh                # docker load 两个镜像
+cp .env.example .env
+vim .env                 # 设置 LIAISON_PUBLIC_HOST、端口
+docker compose up -d
+```
+
+#### 启动完成后
+
+取首次启动随机生成的管理员密码(**只打印一次**):
+
+```bash
+docker compose logs liaison | grep -A5 "first-run credentials"
+```
+
+用该密码访问 `https://<LIAISON_PUBLIC_HOST>:<MANAGER_PORT>` 登录。数据 (`data/`)、TLS 证书 (`certs/`)、日志 (`logs/`) 以 bind mount 方式挂在 `docker-compose.yaml` 同目录下持久化。完整的重置 / 升级 / 反向代理 / 自定义证书文档见 [`deploy/docker/README.md`](deploy/docker/README.md)。
 
 ### 🔌 安装连接器
 

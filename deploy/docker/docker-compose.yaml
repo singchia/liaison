@@ -1,0 +1,45 @@
+services:
+  frontier:
+    image: ${LIAISON_IMAGE_REGISTRY:-liaison}/frontier:${LIAISON_IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile.frontier
+    container_name: liaison-frontier
+    restart: unless-stopped
+    ports:
+      - "${FRONTIER_PORT:-30012}:30012"
+    volumes:
+      - ./certs:/opt/liaison/certs
+    networks:
+      - liaison
+
+  liaison:
+    image: ${LIAISON_IMAGE_REGISTRY:-liaison}/liaison:${LIAISON_IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile.liaison
+    container_name: liaison-manager
+    restart: unless-stopped
+    depends_on:
+      - frontier
+    environment:
+      LIAISON_PUBLIC_HOST: ${LIAISON_PUBLIC_HOST:-localhost}
+      MANAGER_PORT: ${MANAGER_PORT:-443}
+      FRONTIER_PORT: ${FRONTIER_PORT:-30012}
+      LIAISON_ADMIN_EMAIL: ${LIAISON_ADMIN_EMAIL:-default@liaison.com}
+      # Optional: pass a fixed JWT secret instead of letting first-run generate one.
+      # JWT_SECRET: ""
+      # Optional: override the URL the Web console advertises for itself.
+      # SERVER_URL: "https://${LIAISON_PUBLIC_HOST}:${MANAGER_PORT}"
+    ports:
+      - "${MANAGER_PORT:-443}:8080"
+    volumes:
+      - ./data:/opt/liaison/data
+      - ./certs:/opt/liaison/certs
+      - ./logs:/opt/liaison/logs
+    networks:
+      - liaison
+
+networks:
+  liaison:
+    driver: bridge

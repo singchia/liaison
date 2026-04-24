@@ -1,0 +1,47 @@
+# Liaison runtime image
+# Expects the build artifacts produced by `make package` (run on host first):
+#   bin/liaison, bin/password-generator
+#   web/dist/*
+#   packages/edge/*.tar.gz
+#   dist/edge/install.sh / install.ps1 / install.bat / uninstall.sh / uninstall.ps1
+#
+# The host-built binaries link against glibc + libsqlite3, so the runtime
+# image uses debian-slim to stay ABI-compatible.
+FROM debian:bookworm-slim
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates openssl sqlite3 bash tzdata gettext-base \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd -g 1000 liaison && useradd -u 1000 -g 1000 -m -d /opt/liaison -s /bin/bash liaison
+
+RUN mkdir -p \
+        /opt/liaison/bin \
+        /opt/liaison/conf \
+        /opt/liaison/data \
+        /opt/liaison/logs \
+        /opt/liaison/certs \
+        /opt/liaison/web \
+        /opt/liaison/edge \
+    && chown -R liaison:liaison /opt/liaison
+
+COPY --chown=liaison:liaison bin/liaison /opt/liaison/bin/liaison
+COPY --chown=liaison:liaison bin/password-generator /opt/liaison/bin/password-generator
+
+COPY --chown=liaison:liaison web/dist/ /opt/liaison/web/
+
+COPY --chown=liaison:liaison packages/edge/ /opt/liaison/edge/
+COPY --chown=liaison:liaison dist/edge/ /opt/liaison/edge/
+
+COPY deploy/docker/entrypoint-liaison.sh /usr/local/bin/entrypoint-liaison.sh
+COPY deploy/docker/conf/liaison.yaml.template /opt/liaison/conf/liaison.yaml.template
+RUN chmod +x /usr/local/bin/entrypoint-liaison.sh /opt/liaison/bin/liaison /opt/liaison/bin/password-generator \
+    && chown -R liaison:liaison /opt/liaison/edge
+
+USER liaison
+WORKDIR /opt/liaison
+
+EXPOSE 8080
+ENTRYPOINT ["/usr/local/bin/entrypoint-liaison.sh"]
+CMD ["/opt/liaison/bin/liaison", "-c", "/opt/liaison/conf/liaison.yaml"]
