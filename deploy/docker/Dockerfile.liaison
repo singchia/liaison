@@ -42,6 +42,6 @@ RUN chmod +x /usr/local/bin/entrypoint-liaison.sh /opt/liaison/bin/liaison /opt/
 USER liaison
 WORKDIR /opt/liaison
 
-EXPOSE 8080
+EXPOSE 8443
 ENTRYPOINT ["/usr/local/bin/entrypoint-liaison.sh"]
 CMD ["/opt/liaison/bin/liaison", "-c", "/opt/liaison/conf/liaison.yaml"]

@@ -78,7 +78,7 @@ make package-docker
 
 | 端口 | 用途 | 是否对外 |
 |:---|:---|:---|
-| `MANAGER_PORT`(默认 443)→ 8080 | Web 控制台 HTTPS | 是 |
+| `MANAGER_PORT`(默认 443)→ 8443 | Web 控制台 HTTPS | 是 |
 | `FRONTIER_PORT`(默认 30012)→ 30012 | 连接器接入 | 是 |
 | 30011(容器内) | liaison ↔ frontier 内部 | 否 |
 

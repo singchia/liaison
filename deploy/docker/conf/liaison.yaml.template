@@ -4,7 +4,7 @@ daemon:
     enable: true
 manager:
   listen:
-    addr: 0.0.0.0:8080
+    addr: 0.0.0.0:8443
     network: tcp
     tls:
       enable: true

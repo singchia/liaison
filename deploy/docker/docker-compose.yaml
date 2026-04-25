@@ -32,7 +32,7 @@ services:
       # Optional: override the URL the Web console advertises for itself.
       # SERVER_URL: "https://${LIAISON_PUBLIC_HOST}:${MANAGER_PORT}"
     ports:
-      - "${MANAGER_PORT:-443}:8080"
+      - "${MANAGER_PORT:-443}:8443"
     volumes:
       - ./data:/opt/liaison/data
       - ./certs:/opt/liaison/certs
