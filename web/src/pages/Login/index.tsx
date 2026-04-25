@@ -32,7 +32,8 @@ const Login: React.FC = () => {
       }
       message.error(result.message || tr('登录失败', 'Login failed'));
     } catch (error: any) {
-      message.error(error?.message || tr('登录失败，请重试！', 'Login failed, please retry'));
+      const backendMsg = error?.response?.data?.message;
+      message.error(backendMsg || error?.message || tr('登录失败，请重试！', 'Login failed, please retry'));
     }
   };
 

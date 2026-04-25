@@ -439,6 +439,13 @@ export const request: RequestConfig = {
   ],
   errorConfig: {
     errorHandler: (error: any) => {
+      // On the login page the user is already authenticating — a 401 here
+      // means "wrong credentials", not "session expired". Let the page's
+      // own catch render the backend message and skip the global toast +
+      // redirect, otherwise the user sees two messages stacked.
+      if (window.location.pathname === '/login') {
+        return;
+      }
       const { response } = error;
       if (response?.status === 401 || response?.status === 403) {
         localStorage.removeItem('token');
