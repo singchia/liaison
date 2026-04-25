@@ -1,12 +1,12 @@
-# Liaison
+# <img src="web/public/liaison.png" alt="" width="48" style="vertical-align: middle;" /> Liaison
 
-English | [中文](./README_CN.md)
+English | [简体中文](./README_zh.md) | [日本語](./README_ja.md) | [한국어](./README_ko.md) | [Español](./README_es.md) | [Français](./README_fr.md) | [Deutsch](./README_de.md)
 
 [![Go](https://github.com/liaisonio/liaison/actions/workflows/go.yml/badge.svg)](https://github.com/liaisonio/liaison/actions/workflows/go.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/liaisonio/liaison)](https://goreportcard.com/report/github.com/liaisonio/liaison)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Tech](https://img.shields.io/badge/Tech-Go%20%7C%20TypeScript%20%7C%20React-blue)](#)
-[![Version](https://img.shields.io/badge/Version-v1.4.0-green)](#)
+[![Version](https://img.shields.io/badge/Version-v1.5.0-green)](#)
 
 > **Connector-powered access to devices and apps behind NAT**
 
@@ -55,9 +55,9 @@ Pick one of the two server deployment options, then install a connector.
 **1. Download**
 
 ```bash
-wget https://github.com/liaisonio/liaison/releases/download/v1.4.0/liaison-1.4.0-linux-amd64.tar.gz
-tar -xzf liaison-1.4.0-linux-amd64.tar.gz
-cd liaison-1.4.0-linux-amd64
+wget https://github.com/liaisonio/liaison/releases/download/v1.5.0/liaison-1.5.0-linux-amd64.tar.gz
+tar -xzf liaison-1.5.0-linux-amd64.tar.gz
+cd liaison-1.5.0-linux-amd64
 ```
 
 **2. Run install script**
@@ -76,51 +76,18 @@ Visit `https://your-public-ip` to access the Web console.
 
 ### Install Server — Option 2: Docker Compose
 
-Requires Docker 20.10+ with the `docker compose` plugin. Ships `liaison` (Web console + API) and `frontier` (connector gateway) as two containers; the connector itself still installs natively on target hosts.
-
-#### 2a. Build from source (dev / online hosts)
+Requires Docker 20.10+ with the `docker compose` plugin. The bundle ships `liaison` + `frontier` as two containers; images are pre-built — no registry or source checkout needed.
 
 ```bash
-git clone https://github.com/liaisonio/liaison.git && cd liaison
-make package            # builds binaries, web bundle, and edge installers
-make images             # builds liaison/liaison and liaison/frontier images
-
-cd deploy/docker
-cp .env.example .env
-# edit LIAISON_PUBLIC_HOST, MANAGER_PORT, FRONTIER_PORT to match your host
-vim .env
-
-docker compose up -d
+wget https://github.com/liaisonio/liaison/releases/download/v1.5.0/liaison-1.5.0-docker-amd64.tar.gz
+tar -xzf liaison-1.5.0-docker-amd64.tar.gz
+cd liaison-1.5.0-docker-amd64
+./load.sh
 ```
 
-#### 2b. Offline bundle (airgapped / mirrored hosts)
+`load.sh` auto-detects your public IP (with a 30-second countdown prompt), loads the bundled images, starts the stack, and prints the one-time admin password when liaison is ready. Save the password and open `https://<public-ip>` to log in.
 
-On a host with Docker + the source tree, produce a self-contained tar.gz:
-
-```bash
-make package-docker     # emits liaison-<version>-docker-amd64.tar.gz
-```
-
-The bundle contains `docker save`-ed images, a release-mode `docker-compose.yaml` (no `build:` section), `.env.example` pinned to the image tag, and a `load.sh` helper. Ship the tar.gz to the target host, then:
-
-```bash
-tar -xzf liaison-1.4.0-docker-amd64.tar.gz
-cd liaison-1.4.0-docker-amd64
-./load.sh                # docker load both images
-cp .env.example .env
-vim .env                 # set LIAISON_PUBLIC_HOST, ports
-docker compose up -d
-```
-
-#### After `docker compose up`
-
-Grab the one-time admin password (printed **once** on first start):
-
-```bash
-docker compose logs liaison | grep -A5 "first-run credentials"
-```
-
-Open `https://<LIAISON_PUBLIC_HOST>:<MANAGER_PORT>` and log in with the printed password. Data (`data/`), TLS certs (`certs/`), and logs (`logs/`) are bind-mounted next to `docker-compose.yaml` for persistence. See [`deploy/docker/README.md`](deploy/docker/README.md) for reset / upgrade / reverse-proxy / custom-cert recipes.
+Data (`data/` SQLite), TLS certs (`certs/`), and logs (`logs/`) are bind-mounted next to `docker-compose.yaml` for persistence. See [`deploy/docker/README.md`](deploy/docker/README.md) for source builds, upgrade / reset / reverse-proxy / custom-cert recipes.
 
 ### Install Connector
 

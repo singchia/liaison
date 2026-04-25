@@ -1,13 +1,13 @@
 
-# Liaison
+# <img src="web/public/liaison.png" alt="" width="48" style="vertical-align: middle;" /> Liaison
 
-简体中文 | [English](./README.md)
+[English](./README.md) | 简体中文 | [日本語](./README_ja.md) | [한국어](./README_ko.md) | [Español](./README_es.md) | [Français](./README_fr.md) | [Deutsch](./README_de.md)
 
 [![Go](https://github.com/liaisonio/liaison/actions/workflows/go.yml/badge.svg)](https://github.com/liaisonio/liaison/actions/workflows/go.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/liaisonio/liaison)](https://goreportcard.com/report/github.com/liaisonio/liaison)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![技术栈](https://img.shields.io/badge/Tech-Go%20%7C%20TypeScript%20%7C%20React-blue)](#技术栈一览)
-[![版本](https://img.shields.io/badge/Version-v1.4.0-green)](#)
+[![版本](https://img.shields.io/badge/Version-v1.5.0-green)](#)
 
 > **网络马上通达，轻松连接分布在不同位置的设备与应用**
 
@@ -58,11 +58,11 @@ Liaison 是一个企业级应用访问解决方案，不暴露任何内网端口
 
 ```bash
 # 下载最新版本
-wget https://github.com/liaisonio/liaison/releases/download/v1.4.0/liaison-1.4.0-linux-amd64.tar.gz
+wget https://github.com/liaisonio/liaison/releases/download/v1.5.0/liaison-1.5.0-linux-amd64.tar.gz
 
 # 解压
-tar -xzf liaison-1.4.0-linux-amd64.tar.gz
-cd liaison-1.4.0-linux-amd64
+tar -xzf liaison-1.5.0-linux-amd64.tar.gz
+cd liaison-1.5.0-linux-amd64
 sudo ./install.sh
 ```
 
@@ -76,51 +76,18 @@ sudo ./install.sh
 
 ### 🐳 安装服务端 — 方式二：Docker Compose
 
-需要 Docker 20.10+ 及 `docker compose` 插件。服务端以两个容器运行:`liaison`(Web 控制台 + API)和 `frontier`(连接器网关);连接器本身仍以原生方式安装到目标主机。
-
-#### 2a. 源码构建(开发机 / 有外网的主机)
+需要 Docker 20.10+ 及 `docker compose` 插件。安装包内含已构建好的镜像,无需拉仓库或拉镜像。
 
 ```bash
-git clone https://github.com/liaisonio/liaison.git && cd liaison
-make package            # 构建二进制、前端、edge 安装包
-make images             # 构建 liaison/liaison 和 liaison/frontier 镜像
-
-cd deploy/docker
-cp .env.example .env
-# 修改 LIAISON_PUBLIC_HOST、MANAGER_PORT、FRONTIER_PORT 匹配你的主机
-vim .env
-
-docker compose up -d
+wget https://github.com/liaisonio/liaison/releases/download/v1.5.0/liaison-1.5.0-docker-amd64.tar.gz
+tar -xzf liaison-1.5.0-docker-amd64.tar.gz
+cd liaison-1.5.0-docker-amd64
+./load.sh
 ```
 
-#### 2b. 离线分发包(内网 / 镜像主机)
+`load.sh` 会自动探测公网 IP(30 秒倒计时提示用户确认),加载镜像,启动容器,等 liaison 就绪后打印一次性管理员密码。记下密码,访问 `https://<公网IP>` 登录即可。
 
-在有 Docker 和源码的构建机上产出一个自包含 tar.gz:
-
-```bash
-make package-docker     # 产出 liaison-<version>-docker-amd64.tar.gz
-```
-
-包里含 `docker save` 出来的镜像、release 版 `docker-compose.yaml`(无 `build:` 段)、预钉镜像 tag 的 `.env.example`、以及 `load.sh` 辅助脚本。把 tar.gz 拷贝到目标机:
-
-```bash
-tar -xzf liaison-1.4.0-docker-amd64.tar.gz
-cd liaison-1.4.0-docker-amd64
-./load.sh                # docker load 两个镜像
-cp .env.example .env
-vim .env                 # 设置 LIAISON_PUBLIC_HOST、端口
-docker compose up -d
-```
-
-#### 启动完成后
-
-取首次启动随机生成的管理员密码(**只打印一次**):
-
-```bash
-docker compose logs liaison | grep -A5 "first-run credentials"
-```
-
-用该密码访问 `https://<LIAISON_PUBLIC_HOST>:<MANAGER_PORT>` 登录。数据 (`data/`)、TLS 证书 (`certs/`)、日志 (`logs/`) 以 bind mount 方式挂在 `docker-compose.yaml` 同目录下持久化。完整的重置 / 升级 / 反向代理 / 自定义证书文档见 [`deploy/docker/README.md`](deploy/docker/README.md)。
+数据 (`data/` SQLite)、TLS 证书 (`certs/`)、日志 (`logs/`) 以 bind mount 方式挂在 `docker-compose.yaml` 同目录下持久化。源码构建、升级 / 重置 / 反向代理 / 自定义证书等高阶用法见 [`deploy/docker/README.md`](deploy/docker/README.md)。
 
 ### 🔌 安装连接器
 

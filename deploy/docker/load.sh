@@ -1,36 +1,176 @@
 #!/bin/bash
-# Load the bundled Liaison Docker images from images/*.tar into the local daemon.
-# Idempotent — re-running is safe.
+# Liaison Docker bundle installer.
+#   1. Load bundled images into the local Docker daemon.
+#   2. Interactively (or by countdown-default) configure LIAISON_PUBLIC_HOST.
+#   3. Ensure bind-mount dirs are writable by the container user (uid 1000).
+#   4. docker compose up -d.
+#   5. Tail logs until the first-run admin password is printed, then show it.
 set -eu
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-IMAGES_DIR="$SCRIPT_DIR/images"
+cd "$SCRIPT_DIR"
 
-if [ ! -d "$IMAGES_DIR" ]; then
-    echo "❌ $IMAGES_DIR not found. Are you running this from the extracted package root?" >&2
-    exit 1
-fi
+GREEN=$'\033[0;32m'
+YELLOW=$'\033[1;33m'
+RED=$'\033[0;31m'
+CYAN=$'\033[0;36m'
+BOLD=$'\033[1m'
+NC=$'\033[0m'
 
+log()  { printf "${GREEN}%s${NC}\n" "$*"; }
+warn() { printf "${YELLOW}%s${NC}\n" "$*"; }
+err()  { printf "${RED}%s${NC}\n" "$*" >&2; }
+
+# ---------------------------------------------------------------------------
+# 1. Environment checks
+# ---------------------------------------------------------------------------
 if ! command -v docker >/dev/null 2>&1; then
-    echo "❌ docker not found on PATH. Install Docker 20.10+ first." >&2
+    err "docker not found on PATH. Install Docker 20.10+ first."
     exit 1
 fi
 
-found=0
-for tar in "$IMAGES_DIR"/*.tar; do
+if docker compose version >/dev/null 2>&1; then
+    DC="docker compose"
+elif command -v docker-compose >/dev/null 2>&1; then
+    DC="docker-compose"
+else
+    err "docker compose plugin not found."
+    err "Install the compose v2 plugin: https://docs.docker.com/compose/install/"
+    exit 1
+fi
+
+# ---------------------------------------------------------------------------
+# 2. Load images
+# ---------------------------------------------------------------------------
+if [ ! -d "$SCRIPT_DIR/images" ]; then
+    err "images/ directory missing. Run this script from the extracted bundle root."
+    exit 1
+fi
+
+log "==> Loading Docker images"
+for tar in "$SCRIPT_DIR"/images/*.tar; do
     [ -f "$tar" ] || continue
-    found=1
-    echo "📥 Loading $(basename "$tar")..."
-    docker load -i "$tar"
+    printf "  %s\n" "$(basename "$tar")"
+    docker load -i "$tar" | sed 's/^/    /'
 done
 
-if [ "$found" -eq 0 ]; then
-    echo "❌ No *.tar images found under $IMAGES_DIR." >&2
-    exit 1
+# ---------------------------------------------------------------------------
+# 3. Detect public host + prompt (with countdown default)
+# ---------------------------------------------------------------------------
+detect_public_ip() {
+    local ip=""
+    for url in https://ifconfig.me https://ipinfo.io/ip https://api.ipify.org; do
+        ip=$(curl -fsS --max-time 5 "$url" 2>/dev/null | tr -d '[:space:]' || true)
+        if [[ "$ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "$ip"; return
+        fi
+    done
+    echo ""
+}
+
+if [ -f .env ]; then
+    warn "==> .env already exists, keeping it (delete it if you want to re-prompt)"
+else
+    log "==> Detecting public IP..."
+    DETECTED_IP=$(detect_public_ip)
+    if [ -n "$DETECTED_IP" ]; then
+        printf "  detected: ${CYAN}%s${NC}\n" "$DETECTED_IP"
+    else
+        warn "  could not auto-detect; you'll be asked to enter one."
+        DETECTED_IP=""
+    fi
+
+    DEFAULT_HOST="${DETECTED_IP:-localhost}"
+    printf "\n${BOLD}Enter public IP or domain${NC} [${CYAN}%s${NC}] (auto-accept in 30s): " "$DEFAULT_HOST"
+    if read -r -t 30 INPUT_HOST </dev/tty; then
+        PUBLIC_HOST="${INPUT_HOST:-$DEFAULT_HOST}"
+    else
+        echo
+        PUBLIC_HOST="$DEFAULT_HOST"
+        warn "  no input — using $PUBLIC_HOST"
+    fi
+
+    cp .env.example .env
+    # Portable in-place sed (BSD + GNU).
+    sed -e "s|^LIAISON_PUBLIC_HOST=.*|LIAISON_PUBLIC_HOST=${PUBLIC_HOST}|" .env > .env.tmp && mv .env.tmp .env
+    log "==> Wrote .env (LIAISON_PUBLIC_HOST=${PUBLIC_HOST})"
 fi
 
+# Load the final values for post-start messages.
+# shellcheck disable=SC1091
+set -a; . ./.env; set +a
+: "${LIAISON_PUBLIC_HOST:=localhost}"
+: "${MANAGER_PORT:=443}"
+
+# ---------------------------------------------------------------------------
+# 4. Pre-create bind-mount dirs with correct ownership (uid 1000 inside)
+# ---------------------------------------------------------------------------
+mkdir -p data certs logs
+# Best-effort: needs root on Linux. Silently ignore if we lack capability
+# (Docker Desktop on macOS/Windows auto-maps UIDs anyway).
+chown 1000:1000 data certs logs 2>/dev/null || true
+
+# ---------------------------------------------------------------------------
+# 5. Launch
+# ---------------------------------------------------------------------------
+log "==> Starting services"
+$DC up -d
+
+# ---------------------------------------------------------------------------
+# 6. Show connection info
+#    Fresh install: wait up to 60s for the entrypoint to print the new password.
+#    Re-run on existing data/.initialized: no new password is generated, so
+#    just tell the operator to use their existing credentials.
+# ---------------------------------------------------------------------------
 echo
-echo "✅ Images loaded. Next steps:"
-echo "   1. cp .env.example .env   # edit LIAISON_PUBLIC_HOST etc."
-echo "   2. docker compose up -d"
-echo "   3. docker compose logs liaison | grep -A5 'first-run credentials'"
+if [ -f data/.initialized ]; then
+    cat <<EOF
+${BOLD}${GREEN}============================================================${NC}
+  Liaison is up (reusing existing data).
+  URL:      ${CYAN}https://${LIAISON_PUBLIC_HOST}:${MANAGER_PORT}${NC}
+  Login:    use your existing admin credentials.
+${BOLD}${GREEN}============================================================${NC}
+
+Forgot the password? Reset it:
+  $DC exec liaison /opt/liaison/bin/password-generator \\
+      -password NEW_PASSWORD -email default@liaison.com
+
+Operate:
+  $DC ps
+  $DC logs -f liaison
+  $DC down          # stop (keeps data/ certs/ logs/)
+EOF
+    exit 0
+fi
+
+log "==> Waiting for first-run admin password..."
+PASSWORD=""
+for _ in $(seq 1 60); do
+    PASSWORD=$($DC logs liaison 2>&1 | grep -oE "Password:[[:space:]]+[A-Za-z0-9]+" | head -1 | awk '{print $2}')
+    if [ -n "$PASSWORD" ]; then break; fi
+    sleep 1
+done
+
+echo
+if [ -n "$PASSWORD" ]; then
+    cat <<EOF
+${BOLD}${GREEN}============================================================${NC}
+  Liaison is up.
+  URL:      ${CYAN}https://${LIAISON_PUBLIC_HOST}:${MANAGER_PORT}${NC}
+  Email:    ${LIAISON_ADMIN_EMAIL:-default@liaison.com}
+  Password: ${CYAN}${PASSWORD}${NC}
+${BOLD}${GREEN}============================================================${NC}
+
+Save the password — it is only printed once.
+
+Operate:
+  $DC ps
+  $DC logs -f liaison
+  $DC down          # stop (keeps data/ certs/ logs/)
+EOF
+else
+    warn "Could not capture the first-run password within 60s."
+    warn "Containers may still be starting. Inspect with:"
+    warn "  $DC logs liaison"
+    warn "  $DC logs liaison | grep -A5 'first-run credentials'"
+fi

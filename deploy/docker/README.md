@@ -98,12 +98,21 @@ docker compose logs -f frontier
 docker compose build --no-cache
 docker compose up -d
 
-# 彻底删除(保留数据)
+# 彻底删除(保留数据)— 对应离线包里的 ./uninstall.sh
 docker compose down
+docker rmi liaison/liaison:1.4.0 liaison/frontier:1.4.0
 
-# 彻底删除并清空数据(不可恢复)
+# 彻底删除并清空数据(不可恢复)— 对应离线包里的 ./uninstall.sh --purge
 docker compose down
-rm -rf data certs logs
+docker rmi liaison/liaison:1.4.0 liaison/frontier:1.4.0
+rm -rf data certs logs .env
+```
+
+离线分发包(`make package-docker` 产物)附带 `uninstall.sh` 做同样的事,方便不记命令:
+
+```bash
+./uninstall.sh            # 停容器 + 删镜像,保留数据
+./uninstall.sh --purge    # 再删 data/certs/logs/.env,需键入 yes 确认
 ```
 
 ## 重置管理员密码

@@ -78,7 +78,8 @@ echo "LIAISON_IMAGE_TAG=${TAG}" >> "$PACK_DIR/.env.example"
 rm -f "$PACK_DIR/.env.example.tmp"
 
 cp deploy/docker/load.sh "$PACK_DIR/load.sh"
-chmod +x "$PACK_DIR/load.sh"
+cp deploy/docker/uninstall.sh "$PACK_DIR/uninstall.sh"
+chmod +x "$PACK_DIR/load.sh" "$PACK_DIR/uninstall.sh"
 
 cat > "$PACK_DIR/README.md" <<EOF
 # Liaison ${VERSION} — Docker Bundle (offline)
@@ -98,45 +99,45 @@ Images shipped:
 ## Install
 
 \`\`\`bash
-# 1. Load images into the local Docker daemon
 ./load.sh
-
-# 2. Configure — at minimum set LIAISON_PUBLIC_HOST
-cp .env.example .env
-vim .env
-
-# 3. Start
-docker compose up -d
-
-# 4. Grab the one-time admin password (printed only on first start)
-docker compose logs liaison | grep -A5 'first-run credentials'
 \`\`\`
 
-Open \`https://<LIAISON_PUBLIC_HOST>:<MANAGER_PORT>\` and log in.
+That's it. The script will:
+
+1. \`docker load\` both bundled images.
+2. Auto-detect your public IP (fallback: prompt with 30s countdown default).
+3. Write \`.env\`, pre-create bind-mount dirs with the right ownership.
+4. \`docker compose up -d\`.
+5. Tail the liaison log, capture the one-time admin password, and print it.
+
+Open \`https://<LIAISON_PUBLIC_HOST>:<MANAGER_PORT>\` and log in with the printed password.
+
+Re-running \`./load.sh\` on the same host is safe — if \`.env\` already exists it is reused, and \`docker compose up -d\` is a no-op on unchanged services.
 
 ## Persistence
 
-First launch creates three host directories next to \`docker-compose.yaml\`:
+First launch creates three host directories next to \`docker-compose.yaml\`, bind-mounted into the containers:
 
 | dir | contents |
 |:---|:---|
-| \`data/\` | SQLite DB, init marker |
-| \`certs/\` | server.crt / server.key (shared between liaison & frontier) |
+| \`data/\` | SQLite DB (\`liaison.db\`), \`.initialized\` marker |
+| \`certs/\` | \`server.crt\` / \`server.key\` (shared between liaison & frontier) |
 | \`logs/\` | liaison process logs |
 
 ## Upgrade
 
 1. Download the new bundle, extract it to a fresh directory.
 2. Copy over your \`data/\`, \`certs/\`, \`logs/\`, and \`.env\` from the old directory.
-3. \`./load.sh && docker compose up -d\`.
+3. \`./load.sh\` — it will detect the existing \`.env\` and skip the prompt.
 
 ## Uninstall
 
 \`\`\`bash
-docker compose down                # stop + remove containers
-docker rmi ${LIAISON_IMAGE} ${FRONTIER_IMAGE}
-rm -rf data certs logs .env        # ⚠ nukes the database
+./uninstall.sh            # stop + remove containers and images, KEEP data/certs/logs/.env
+./uninstall.sh --purge    # also delete data/certs/logs/.env — DESTROYS the database
 \`\`\`
+
+Re-running \`./load.sh\` after a plain \`uninstall\` reinstalls the stack with all existing users / proxies / certs intact. After \`--purge\` it's a fresh install.
 
 See the repository's \`deploy/docker/README.md\` for the full reference (reverse proxy, custom certs, password reset, etc.).
 EOF
