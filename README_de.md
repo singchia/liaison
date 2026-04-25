@@ -1,4 +1,6 @@
-# <img src="web/public/liaison.png" alt="" width="48" style="vertical-align: middle;" /> Liaison
+<h2 align="center">
+  <img src="docs/diagrams/liaison-logo.svg" width="60" alt="" />&nbsp;Liaison
+</h2>
 
 [English](./README.md) | [简体中文](./README_zh.md) | [日本語](./README_ja.md) | [한국어](./README_ko.md) | [Español](./README_es.md) | [Français](./README_fr.md) | Deutsch
 
