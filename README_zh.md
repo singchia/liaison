@@ -1,5 +1,5 @@
 
-## <img src="docs/diagrams/liaison-logo.svg" height="32" alt="" /> Liaison
+## <img src="docs/diagrams/liaison-logo.svg" height="24" align="absmiddle" alt="" /> Liaison
 
 [English](./README.md) | 简体中文 | [日本語](./README_ja.md) | [한국어](./README_ko.md) | [Español](./README_es.md) | [Français](./README_fr.md) | [Deutsch](./README_de.md)
 
