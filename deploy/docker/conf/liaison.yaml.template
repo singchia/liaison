@@ -4,7 +4,7 @@ daemon:
     enable: true
 manager:
   listen:
-    addr: 0.0.0.0:8443
+    addr: 0.0.0.0:${MANAGER_PORT}
     network: tcp
     tls:
       enable: true
@@ -20,7 +20,7 @@ manager:
 frontier:
   dial:
     addrs:
-      - frontier:30011
+      - 127.0.0.1:30011
     network: tcp
     tls:
       enable: false

@@ -74,13 +74,15 @@ make package-docker
 
 `.gitignore` 已经忽略这三个目录。
 
-## 端口说明
+## 网络与端口
+
+容器以 `network_mode: host` 运行 —— 不走 docker bridge,也不做端口映射。`MANAGER_PORT` / `FRONTIER_PORT` 是直接绑在宿主机网卡上的端口,跟 systemd 部署完全等价。liaison 容器加了 `cap_add: NET_BIND_SERVICE`,所以可以以 uid=1000 的非 root 用户绑 443 这种特权端口。
 
 | 端口 | 用途 | 是否对外 |
 |:---|:---|:---|
-| `MANAGER_PORT`(默认 443)→ 8443 | Web 控制台 HTTPS | 是 |
-| `FRONTIER_PORT`(默认 30012)→ 30012 | 连接器接入 | 是 |
-| 30011(容器内) | liaison ↔ frontier 内部 | 否 |
+| `MANAGER_PORT`(默认 443) | Web 控制台 HTTPS | 是 |
+| `FRONTIER_PORT`(默认 30012) | 连接器接入 | 是 |
+| 127.0.0.1:30011 | liaison ↔ frontier 本地通信 | 否(loopback) |
 
 Edge 连接器在 Web 里创建时会自动把 `LIAISON_PUBLIC_HOST:FRONTIER_PORT` 写进安装命令。改了 `FRONTIER_PORT` 之后,已发出去的 edge 安装命令也会指向新端口,老的 edge 需要重新下发。
 

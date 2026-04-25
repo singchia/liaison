@@ -21,18 +21,27 @@ mkdir -p "$DATA_DIR" "$CERTS_DIR" "$LOG_DIR"
 : "${FRONTIER_PORT:=30012}"
 : "${LIAISON_PUBLIC_HOST:=localhost}"
 : "${MANAGER_PORT:=443}"
-: "${SERVER_URL:=https://${LIAISON_PUBLIC_HOST}:${MANAGER_PORT}}"
 : "${LIAISON_ADMIN_EMAIL:=default@liaison.com}"
+
+# server_url: omit :PORT for the well-known TLS / HTTP defaults so the URL
+# baked into the web console / install commands is canonical.
+if [ -z "${SERVER_URL:-}" ]; then
+    case "$MANAGER_PORT" in
+        443) SERVER_URL="https://${LIAISON_PUBLIC_HOST}" ;;
+        80)  SERVER_URL="http://${LIAISON_PUBLIC_HOST}" ;;
+        *)   SERVER_URL="https://${LIAISON_PUBLIC_HOST}:${MANAGER_PORT}" ;;
+    esac
+fi
 
 if [ ! -f "$CONF_DIR/liaison.yaml" ]; then
     if [ -z "${JWT_SECRET:-}" ]; then
         JWT_SECRET=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-32)
     fi
-    export FRONTIER_PORT SERVER_URL JWT_SECRET
+    export FRONTIER_PORT MANAGER_PORT SERVER_URL JWT_SECRET
     # shellcheck disable=SC2016
-    envsubst '${FRONTIER_PORT} ${SERVER_URL} ${JWT_SECRET}' \
+    envsubst '${FRONTIER_PORT} ${MANAGER_PORT} ${SERVER_URL} ${JWT_SECRET}' \
         < "$CONF_DIR/liaison.yaml.template" > "$CONF_DIR/liaison.yaml"
-    echo "[entrypoint] rendered $CONF_DIR/liaison.yaml (public_host=$LIAISON_PUBLIC_HOST frontier_port=$FRONTIER_PORT)"
+    echo "[entrypoint] rendered $CONF_DIR/liaison.yaml (public_host=$LIAISON_PUBLIC_HOST manager_port=$MANAGER_PORT frontier_port=$FRONTIER_PORT)"
 fi
 
 # ---- Generate TLS cert ----------------------------------------------------

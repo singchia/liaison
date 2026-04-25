@@ -11,7 +11,7 @@ FROM --platform=linux/amd64 debian:bookworm-slim
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        ca-certificates openssl sqlite3 bash tzdata gettext-base \
+        ca-certificates openssl sqlite3 bash tzdata gettext-base libcap2-bin \
     && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -g 1000 liaison && useradd -u 1000 -g 1000 -m -d /opt/liaison -s /bin/bash liaison
@@ -37,11 +37,15 @@ COPY --chown=liaison:liaison dist/edge/ /opt/liaison/edge/
 COPY deploy/docker/entrypoint-liaison.sh /usr/local/bin/entrypoint-liaison.sh
 COPY deploy/docker/conf/liaison.yaml.template /opt/liaison/conf/liaison.yaml.template
 RUN chmod +x /usr/local/bin/entrypoint-liaison.sh /opt/liaison/bin/liaison /opt/liaison/bin/password-generator \
-    && chown -R liaison:liaison /opt/liaison/edge
+    && chown -R liaison:liaison /opt/liaison/edge \
+    && setcap 'cap_net_bind_service=+ep' /opt/liaison/bin/liaison
 
 USER liaison
 WORKDIR /opt/liaison
 
-EXPOSE 8443
+# Container runs in host network mode (see docker-compose.yaml); EXPOSE
+# is informational only — liaison binds whatever MANAGER_PORT is set to,
+# 443 by default.
+EXPOSE 443
 ENTRYPOINT ["/usr/local/bin/entrypoint-liaison.sh"]
 CMD ["/opt/liaison/bin/liaison", "-c", "/opt/liaison/conf/liaison.yaml"]

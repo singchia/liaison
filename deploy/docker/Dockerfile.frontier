@@ -24,6 +24,8 @@ RUN chmod +x /usr/local/bin/entrypoint-frontier.sh /opt/liaison/bin/frontier
 USER liaison
 WORKDIR /opt/liaison
 
-EXPOSE 30011 30012
+# Host network mode: 30012 (edgebound) is public, 30011 (servicebound)
+# binds 127.0.0.1 only so it stays loopback-only on the host.
+EXPOSE 30012
 ENTRYPOINT ["/usr/local/bin/entrypoint-frontier.sh"]
 CMD ["/opt/liaison/bin/frontier", "--config", "/opt/liaison/conf/frontier.yaml"]
