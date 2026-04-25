@@ -1,15 +1,15 @@
 
-# Liaison
+# <img src="docs/diagrams/liaison-logo.svg" height="40" align="absmiddle" alt="" /> Liaison
 
-简体中文 | [English](./README.md)
+> **网络马上通达，轻松连接分布在不同位置的设备与应用**
 
 [![Go](https://github.com/liaisonio/liaison/actions/workflows/go.yml/badge.svg)](https://github.com/liaisonio/liaison/actions/workflows/go.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/liaisonio/liaison)](https://goreportcard.com/report/github.com/liaisonio/liaison)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![技术栈](https://img.shields.io/badge/Tech-Go%20%7C%20TypeScript%20%7C%20React-blue)](#技术栈一览)
-[![版本](https://img.shields.io/badge/Version-v1.4.0-green)](#)
+[![版本](https://img.shields.io/badge/Version-v1.5.0-green)](#)
 
-> **网络马上通达，轻松连接分布在不同位置的设备与应用**
+[English](./README.md) | 简体中文 | [日本語](./README_ja.md) | [한국어](./README_ko.md) | [Español](./README_es.md) | [Français](./README_fr.md) | [Deutsch](./README_de.md)
 
 ![Dashboard](docs/pages/home.png)
 
@@ -50,17 +50,19 @@ Liaison 是一个企业级应用访问解决方案，不暴露任何内网端口
 
 ## 🚀 快速开始
 
-### 📦 安装服务端
+服务端二选一,之后再安装连接器。
+
+### 📦 安装服务端 — 方式一：二进制 + systemd
 
 **1. 下载安装包并运行安装脚本**
 
 ```bash
 # 下载最新版本
-wget https://github.com/liaisonio/liaison/releases/download/v1.4.0/liaison-1.4.0-linux-amd64.tar.gz
+wget https://github.com/liaisonio/liaison/releases/download/v1.5.0/liaison-1.5.0-linux-amd64.tar.gz
 
 # 解压
-tar -xzf liaison-1.4.0-linux-amd64.tar.gz
-cd liaison-1.4.0-linux-amd64
+tar -xzf liaison-1.5.0-linux-amd64.tar.gz
+cd liaison-1.5.0-linux-amd64
 sudo ./install.sh
 ```
 
@@ -71,6 +73,21 @@ sudo ./install.sh
 安装完成后，访问 `https://你的公网IP` 即可进入 Web 控制台。
 
 > 💡 **提示**: 默认管理员账号密码请查看安装脚本输出或配置文件
+
+### 🐳 安装服务端 — 方式二：Docker Compose
+
+需要 Docker 20.10+ 及 `docker compose` 插件。安装包内含已构建好的镜像,无需拉仓库或拉镜像。
+
+```bash
+wget https://github.com/liaisonio/liaison/releases/download/v1.5.0/liaison-1.5.0-docker-amd64.tar.gz
+tar -xzf liaison-1.5.0-docker-amd64.tar.gz
+cd liaison-1.5.0-docker-amd64
+./load.sh
+```
+
+`load.sh` 会自动探测公网 IP(30 秒倒计时提示用户确认),加载镜像,启动容器,等 liaison 就绪后打印一次性管理员密码。记下密码,访问 `https://<公网IP>` 登录即可。
+
+数据 (`data/` SQLite)、TLS 证书 (`certs/`)、日志 (`logs/`) 以 bind mount 方式挂在 `docker-compose.yaml` 同目录下持久化。源码构建、升级 / 重置 / 反向代理 / 自定义证书等高阶用法见 [`deploy/docker/README.md`](deploy/docker/README.md)。
 
 ### 🔌 安装连接器
 

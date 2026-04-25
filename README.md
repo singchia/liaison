@@ -1,14 +1,14 @@
-# Liaison
+# <img src="docs/diagrams/liaison-logo.svg" height="40" align="absmiddle" alt="" /> Liaison
 
-English | [中文](./README_CN.md)
+> **Connector-powered access to devices and apps behind NAT**
 
 [![Go](https://github.com/liaisonio/liaison/actions/workflows/go.yml/badge.svg)](https://github.com/liaisonio/liaison/actions/workflows/go.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/liaisonio/liaison)](https://goreportcard.com/report/github.com/liaisonio/liaison)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Tech](https://img.shields.io/badge/Tech-Go%20%7C%20TypeScript%20%7C%20React-blue)](#)
-[![Version](https://img.shields.io/badge/Version-v1.4.0-green)](#)
+[![Version](https://img.shields.io/badge/Version-v1.5.0-green)](#)
 
-> **Connector-powered access to devices and apps behind NAT**
+English | [简体中文](./README_zh.md) | [日本語](./README_ja.md) | [한국어](./README_ko.md) | [Español](./README_es.md) | [Français](./README_fr.md) | [Deutsch](./README_de.md)
 
 ![Dashboard](docs/pages/home_en.png)
 
@@ -48,14 +48,16 @@ Use cases:
 
 ## Quick Start
 
-### Install Server
+Pick one of the two server deployment options, then install a connector.
+
+### Install Server — Option 1: Binary + systemd
 
 **1. Download**
 
 ```bash
-wget https://github.com/liaisonio/liaison/releases/download/v1.4.0/liaison-1.4.0-linux-amd64.tar.gz
-tar -xzf liaison-1.4.0-linux-amd64.tar.gz
-cd liaison-1.4.0-linux-amd64
+wget https://github.com/liaisonio/liaison/releases/download/v1.5.0/liaison-1.5.0-linux-amd64.tar.gz
+tar -xzf liaison-1.5.0-linux-amd64.tar.gz
+cd liaison-1.5.0-linux-amd64
 ```
 
 **2. Run install script**
@@ -71,6 +73,21 @@ You will be prompted for a public IP or domain; if none is entered within 30 sec
 Visit `https://your-public-ip` to access the Web console.
 
 > **Tip:** Default admin credentials are shown in the install script output or config.
+
+### Install Server — Option 2: Docker Compose
+
+Requires Docker 20.10+ with the `docker compose` plugin. The bundle ships `liaison` + `frontier` as two containers; images are pre-built — no registry or source checkout needed.
+
+```bash
+wget https://github.com/liaisonio/liaison/releases/download/v1.5.0/liaison-1.5.0-docker-amd64.tar.gz
+tar -xzf liaison-1.5.0-docker-amd64.tar.gz
+cd liaison-1.5.0-docker-amd64
+./load.sh
+```
+
+`load.sh` auto-detects your public IP (with a 30-second countdown prompt), loads the bundled images, starts the stack, and prints the one-time admin password when liaison is ready. Save the password and open `https://<public-ip>` to log in.
+
+Data (`data/` SQLite), TLS certs (`certs/`), and logs (`logs/`) are bind-mounted next to `docker-compose.yaml` for persistence. See [`deploy/docker/README.md`](deploy/docker/README.md) for source builds, upgrade / reset / reverse-proxy / custom-cert recipes.
 
 ### Install Connector
 

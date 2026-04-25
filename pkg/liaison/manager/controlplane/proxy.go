@@ -3,6 +3,7 @@ package controlplane
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"strings"
 	"time"
 
@@ -300,23 +301,26 @@ func (cp *controlPlane) transformProxy(proxy *model.Proxy) *v1.Proxy {
 		status = "unknown"
 	}
 
-	// 生成访问地址
+	// 生成访问地址 —— server_url 形如 https://<host>[:<manager_port>]，
+	// 这里只需要 host 部分,再拼 entry 自己的端口。
 	var accessURL string
 	if proxy.Application != nil && proxy.Port > 0 {
 		serverURL := cp.conf.Manager.ServerURL
 		if serverURL != "" {
-			if proxy.Application.ApplicationType == model.ApplicationTypeHTTP {
-				// HTTP: server_url + 端口
-				accessURL = fmt.Sprintf("%s:%d", serverURL, proxy.Port)
+			host := serverURL
+			if u, err := url.Parse(serverURL); err == nil && u.Host != "" {
+				host = u.Hostname() // 去掉 scheme + manager 端口
 			} else {
-				// TCP: server_url去掉https://，加上端口
-				url := serverURL
-				if strings.HasPrefix(url, "https://") {
-					url = strings.TrimPrefix(url, "https://")
-				} else if strings.HasPrefix(url, "http://") {
-					url = strings.TrimPrefix(url, "http://")
+				// 兜底:手动剥 scheme,再剥结尾 :port(只剥末尾,不影响 IPv6)
+				host = strings.TrimPrefix(strings.TrimPrefix(host, "https://"), "http://")
+				if i := strings.LastIndex(host, ":"); i > strings.LastIndex(host, "]") {
+					host = host[:i]
 				}
-				accessURL = fmt.Sprintf("%s:%d", url, proxy.Port)
+			}
+			if proxy.Application.ApplicationType == model.ApplicationTypeHTTP {
+				accessURL = fmt.Sprintf("https://%s:%d", host, proxy.Port)
+			} else {
+				accessURL = fmt.Sprintf("%s:%d", host, proxy.Port)
 			}
 		}
 	}

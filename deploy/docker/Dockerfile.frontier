@@ -1,0 +1,31 @@
+# Frontier runtime image
+# Expects `bin/frontier` to exist on host (produced by `make build-frontier-linux`).
+FROM --platform=linux/amd64 debian:bookworm-slim
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates bash tzdata gettext-base \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd -g 1000 liaison && useradd -u 1000 -g 1000 -m -d /opt/liaison -s /bin/bash liaison
+
+RUN mkdir -p \
+        /opt/liaison/bin \
+        /opt/liaison/conf \
+        /opt/liaison/certs \
+    && chown -R liaison:liaison /opt/liaison
+
+COPY --chown=liaison:liaison bin/frontier /opt/liaison/bin/frontier
+
+COPY deploy/docker/entrypoint-frontier.sh /usr/local/bin/entrypoint-frontier.sh
+COPY deploy/docker/conf/frontier.yaml.template /opt/liaison/conf/frontier.yaml.template
+RUN chmod +x /usr/local/bin/entrypoint-frontier.sh /opt/liaison/bin/frontier
+
+USER liaison
+WORKDIR /opt/liaison
+
+# Host network mode: 30012 (edgebound) is public, 30011 (servicebound)
+# binds 127.0.0.1 only so it stays loopback-only on the host.
+EXPOSE 30012
+ENTRYPOINT ["/usr/local/bin/entrypoint-frontier.sh"]
+CMD ["/opt/liaison/bin/frontier", "--config", "/opt/liaison/conf/frontier.yaml"]

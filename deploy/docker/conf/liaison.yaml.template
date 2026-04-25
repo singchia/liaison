@@ -1,0 +1,31 @@
+daemon:
+  pprof:
+    addr: 127.0.0.1:6060
+    enable: true
+manager:
+  listen:
+    addr: 0.0.0.0:${MANAGER_PORT}
+    network: tcp
+    tls:
+      enable: true
+      certs:
+      - cert: /opt/liaison/certs/server.crt
+        key: /opt/liaison/certs/server.key
+  db: /opt/liaison/data/liaison.db
+  packages_dir: /opt/liaison/edge
+  web_dir: /opt/liaison/web
+  frontier_edge_port: ${FRONTIER_PORT}
+  server_url: ${SERVER_URL}
+  jwt_secret: ${JWT_SECRET}
+frontier:
+  dial:
+    addrs:
+      - 127.0.0.1:30011
+    network: tcp
+    tls:
+      enable: false
+log:
+  level: info
+  file: /opt/liaison/logs/liaison.log
+  maxsize: 100
+  maxrolls: 10

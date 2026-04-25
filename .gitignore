@@ -52,6 +52,15 @@ certs/*.crt
 
 # Build artifacts
 /liaison-v*.tar.gz
+/liaison-[0-9]*-linux-*.tar.gz
+/liaison-[0-9]*-docker-*.tar.gz
+/liaison-[0-9]*-docker-*/
 /packages/
 /bin/
 /web/dist/
+
+# Docker compose runtime state
+/deploy/docker/.env
+/deploy/docker/data/
+/deploy/docker/certs/
+/deploy/docker/logs/

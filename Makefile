@@ -52,10 +52,25 @@
 #      - make package               # 打包完整的 Liaison 安装包（Linux）
 #                                    包含：
 #                                    - liaison (Linux amd64)
-#                                    - liaison-edge (所有平台：linux-amd64, linux-arm64, 
+#                                    - liaison-edge (所有平台：linux-amd64, linux-arm64,
 #                                                    darwin-amd64, darwin-arm64, windows-amd64)
 #                                    - 前端文件 (web/dist)
 #                                    - systemd 配置文件
+#
+#  10. Docker Compose 部署（仅服务端：liaison + frontier）
+#      前置：先跑 `make package`（产出 bin/web/edge/frontier 等构件），Docker 镜像只做 COPY。
+#      - make image-liaison          # 构建 liaison runtime 镜像
+#      - make image-frontier         # 构建 frontier runtime 镜像
+#      - make images                 # 同时构建两个镜像
+#      - make compose-up             # 启动（需要 deploy/docker/.env）
+#      - make compose-down           # 停止并移除容器
+#      - make compose-logs           # 跟踪两个服务的日志
+#      - make package-docker         # 输出离线分发包
+#                                    liaison-<VERSION>-docker-amd64.tar.gz 含：
+#                                    - images/{liaison,frontier}.tar（docker save）
+#                                    - docker-compose.yaml（release 版，无 build: 段）
+#                                    - .env.example（预钉镜像 tag）
+#                                    - load.sh / README.md
 #
 # 注意事项：
 #   - liaison 需要 CGO（SQLite），本地构建需要 CGO_ENABLED=1
@@ -204,7 +219,7 @@ build-frontier-linux:
 		echo "✅ frontier binary already exists, skipping download"; \
 	else \
 		echo "Downloading frontier-linux-amd64 from GitHub releases..."; \
-		curl -L -o ./bin/frontier https://github.com/singchia/frontier/releases/download/v1.2.3-rc.2/frontier-linux-amd64 && \
+		curl -L -o ./bin/frontier https://github.com/singchia/frontier/releases/download/v1.2.4/frontier-linux-amd64 && \
 		chmod +x ./bin/frontier && \
 		echo "✅ Downloaded: ./bin/frontier"; \
 	fi
@@ -469,6 +484,56 @@ package: build-linux build-edge-all package-edge-all build-web build-tools-linux
 pack: package
 
 # ============================================================================
+# Docker images (server-side: liaison + frontier)
+# Images are "thin": they COPY pre-built artifacts produced by `make package`.
+# Run `make package` first (or at least build-linux + build-web + build-tools-linux
+# + build-edge-all + package-edge-all + build-frontier-linux).
+# ============================================================================
+DOCKER_COMPOSE_DIR = deploy/docker
+LIAISON_IMAGE_REGISTRY ?= liaison
+LIAISON_IMAGE_TAG ?= $(shell cat VERSION 2>/dev/null | tr -d 'v' || echo latest)
+
+.PHONY: image-liaison
+image-liaison:
+	@if [ ! -f bin/liaison ] || [ ! -f bin/password-generator ] || [ ! -d web/dist ]; then \
+		echo "❌ Missing artifacts. Run 'make package' first."; \
+		exit 1; \
+	fi
+	docker build -t $(LIAISON_IMAGE_REGISTRY)/liaison:$(LIAISON_IMAGE_TAG) \
+		-f $(DOCKER_COMPOSE_DIR)/Dockerfile.liaison .
+	@echo "✅ Built $(LIAISON_IMAGE_REGISTRY)/liaison:$(LIAISON_IMAGE_TAG)"
+
+.PHONY: image-frontier
+image-frontier: build-frontier-linux
+	docker build -t $(LIAISON_IMAGE_REGISTRY)/frontier:$(LIAISON_IMAGE_TAG) \
+		-f $(DOCKER_COMPOSE_DIR)/Dockerfile.frontier .
+	@echo "✅ Built $(LIAISON_IMAGE_REGISTRY)/frontier:$(LIAISON_IMAGE_TAG)"
+
+.PHONY: images
+images: image-liaison image-frontier
+
+.PHONY: compose-up
+compose-up:
+	@if [ ! -f $(DOCKER_COMPOSE_DIR)/.env ]; then \
+		echo "❌ $(DOCKER_COMPOSE_DIR)/.env not found. Copy .env.example and edit first."; \
+		exit 1; \
+	fi
+	cd $(DOCKER_COMPOSE_DIR) && docker compose up -d
+
+.PHONY: compose-down
+compose-down:
+	cd $(DOCKER_COMPOSE_DIR) && docker compose down
+
+.PHONY: compose-logs
+compose-logs:
+	cd $(DOCKER_COMPOSE_DIR) && docker compose logs -f
+
+.PHONY: package-docker
+package-docker: images
+	@chmod +x $(DOCKER_COMPOSE_DIR)/package-docker.sh
+	@$(DOCKER_COMPOSE_DIR)/package-docker.sh
+
+# ============================================================================
 # Version sync
 # Usage:
 #   make update-version version=1.2.7
@@ -491,9 +556,9 @@ update-version version:
 		exit 1; \
 	fi; \
 	echo "$$NEW_VERSION" > VERSION; \
-	for f in README.md README_CN.md README_EN.md; do \
+	for f in README.md README_zh.md README_ja.md README_ko.md README_es.md README_fr.md README_de.md; do \
 		if [ -f "$$f" ]; then \
 			sed -E "s/v[0-9]+\.[0-9]+\.[0-9]+/$$NEW_VERSION/g" "$$f" > "$$f.tmp" && mv "$$f.tmp" "$$f"; \
 		fi; \
 	done; \
-	echo "✅ Updated version to $$NEW_VERSION in VERSION, README.md, README_CN.md, README_EN.md"
+	echo "✅ Updated version to $$NEW_VERSION in VERSION + all language READMEs"
