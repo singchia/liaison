@@ -1,7 +1,7 @@
 
 # <img src="docs/diagrams/liaison-logo.svg" height="40" align="absmiddle" alt="" /> Liaison
 
-[English](./README.md) | 简体中文 | [日本語](./README_ja.md) | [한국어](./README_ko.md) | [Español](./README_es.md) | [Français](./README_fr.md) | [Deutsch](./README_de.md)
+> **网络马上通达，轻松连接分布在不同位置的设备与应用**
 
 [![Go](https://github.com/liaisonio/liaison/actions/workflows/go.yml/badge.svg)](https://github.com/liaisonio/liaison/actions/workflows/go.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/liaisonio/liaison)](https://goreportcard.com/report/github.com/liaisonio/liaison)
@@ -9,7 +9,7 @@
 [![技术栈](https://img.shields.io/badge/Tech-Go%20%7C%20TypeScript%20%7C%20React-blue)](#技术栈一览)
 [![版本](https://img.shields.io/badge/Version-v1.5.0-green)](#)
 
-> **网络马上通达，轻松连接分布在不同位置的设备与应用**
+[English](./README.md) | 简体中文 | [日本語](./README_ja.md) | [한국어](./README_ko.md) | [Español](./README_es.md) | [Français](./README_fr.md) | [Deutsch](./README_de.md)
 
 ![Dashboard](docs/pages/home.png)
 

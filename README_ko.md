@@ -1,6 +1,6 @@
 # <img src="docs/diagrams/liaison-logo.svg" height="40" align="absmiddle" alt="" /> Liaison
 
-[English](./README.md) | [简体中文](./README_zh.md) | [日本語](./README_ja.md) | 한국어 | [Español](./README_es.md) | [Français](./README_fr.md) | [Deutsch](./README_de.md)
+> **커넥터 기반으로 NAT 뒤의 기기와 앱에 접근**
 
 [![Go](https://github.com/liaisonio/liaison/actions/workflows/go.yml/badge.svg)](https://github.com/liaisonio/liaison/actions/workflows/go.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/liaisonio/liaison)](https://goreportcard.com/report/github.com/liaisonio/liaison)
@@ -8,7 +8,7 @@
 [![Tech](https://img.shields.io/badge/Tech-Go%20%7C%20TypeScript%20%7C%20React-blue)](#)
 [![Version](https://img.shields.io/badge/Version-v1.5.0-green)](#)
 
-> **커넥터 기반으로 NAT 뒤의 기기와 앱에 접근**
+[English](./README.md) | [简体中文](./README_zh.md) | [日本語](./README_ja.md) | 한국어 | [Español](./README_es.md) | [Français](./README_fr.md) | [Deutsch](./README_de.md)
 
 ![Dashboard](docs/pages/home_en.png)
 
