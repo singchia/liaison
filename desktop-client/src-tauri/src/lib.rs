@@ -190,6 +190,23 @@ async fn cmd_set_server(
     Ok(())
 }
 
+/// Headless cleanup invoked at uninstall time (see main.rs). Deletes
+/// the active server's PAT from the OS credential store so the
+/// uninstaller doesn't leave a leftover entry behind. Also tries the
+/// legacy un-namespaced slot for users upgrading from a build that
+/// pre-dates per-host keychain namespacing. Best-effort: any failure
+/// is swallowed so an unfixable credential entry doesn't block the
+/// uninstaller.
+pub fn cleanup_credentials() {
+    let s = crate::state::load();
+    if !s.base_url.is_empty() {
+        let _ = auth::delete_pat_from_keychain(&s.base_url);
+    }
+    // Legacy "pat" entry (no host suffix). delete_pat_from_keychain
+    // routes through keychain_user("") -> no host -> legacy slot.
+    let _ = auth::delete_pat_from_keychain("");
+}
+
 pub fn debug_log(msg: impl AsRef<str>) {
     use std::io::Write;
     let Ok(dir) = edge_supervisor::liaison_log_dir() else {

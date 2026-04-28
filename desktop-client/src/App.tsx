@@ -46,6 +46,23 @@ function hostFromUrl(url: string): string {
   }
 }
 
+function GearIcon() {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="8" cy="8" r="2.2" />
+      <path d="M8 1.5v1.6M8 12.9v1.6M1.5 8h1.6M12.9 8h1.6M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1" />
+    </svg>
+  );
+}
+
 function App() {
   const [status, setStatus] = useState<StatusPayload | null>(null);
   const [busy, setBusy] = useState(false);
@@ -177,8 +194,10 @@ function App() {
             className="server__change"
             disabled={busy}
             onClick={() => startEditServer(base_url)}
+            aria-label="更改服务器"
+            title="更改服务器"
           >
-            更改
+            <GearIcon />
           </button>
         </div>
       )}

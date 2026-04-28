@@ -15,7 +15,7 @@
         "label": "popup",
         "title": "Liaison",
         "width": 320,
-        "height": 270,
+        "height": 300,
         "visible": false,
         "decorations": false,
         "transparent": true,
@@ -44,6 +44,11 @@
     ],
     "macOS": {
       "minimumSystemVersion": "10.13"
+    },
+    "windows": {
+      "nsis": {
+        "installerHooks": "./installer-hooks.nsh"
+      }
     }
   }
 }
