@@ -135,15 +135,22 @@ pub fn save_pat_to_keychain(base_url: &str, pat: &str) -> Result<(), AuthError> 
     Ok(())
 }
 
-/// Read the PAT for `base_url`. Falls back to the legacy un-namespaced
-/// entry so users upgrading from the single-server build don't get
-/// logged out the first time they launch the multi-server build.
+/// Read the PAT for `base_url`. Falls back to the legacy
+/// un-namespaced slot **only when the active server is the public
+/// SaaS host** (the single-server build always pointed there, so a
+/// legacy entry can only have come from that deployment). For any
+/// other host — e.g. a private deployment — we never reuse the
+/// legacy PAT, since cross-deployment PATs don't validate against
+/// each other and would leave the UI thinking it's logged in when
+/// the actual API would 401.
 pub fn get_pat_from_keychain(base_url: &str) -> Result<String, AuthError> {
     let user = keychain_user(base_url);
     let entry = keyring::Entry::new(KEYCHAIN_SERVICE, &user)?;
     match entry.get_password() {
         Ok(pat) => Ok(pat),
-        Err(keyring::Error::NoEntry) if user != KEYCHAIN_USER_LEGACY => {
+        Err(keyring::Error::NoEntry)
+            if user != KEYCHAIN_USER_LEGACY && is_default_saas_host(base_url) =>
+        {
             let legacy = keyring::Entry::new(KEYCHAIN_SERVICE, KEYCHAIN_USER_LEGACY)?;
             Ok(legacy.get_password()?)
         }
@@ -151,9 +158,24 @@ pub fn get_pat_from_keychain(base_url: &str) -> Result<String, AuthError> {
     }
 }
 
+fn is_default_saas_host(base_url: &str) -> bool {
+    matches!(
+        url::Url::parse(base_url)
+            .ok()
+            .and_then(|u| u.host_str().map(str::to_string)),
+        Some(h) if h == "liaison.cloud"
+    )
+}
+
+/// Delete the PAT for `base_url`. Also clears the legacy un-namespaced
+/// slot — that slot can only have come from a single-server build
+/// (always SaaS), so leaving it around after an explicit logout would
+/// silently revive the session via the get_pat_from_keychain fallback.
 pub fn delete_pat_from_keychain(base_url: &str) -> Result<(), AuthError> {
     let entry = keyring::Entry::new(KEYCHAIN_SERVICE, &keychain_user(base_url))?;
-    entry.delete_credential()?;
+    let _ = entry.delete_credential();
+    let legacy = keyring::Entry::new(KEYCHAIN_SERVICE, KEYCHAIN_USER_LEGACY)?;
+    let _ = legacy.delete_credential();
     Ok(())
 }
 
@@ -255,6 +277,38 @@ mod tests {
     fn parse_callback_rejects_state_mismatch() {
         let err = parse_callback("/callback?state=other&token=t", "expected").unwrap_err();
         assert!(matches!(err, AuthError::StateMismatch));
+    }
+
+    #[test]
+    fn keychain_user_namespaces_by_host() {
+        assert_eq!(keychain_user("https://liaison.cloud"), "pat@liaison.cloud");
+        assert_eq!(
+            keychain_user("https://liaison.example.com:8443/dashboard/"),
+            "pat@liaison.example.com",
+        );
+    }
+
+    #[test]
+    fn keychain_user_falls_back_to_legacy_for_garbage_url() {
+        assert_eq!(keychain_user(""), KEYCHAIN_USER_LEGACY);
+        assert_eq!(keychain_user("not-a-url"), KEYCHAIN_USER_LEGACY);
+    }
+
+    #[test]
+    fn legacy_fallback_only_kicks_in_for_saas_host() {
+        // The single-server build always pointed at liaison.cloud, so a
+        // legacy keychain entry can only have come from there. Allow
+        // fallback for liaison.cloud, refuse for any other host —
+        // otherwise a private-deployment user upgrading the client
+        // gets a stale SaaS PAT silently bound to their private base
+        // URL, the dashboard reports "logged in", and resume / login
+        // both stop working.
+        assert!(is_default_saas_host("https://liaison.cloud"));
+        assert!(is_default_saas_host("https://liaison.cloud/dashboard/"));
+        assert!(!is_default_saas_host("https://liaison.example.com"));
+        assert!(!is_default_saas_host("https://192.168.1.10"));
+        assert!(!is_default_saas_host("not-a-url"));
+        assert!(!is_default_saas_host(""));
     }
 
     #[test]
