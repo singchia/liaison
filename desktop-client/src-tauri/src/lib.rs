@@ -139,7 +139,27 @@ async fn cmd_login(app: AppHandle, state: State<'_, AppState>) -> Result<(), Str
     write_edge_config(&config_path, &cfg)
         .map_err(|e| login_rollback(&base_url, e.to_string()))?;
 
+    // Logging in implies the user wants to be connected. If state.json
+    // still carries `intended = Stopped` from an earlier pause on the
+    // old server, the new supervisor would inherit it and the popup
+    // would land on Paused, forcing a manual 恢复连接 click. Reset
+    // before start_supervisor reads state.json so the run loop sees
+    // Running on the very first poll.
+    persist_intended(IntendedState::Running);
+
     start_supervisor(&app, &state, binary_path, config_path, Some(pat));
+
+    // Pull the popup back to the front. The browser took over focus
+    // for the OAuth round-trip and the blur handler hid the popup
+    // somewhere along the way; without this the user finishes login
+    // and finds nothing visibly happened, then has to dig the tray
+    // icon out of the system tray overflow to see the new state.
+    if let Some(popup) = app.get_webview_window("popup") {
+        position_popup_at_corner(&popup);
+        let _ = popup.unminimize();
+        let _ = popup.show();
+        let _ = popup.set_focus();
+    }
     Ok(())
 }
 
@@ -194,7 +214,10 @@ async fn cmd_set_server(
     let _ = std::fs::remove_file(&state.config_path);
 
     // Swap in the new server. Persist before emitting so the next
-    // cmd_get_status reflects the new state.
+    // cmd_get_status reflects the new state. Also reset intent to
+    // Running — switching servers is a deliberate fresh start, so
+    // the old server's pause state shouldn't carry forward to the
+    // new deployment's first launch.
     {
         let mut s = state.server.lock().expect("poisoned");
         s.base_url = trimmed.clone();
@@ -202,6 +225,7 @@ async fn cmd_set_server(
     }
     let mut persisted = crate::state::load();
     persisted.base_url = trimmed;
+    persisted.set_intended(IntendedState::Running);
     crate::state::save(&persisted);
 
     // Tell the popup to repaint as LoggedOut.
