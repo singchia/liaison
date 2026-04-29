@@ -145,21 +145,40 @@ impl ApiClient {
             header::HeaderValue::from_static("application/json"),
         );
 
+        let base_url_owned = base_url.into().trim_end_matches('/').to_string();
+
         let mut builder = reqwest::Client::builder()
             .default_headers(headers)
             .user_agent(USER_AGENT)
             .timeout(std::time::Duration::from_secs(DEFAULT_TIMEOUT_SECS));
-        if std::env::var("LIAISON_INSECURE_TLS")
+
+        // Trust validation strategy:
+        //   - SaaS host (liaison.cloud): always validate certs.
+        //   - Anything else (private / self-hosted): default to skip,
+        //     because private deployments very commonly run with self-
+        //     signed certs and otherwise cmd_login partially succeeds
+        //     (PAT saved to keychain, then create_edge fails on the
+        //     TLS handshake) — leaving the user stuck in "logged in
+        //     but no edge.yaml" state.
+        //   - LIAISON_INSECURE_TLS env var still forces skip on any host.
+        let force_skip = std::env::var("LIAISON_INSECURE_TLS")
             .ok()
             .filter(|s| !s.is_empty() && s != "0")
-            .is_some()
-        {
+            .is_some();
+        let host_is_saas = url::Url::parse(&base_url_owned)
+            .ok()
+            .and_then(|u| u.host_str().map(str::to_string))
+            .map(|h| h == "liaison.cloud")
+            .unwrap_or(false);
+        if force_skip || !host_is_saas {
             builder = builder.danger_accept_invalid_certs(true);
         }
         let client = builder.build()?;
 
-        let base_url = base_url.into().trim_end_matches('/').to_string();
-        Ok(Self { base_url, client })
+        Ok(Self {
+            base_url: base_url_owned,
+            client,
+        })
     }
 
     pub async fn get_profile(&self) -> Result<Profile, ApiError> {

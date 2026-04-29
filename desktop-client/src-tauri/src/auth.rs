@@ -125,7 +125,7 @@ where
     F: FnOnce(&str) -> Result<(), AuthError>,
 {
     let cli_auth_path = discover_cli_auth_path(base_url).await;
-    let pending = start_login(base_url, cli_auth_path, None)?;
+    let pending = start_login(base_url, &cli_auth_path, None)?;
     open_browser(&pending.auth_url)?;
     let pat = pending
         .await_token(Duration::from_secs(DEFAULT_LOGIN_TIMEOUT_SECS))
@@ -215,42 +215,75 @@ fn parse_callback(path_with_query: &str, expected_state: &str) -> Result<String,
     Ok(token)
 }
 
-/// Candidate paths for the dashboard's CliAuth React route. liaison-cloud
-/// builds the dashboard with `base: '/dashboard/'` so the route lives at
-/// `/dashboard/cli-auth`; private deployments commonly leave `base`
-/// unset and the same React route ends up at `/cli-auth`. We probe
-/// both at login time and use whichever serves a 2xx.
-const CLI_AUTH_PATHS: &[&str] = &["/dashboard/cli-auth", "/cli-auth"];
-
-/// Probe `base_url` to figure out where the CliAuth page is mounted.
-/// Best-effort; on any failure (timeout, TLS, both 404) we fall back
-/// to the SaaS-style `/dashboard/cli-auth` since that's the bigger
-/// user population and the harmless wrong guess (the user just sees
-/// a blank tab and can correct the URL by hand).
+/// Where the dashboard SPA's CliAuth route lives, derived at login
+/// time by inspecting the deployed dashboard's index.html. Falls back
+/// to the SaaS-style `/dashboard/cli-auth` if the probe can't decide.
 ///
-/// Self-signed certs are accepted on the probe. The probe is a HEAD-
-/// like read; the real auth flow happens in the user's browser, which
-/// does its own cert validation, so trusting an attacker here at most
-/// gets us a wrong-path open — not a credential leak.
-pub async fn discover_cli_auth_path(base_url: &str) -> &'static str {
+/// We can't just status-probe `/cli-auth` vs `/dashboard/cli-auth`
+/// because the dashboard's nginx typically uses `try_files $uri /index.html`
+/// and returns 200 + the SPA index for any path — including ones the
+/// React router has no route for. So both candidates "succeed" and
+/// the desktop blindly picks the wrong one.
+///
+/// Reliable signal: umi builds bake the dashboard's `base` into asset
+/// paths in the index.html. Private deployments leave `base` at `/`
+/// so scripts load from `/umi.js`; SaaS sets `base: '/dashboard/'`
+/// so scripts load from `/dashboard/umi.js`. Reading that prefix
+/// tells us where CliAuth lives.
+///
+/// Self-signed certs are accepted on the probe — private deployments
+/// commonly use them, and the actual auth flow runs in the user's
+/// browser which validates certs itself, so trusting a hostile probe
+/// would at most open a wrong path (no credential exposure).
+pub async fn discover_cli_auth_path(base_url: &str) -> String {
+    const FALLBACK: &str = "/dashboard/cli-auth";
     let client = match reqwest::Client::builder()
         .danger_accept_invalid_certs(true)
-        .timeout(std::time::Duration::from_secs(5))
+        .timeout(std::time::Duration::from_secs(8))
         .build()
     {
         Ok(c) => c,
-        Err(_) => return CLI_AUTH_PATHS[0],
+        Err(_) => return FALLBACK.to_string(),
     };
     let base = base_url.trim_end_matches('/');
-    for path in CLI_AUTH_PATHS {
-        let url = format!("{base}{path}");
-        if let Ok(resp) = client.get(&url).send().await {
-            if resp.status().is_success() {
-                return path;
-            }
+    // Likely roots where the dashboard SPA is mounted. Try root first
+    // (private layout), then /dashboard/ (SaaS layout). Whichever
+    // returns a body containing umi.js wins.
+    for root in &["/", "/dashboard/"] {
+        let url = format!("{base}{root}");
+        let Ok(resp) = client.get(&url).send().await else {
+            continue;
+        };
+        if !resp.status().is_success() {
+            continue;
+        }
+        let Ok(body) = resp.text().await else { continue };
+        if let Some(prefix) = umi_base_prefix(&body) {
+            // prefix ends with "/", so concatenating "cli-auth" gives
+            // the right absolute path.
+            return format!("{prefix}cli-auth");
         }
     }
-    CLI_AUTH_PATHS[0]
+    FALLBACK.to_string()
+}
+
+/// Extract the dashboard's base path from its index.html by finding
+/// the `<script src="...umi.js">` tag and returning everything before
+/// `umi.js`. Returns paths like `/` or `/dashboard/`.
+fn umi_base_prefix(html: &str) -> Option<String> {
+    // Find the closing-quote of `umi.js"` and walk back to the opening
+    // src=" so we capture exactly the URL. Tolerate single quotes too
+    // in case some build tool emits them.
+    let needle_end = html.find("umi.js\"").or_else(|| html.find("umi.js'"))?;
+    let before = &html[..needle_end];
+    let src_marker = before.rfind("src=\"").or_else(|| before.rfind("src='"))?;
+    let src_start = src_marker + 5; // len of `src="` / `src='`
+    let path = &html[src_start..needle_end];
+    if path.starts_with('/') && path.ends_with('/') {
+        Some(path.to_string())
+    } else {
+        None
+    }
 }
 
 fn build_auth_url(
@@ -387,6 +420,38 @@ mod tests {
     fn keychain_user_falls_back_to_legacy_for_garbage_url() {
         assert_eq!(keychain_user(""), KEYCHAIN_USER_LEGACY);
         assert_eq!(keychain_user("not-a-url"), KEYCHAIN_USER_LEGACY);
+    }
+
+    #[test]
+    fn umi_base_prefix_extracts_root_for_private_dashboard() {
+        // Real built index.html shape from a private (umirc base = '/').
+        let html = r#"<!DOCTYPE html><html><head>
+<link rel="stylesheet" href="/umi.css">
+<script src="/preload_helper.js"></script>
+</head><body><div id="root"></div>
+<script src="/umi.js"></script></body></html>"#;
+        assert_eq!(umi_base_prefix(html).as_deref(), Some("/"));
+    }
+
+    #[test]
+    fn umi_base_prefix_extracts_dashboard_for_saas() {
+        // Real built index.html shape from liaison-cloud (umirc base = '/dashboard/').
+        let html = r#"<!DOCTYPE html><html><head>
+<link rel="stylesheet" href="/dashboard/umi.css">
+<script src="/dashboard/umami-config.js"></script>
+<script src="/dashboard/preload_helper.js"></script>
+</head><body><div id="root"></div>
+<script src="/dashboard/umi.js"></script></body></html>"#;
+        assert_eq!(umi_base_prefix(html).as_deref(), Some("/dashboard/"));
+    }
+
+    #[test]
+    fn umi_base_prefix_returns_none_for_marketing_site() {
+        // SaaS root marketing page has no umi.js script, so we should
+        // refuse to guess and let the probe try the next candidate.
+        let html = r#"<!DOCTYPE html><html><head><title>Welcome</title></head>
+<body>marketing landing</body></html>"#;
+        assert!(umi_base_prefix(html).is_none());
     }
 
     #[test]

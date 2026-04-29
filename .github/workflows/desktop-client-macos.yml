@@ -78,6 +78,24 @@ jobs:
         working-directory: desktop-client
         run: pnpm tauri build --target universal-apple-darwin
 
+      - name: Stamp .dmg filename with date + commit
+        # Tauri's default name (Liaison_0.1.0_universal.dmg) is stable so
+        # the rolling URL doesn't change, but a stale cached download is
+        # indistinguishable from a fresh one. Add a second .dmg whose
+        # filename embeds the build date + short sha, so a tester can
+        # tell at a glance which build they're holding.
+        shell: bash
+        run: |
+          sha="${GITHUB_SHA:0:7}"
+          date="$(date -u +%Y%m%d-%H%M)"
+          stamp="_${date}_${sha}"
+          bd="desktop-client/src-tauri/target/universal-apple-darwin/release/bundle/dmg"
+          for f in "$bd"/*.dmg; do
+            base="${f%.dmg}"
+            cp "$f" "${base}${stamp}.dmg"
+            echo "  stamped: ${base}${stamp}.dmg"
+          done
+
       - name: Locate produced bundle
         id: bundles
         shell: bash

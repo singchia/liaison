@@ -104,7 +104,7 @@ async fn cmd_login(app: AppHandle, state: State<'_, AppState>) -> Result<(), Str
     // /dashboard/cli-auth, private deployments commonly use /cli-auth)
     // so a single client binary works against either without a setting.
     let cli_auth_path = auth::discover_cli_auth_path(&base_url).await;
-    let pending = auth::start_login(&base_url, cli_auth_path, None)
+    let pending = auth::start_login(&base_url, &cli_auth_path, None)
         .map_err(|e| e.to_string())?;
     let url = pending.auth_url.clone();
     app.opener()
@@ -117,12 +117,16 @@ async fn cmd_login(app: AppHandle, state: State<'_, AppState>) -> Result<(), Str
         .map_err(|e| e.to_string())?;
     auth::save_pat_to_keychain(&base_url, &pat).map_err(|e| e.to_string())?;
 
-    let api =
-        api_client::ApiClient::new(&base_url, &pat).map_err(|e| e.to_string())?;
+    // From here on, any failure must roll the keychain entry back —
+    // otherwise the popup sees a stored PAT, decides we're "logged
+    // in but not running", paints the 恢复连接 button, and gets stuck
+    // because no edge.yaml ever got written.
+    let api = api_client::ApiClient::new(&base_url, &pat)
+        .map_err(|e| login_rollback(&base_url, e.to_string()))?;
     let keys = api
         .create_edge(DESKTOP_EDGE_NAME, "menubar GUI")
         .await
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| login_rollback(&base_url, e.to_string()))?;
 
     let cfg = EdgeConfig {
         manager_addr,
@@ -132,10 +136,20 @@ async fn cmd_login(app: AppHandle, state: State<'_, AppState>) -> Result<(), Str
         insecure_skip_verify: true,
         log_file,
     };
-    write_edge_config(&config_path, &cfg).map_err(|e| e.to_string())?;
+    write_edge_config(&config_path, &cfg)
+        .map_err(|e| login_rollback(&base_url, e.to_string()))?;
 
     start_supervisor(&app, &state, binary_path, config_path, Some(pat));
     Ok(())
+}
+
+/// Wipe the per-host PAT and surface the original error. Used by
+/// cmd_login when a step after save_pat_to_keychain fails so the
+/// keychain doesn't end up populated for a session we couldn't
+/// actually finish setting up.
+fn login_rollback(base_url: &str, err: String) -> String {
+    let _ = auth::delete_pat_from_keychain(base_url);
+    err
 }
 
 #[tauri::command]
