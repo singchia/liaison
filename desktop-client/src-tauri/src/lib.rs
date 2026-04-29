@@ -642,40 +642,20 @@ pub fn run() {
                 })
                 .build(app)?;
 
-            // On macOS the popup follows the menubar pattern: borderless,
-            // tray-anchored, hides on focus loss. On Windows users
-            // expect a normal desktop window — visible in the taskbar,
-            // chrome with min/max/close, doesn't disappear when they
-            // click elsewhere. The tray icon stays as a secondary
-            // entry point either way.
+            // Hide popup when it loses focus (clicking elsewhere).
+            // Skipped during the brief launch window so the splash
+            // popup we explicitly show below isn't auto-hidden by
+            // the event that immediately follows window creation.
             let blur_armed = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
             if let Some(popup) = app.get_webview_window("popup") {
-                #[cfg(target_os = "windows")]
-                {
-                    let _ = popup.set_skip_taskbar(false);
-                    let _ = popup.set_decorations(true);
-                }
-
-                let popup_clone = popup.clone();
-                #[cfg(not(target_os = "windows"))]
+                let popup_for_blur = popup.clone();
                 let armed = blur_armed.clone();
-                popup.on_window_event(move |event| match event {
-                    // macOS / Linux: classic menubar auto-hide.
-                    #[cfg(not(target_os = "windows"))]
-                    WindowEvent::Focused(false) => {
+                popup.on_window_event(move |event| {
+                    if let WindowEvent::Focused(false) = event {
                         if armed.load(std::sync::atomic::Ordering::Relaxed) {
-                            let _ = popup_clone.hide();
+                            let _ = popup_for_blur.hide();
                         }
                     }
-                    // Windows: pressing the X minimizes-to-tray instead
-                    // of quitting, so the tray icon and any background
-                    // edge subprocess survive a stray close-button.
-                    #[cfg(target_os = "windows")]
-                    WindowEvent::CloseRequested { api, .. } => {
-                        let _ = popup_clone.hide();
-                        api.prevent_close();
-                    }
-                    _ => {}
                 });
             }
 
