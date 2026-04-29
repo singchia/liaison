@@ -225,7 +225,22 @@ impl EdgeSupervisor {
         config_path: PathBuf,
         supervisor_log: PathBuf,
     ) -> Self {
-        let (intended_tx, intended_rx) = watch::channel(IntendedState::Running);
+        Self::with_intent(binary_path, config_path, supervisor_log, IntendedState::Running)
+    }
+
+    /// Construct with a specific initial intent so callers can seed
+    /// the watch channel from persisted state without first calling
+    /// set_intended() — which is technically a no-op if the value
+    /// matches but still bumps the watch's version, causing the
+    /// run-loop to fire a spurious "intent changed mid-run" on its
+    /// first iteration and pointlessly kill+respawn the edge child.
+    pub fn with_intent(
+        binary_path: PathBuf,
+        config_path: PathBuf,
+        supervisor_log: PathBuf,
+        initial_intent: IntendedState,
+    ) -> Self {
+        let (intended_tx, intended_rx) = watch::channel(initial_intent);
         let (state_tx, _) = broadcast::channel(16);
         Self {
             binary_path,

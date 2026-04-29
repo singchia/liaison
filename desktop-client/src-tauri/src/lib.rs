@@ -356,15 +356,20 @@ fn start_supervisor(
         .parent()
         .unwrap_or_else(|| std::path::Path::new("."))
         .join("liaison-edge-supervisor.log");
-    let supervisor = EdgeSupervisor::new(binary_path, config_path, supervisor_log);
-    let handle = supervisor.handle();
-
-    // Restore the user's last intended state from disk before the
-    // supervisor's run loop reads it. If the user previously paused
-    // and then quit, we honour that on relaunch instead of silently
-    // re-connecting.
+    // Seed the supervisor with the persisted intent at construction
+    // time so the watch channel's initial value matches what we want.
+    // Calling set_intended() afterwards would bump the channel version
+    // even when the value is unchanged, and the run loop's first
+    // tokio::select! would interpret that as "intent changed mid-run"
+    // and pointlessly kill+respawn the freshly-spawned edge child.
     let persisted = crate::state::load();
-    handle.set_intended(persisted.intended_as_enum());
+    let supervisor = EdgeSupervisor::with_intent(
+        binary_path,
+        config_path,
+        supervisor_log,
+        persisted.intended_as_enum(),
+    );
+    let handle = supervisor.handle();
 
     let app_for_events = app.clone();
     let mut rx = handle.subscribe();
