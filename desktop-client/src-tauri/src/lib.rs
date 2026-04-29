@@ -100,7 +100,12 @@ async fn cmd_login(app: AppHandle, state: State<'_, AppState>) -> Result<(), Str
     let log_file = state.log_file.clone();
     let binary_path = state.binary_path.lock().expect("poisoned").clone();
 
-    let pending = auth::start_login(&base_url, None).map_err(|e| e.to_string())?;
+    // Probe both candidate dashboard mount paths (SaaS uses
+    // /dashboard/cli-auth, private deployments commonly use /cli-auth)
+    // so a single client binary works against either without a setting.
+    let cli_auth_path = auth::discover_cli_auth_path(&base_url).await;
+    let pending = auth::start_login(&base_url, cli_auth_path, None)
+        .map_err(|e| e.to_string())?;
     let url = pending.auth_url.clone();
     app.opener()
         .open_url(&url, None::<&str>)

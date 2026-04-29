@@ -58,7 +58,11 @@ pub struct PendingLogin {
     rx: oneshot::Receiver<Result<String, AuthError>>,
 }
 
-pub fn start_login(base_url: &str, token_name: Option<&str>) -> Result<PendingLogin, AuthError> {
+pub fn start_login(
+    base_url: &str,
+    cli_auth_path: &str,
+    token_name: Option<&str>,
+) -> Result<PendingLogin, AuthError> {
     let server = tiny_http::Server::http("127.0.0.1:0")
         .map_err(|e| AuthError::Server(e.to_string()))?;
     let port = server
@@ -69,7 +73,7 @@ pub fn start_login(base_url: &str, token_name: Option<&str>) -> Result<PendingLo
 
     let state = generate_state();
     let name = token_name.unwrap_or(DEFAULT_TOKEN_NAME);
-    let auth_url = build_auth_url(base_url, port, &state, name)?;
+    let auth_url = build_auth_url(base_url, cli_auth_path, port, &state, name)?;
     let expected_state = state;
 
     let (tx, rx) = oneshot::channel::<Result<String, AuthError>>();
@@ -120,7 +124,8 @@ pub async fn login_with_device_code<F>(
 where
     F: FnOnce(&str) -> Result<(), AuthError>,
 {
-    let pending = start_login(base_url, None)?;
+    let cli_auth_path = discover_cli_auth_path(base_url).await;
+    let pending = start_login(base_url, cli_auth_path, None)?;
     open_browser(&pending.auth_url)?;
     let pat = pending
         .await_token(Duration::from_secs(DEFAULT_LOGIN_TIMEOUT_SECS))
@@ -210,10 +215,59 @@ fn parse_callback(path_with_query: &str, expected_state: &str) -> Result<String,
     Ok(token)
 }
 
-fn build_auth_url(base: &str, port: u16, state: &str, name: &str) -> Result<String, AuthError> {
+/// Candidate paths for the dashboard's CliAuth React route. liaison-cloud
+/// builds the dashboard with `base: '/dashboard/'` so the route lives at
+/// `/dashboard/cli-auth`; private deployments commonly leave `base`
+/// unset and the same React route ends up at `/cli-auth`. We probe
+/// both at login time and use whichever serves a 2xx.
+const CLI_AUTH_PATHS: &[&str] = &["/dashboard/cli-auth", "/cli-auth"];
+
+/// Probe `base_url` to figure out where the CliAuth page is mounted.
+/// Best-effort; on any failure (timeout, TLS, both 404) we fall back
+/// to the SaaS-style `/dashboard/cli-auth` since that's the bigger
+/// user population and the harmless wrong guess (the user just sees
+/// a blank tab and can correct the URL by hand).
+///
+/// Self-signed certs are accepted on the probe. The probe is a HEAD-
+/// like read; the real auth flow happens in the user's browser, which
+/// does its own cert validation, so trusting an attacker here at most
+/// gets us a wrong-path open — not a credential leak.
+pub async fn discover_cli_auth_path(base_url: &str) -> &'static str {
+    let client = match reqwest::Client::builder()
+        .danger_accept_invalid_certs(true)
+        .timeout(std::time::Duration::from_secs(5))
+        .build()
+    {
+        Ok(c) => c,
+        Err(_) => return CLI_AUTH_PATHS[0],
+    };
+    let base = base_url.trim_end_matches('/');
+    for path in CLI_AUTH_PATHS {
+        let url = format!("{base}{path}");
+        if let Ok(resp) = client.get(&url).send().await {
+            if resp.status().is_success() {
+                return path;
+            }
+        }
+    }
+    CLI_AUTH_PATHS[0]
+}
+
+fn build_auth_url(
+    base: &str,
+    cli_auth_path: &str,
+    port: u16,
+    state: &str,
+    name: &str,
+) -> Result<String, AuthError> {
     let mut url = url::Url::parse(base).map_err(|e| AuthError::InvalidUrl(e.to_string()))?;
     let trimmed = url.path().trim_end_matches('/').to_string();
-    url.set_path(&format!("{trimmed}/dashboard/cli-auth"));
+    let suffix = if cli_auth_path.starts_with('/') {
+        cli_auth_path.to_string()
+    } else {
+        format!("/{cli_auth_path}")
+    };
+    url.set_path(&format!("{trimmed}{suffix}"));
     let callback = format!("http://127.0.0.1:{port}/callback");
     url.query_pairs_mut()
         .clear()
@@ -249,9 +303,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn build_auth_url_appends_path_and_params() {
-        let url = build_auth_url("https://liaison.cloud", 47823, "abc1234567890123", "Demo")
-            .expect("build url");
+    fn build_auth_url_saas_path() {
+        let url = build_auth_url(
+            "https://liaison.cloud",
+            "/dashboard/cli-auth",
+            47823,
+            "abc1234567890123",
+            "Demo",
+        )
+        .expect("build url");
         assert!(url.starts_with("https://liaison.cloud/dashboard/cli-auth?"));
         assert!(url.contains("callback=http%3A%2F%2F127.0.0.1%3A47823%2Fcallback"));
         assert!(url.contains("state=abc1234567890123"));
@@ -260,10 +320,45 @@ mod tests {
     }
 
     #[test]
+    fn build_auth_url_private_root_path() {
+        // Private deployments where the dashboard isn't mounted under
+        // /dashboard/ have the React route at /cli-auth.
+        let url = build_auth_url(
+            "https://liaison.example.com",
+            "/cli-auth",
+            12345,
+            "0123456789abcdef",
+            "Liaison Desktop",
+        )
+        .expect("build url");
+        assert!(url.starts_with("https://liaison.example.com/cli-auth?"));
+        assert!(!url.contains("/dashboard/"));
+    }
+
+    #[test]
     fn build_auth_url_handles_trailing_slash() {
-        let url =
-            build_auth_url("https://liaison.cloud/", 1, "s", "n").expect("build url");
+        let url = build_auth_url(
+            "https://liaison.cloud/",
+            "/dashboard/cli-auth",
+            1,
+            "s",
+            "n",
+        )
+        .expect("build url");
         assert!(url.starts_with("https://liaison.cloud/dashboard/cli-auth?"));
+    }
+
+    #[test]
+    fn build_auth_url_normalises_path_without_leading_slash() {
+        let url = build_auth_url(
+            "https://liaison.cloud",
+            "cli-auth",
+            1,
+            "s",
+            "n",
+        )
+        .expect("build url");
+        assert!(url.starts_with("https://liaison.cloud/cli-auth?"));
     }
 
     #[test]
