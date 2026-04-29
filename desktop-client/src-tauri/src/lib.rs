@@ -578,6 +578,26 @@ fn position_popup_under(
     let _ = window.set_position(PhysicalPosition::new(x, y));
 }
 
+/// Drop the popup at the corner of the primary monitor where the tray
+/// icon typically lives. Used both at first launch and when a
+/// second-launch (desktop-shortcut double-click forwarded by the
+/// single-instance plugin) needs to surface the popup — without this
+/// the show() may bring back the popup at its last hidden position,
+/// which can be off-screen if the user has since disconnected an
+/// external monitor.
+fn position_popup_at_corner(window: &tauri::WebviewWindow) {
+    let Ok(Some(monitor)) = window.current_monitor() else { return };
+    let Ok(outer) = window.outer_size() else { return };
+    let mp = monitor.position();
+    let ms = monitor.size();
+    let x = mp.x + ms.width as i32 - outer.width as i32 - 8;
+    #[cfg(target_os = "macos")]
+    let y = mp.y + 28;
+    #[cfg(not(target_os = "macos"))]
+    let y = mp.y + ms.height as i32 - outer.height as i32 - 48;
+    let _ = window.set_position(PhysicalPosition::new(x, y));
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let mut builder = tauri::Builder::default();
@@ -591,7 +611,19 @@ pub fn run() {
     {
         builder = builder.plugin(tauri_plugin_single_instance::init(
             |app, _args, _cwd| {
+                // Second-launch path: user double-clicked the desktop
+                // shortcut while we were already running. Re-anchor the
+                // popup at the tray corner first — its prior position
+                // could be off-screen (multi-monitor disconnect, dragged
+                // by user) and the previous show()+set_focus() pair
+                // looked silent. Then unminimize → show → focus to bring
+                // it forward; on Windows set_focus alone can be ignored
+                // due to foreground-window restrictions, but the
+                // alwaysOnTop=true config in tauri.conf.json plus the
+                // explicit reposition makes the popup definitely visible.
                 if let Some(window) = app.get_webview_window("popup") {
+                    position_popup_at_corner(&window);
+                    let _ = window.unminimize();
                     let _ = window.show();
                     let _ = window.set_focus();
                 }
@@ -678,18 +710,7 @@ pub fn run() {
             //   Windows / Linux: lower-right (just above the taskbar).
             // The user can drag it elsewhere via the header drag-region.
             if let Some(popup) = app.get_webview_window("popup") {
-                if let Ok(Some(monitor)) = popup.current_monitor() {
-                    if let Ok(outer) = popup.outer_size() {
-                        let mp = monitor.position();
-                        let ms = monitor.size();
-                        let x = mp.x + ms.width as i32 - outer.width as i32 - 8;
-                        #[cfg(target_os = "macos")]
-                        let y = mp.y + 28;
-                        #[cfg(not(target_os = "macos"))]
-                        let y = mp.y + ms.height as i32 - outer.height as i32 - 48;
-                        let _ = popup.set_position(PhysicalPosition::new(x, y));
-                    }
-                }
+                position_popup_at_corner(&popup);
                 let _ = popup.show();
                 let _ = popup.set_focus();
             }
