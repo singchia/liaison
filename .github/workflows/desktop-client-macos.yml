@@ -36,17 +36,40 @@ jobs:
       - name: Build liaison-edge for both Mac architectures
         run: |
           mkdir -p desktop-client/src-tauri/resources
-          # Universal Tauri bundle picks at runtime via
-          # cfg!(target_arch). Ship both binaries so the universal
-          # .app works on Apple Silicon and Intel without a re-bundle.
-          for arch in arm64 amd64; do
-            echo "building edge for darwin/$arch ..."
-            CGO_ENABLED=0 GOOS=darwin GOARCH=$arch \
-              go build -trimpath -ldflags "-s -w" \
-              -o desktop-client/src-tauri/resources/liaison-edge-darwin-$arch \
-              ./cmd/edge
-          done
+
+          # CGO must be enabled on darwin: gopsutil's cpu.Percent /
+          # disk.Usage call into mach kernel APIs and the C standard
+          # library, and without CGO they return ErrNotImplementedError
+          # ("not implemented yet"). The reporter's heartbeat would
+          # then never reach the manager, the heartbeat-aware
+          # effectiveEdgeOnline check would mark the edge offline
+          # after 60s, and the dashboard would show a connected edge
+          # as "已离线". Linux/Windows are fine without CGO because
+          # gopsutil there reads /proc or syscalls.
+          #
+          # Apple Silicon runner has the host clang for arm64 natively;
+          # for amd64 we just point CC/CXX at clang with -arch x86_64
+          # so the SDK lipo's both arches into the binary chain Tauri
+          # expects under universal-apple-darwin.
+
+          # Native arch (arm64 on Apple Silicon runner)
+          echo "building edge for darwin/arm64 (CGO enabled, native) ..."
+          CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 \
+            go build -trimpath -ldflags "-s -w" \
+            -o desktop-client/src-tauri/resources/liaison-edge-darwin-arm64 \
+            ./cmd/edge
+
+          # Cross arch (amd64 from arm64 runner, via clang -arch x86_64)
+          echo "building edge for darwin/amd64 (CGO enabled, cross) ..."
+          CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 \
+            CC="clang -arch x86_64" \
+            CXX="clang++ -arch x86_64" \
+            go build -trimpath -ldflags "-s -w" \
+            -o desktop-client/src-tauri/resources/liaison-edge-darwin-amd64 \
+            ./cmd/edge
+
           ls -la desktop-client/src-tauri/resources/
+          file desktop-client/src-tauri/resources/liaison-edge-darwin-*
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
