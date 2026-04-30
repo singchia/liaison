@@ -218,6 +218,34 @@ body,
 .settings__err {
   margin-top: 2px;
 }
+.settings__label--gap {
+  margin-top: 8px;
+}
+.settings__select {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  color: #e9eef9;
+  font-size: 12px;
+  padding: 6px 28px 6px 10px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.12s ease;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #8088a0 50%),
+    linear-gradient(-45deg, transparent 50%, #8088a0 50%);
+  background-position: calc(100% - 14px) center, calc(100% - 9px) center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+.settings__select:focus {
+  border-color: rgba(155, 92, 212, 0.55);
+}
+.settings__select:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
 
 .err {
   background: rgba(255, 92, 92, 0.1);

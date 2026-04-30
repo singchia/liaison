@@ -32,6 +32,62 @@ const TRAY_EVENT: &str = "tray_state_changed";
 const LOGIN_TIMEOUT_SECS: u64 = 300;
 const DESKTOP_EDGE_NAME: &str = "Liaison Desktop";
 
+/// Tray menu strings, kept in sync with src/i18n.ts on the React side.
+/// Two locales for now (en / zh); add more as needed.
+struct TrayLang {
+    login: &'static str,
+    logout: &'static str,
+    pause: &'static str,
+    resume: &'static str,
+    dashboard: &'static str,
+    quit: &'static str,
+}
+
+const TRAY_LANG_EN: TrayLang = TrayLang {
+    login: "Sign in",
+    logout: "Sign out",
+    pause: "Pause",
+    resume: "Resume",
+    dashboard: "Open Dashboard…",
+    quit: "Quit Liaison",
+};
+
+const TRAY_LANG_ZH: TrayLang = TrayLang {
+    login: "登录",
+    logout: "退出登录",
+    pause: "暂停连接",
+    resume: "继续连接",
+    dashboard: "打开 Dashboard…",
+    quit: "退出 Liaison",
+};
+
+/// Resolve `state.json`'s `locale` field (or the OS locale, on first
+/// launch) into one of the two TrayLang tables.
+fn pick_tray_locale(persisted: &Option<String>) -> &'static TrayLang {
+    let chosen = persisted.as_deref().map(str::to_lowercase);
+    let lang = chosen.unwrap_or_else(detect_os_locale);
+    if lang.starts_with("zh") {
+        &TRAY_LANG_ZH
+    } else {
+        &TRAY_LANG_EN
+    }
+}
+
+/// Best-effort OS locale lookup for first-launch defaulting. Reads the
+/// LANG / LC_* env vars Unix sets and that Windows respects via the
+/// MSVC runtime; anything starting with "zh" maps to Chinese, all
+/// other values fall through to English.
+fn detect_os_locale() -> String {
+    for var in ["LC_ALL", "LC_MESSAGES", "LANG"] {
+        if let Ok(v) = std::env::var(var) {
+            if !v.is_empty() {
+                return v.to_lowercase();
+            }
+        }
+    }
+    String::new()
+}
+
 /// Server configuration that can change at runtime when the user
 /// switches deployments via the popup. Mutex-wrapped on AppState so
 /// commands can swap it atomically.
@@ -61,6 +117,7 @@ struct StatusPayload {
     logged_in: bool,
     cli_hits: Vec<cli_detector::CliHit>,
     base_url: String,
+    locale: Option<String>,
 }
 
 fn current_tray_state(state: &AppState) -> (TrayState, bool, String) {
@@ -79,16 +136,34 @@ fn current_tray_state(state: &AppState) -> (TrayState, bool, String) {
 #[tauri::command]
 fn cmd_get_status(state: State<'_, AppState>) -> StatusPayload {
     let (tray, logged_in, base_url) = current_tray_state(&state);
+    let locale = crate::state::load().locale;
     debug_log(format!(
-        "cmd_get_status: tray={:?} logged_in={} base_url={}",
-        tray, logged_in, base_url
+        "cmd_get_status: tray={:?} logged_in={} base_url={} locale={:?}",
+        tray, logged_in, base_url, locale
     ));
     StatusPayload {
         tray,
         logged_in,
         cli_hits: cli_detector::detect_existing_cli(),
         base_url,
+        locale,
     }
+}
+
+/// Persist the user's locale choice. Frontend strings repaint
+/// immediately from the React side; tray-menu strings only refresh
+/// on next app launch since rebuilding NSMenu / system tray menus
+/// at runtime is more invasive than this MVP needs.
+#[tauri::command]
+fn cmd_set_locale(locale: String) -> Result<(), String> {
+    let normalised = match locale.as_str() {
+        "en" | "zh" => locale,
+        other => return Err(format!("unsupported locale: {other}")),
+    };
+    let mut s = crate::state::load();
+    s.locale = Some(normalised);
+    crate::state::save(&s);
+    Ok(())
 }
 
 #[tauri::command]
@@ -734,18 +809,26 @@ pub fn run() {
                 resolve_edge_binary(&app.handle());
             app.manage(state);
 
+            // Tray menu strings come from whatever locale was persisted.
+            // First-launch users get the OS-locale-derived default;
+            // changing locale via the popup updates state.json but the
+            // tray menu only repaints on next app launch (acceptable
+            // MVP — rebuilding the NSMenu / system tray menu at
+            // runtime adds platform-specific complexity we don't need
+            // until the locale picker sees real use).
+            let tray_lang = pick_tray_locale(&crate::state::load().locale);
             let menu = Menu::with_items(
                 app,
                 &[
-                    &MenuItem::with_id(app, "login", "登录", true, None::<&str>)?,
-                    &MenuItem::with_id(app, "logout", "退出登录", true, None::<&str>)?,
+                    &MenuItem::with_id(app, "login", tray_lang.login, true, None::<&str>)?,
+                    &MenuItem::with_id(app, "logout", tray_lang.logout, true, None::<&str>)?,
                     &PredefinedMenuItem::separator(app)?,
-                    &MenuItem::with_id(app, "pause", "暂停连接", true, None::<&str>)?,
-                    &MenuItem::with_id(app, "resume", "继续连接", true, None::<&str>)?,
+                    &MenuItem::with_id(app, "pause", tray_lang.pause, true, None::<&str>)?,
+                    &MenuItem::with_id(app, "resume", tray_lang.resume, true, None::<&str>)?,
                     &PredefinedMenuItem::separator(app)?,
-                    &MenuItem::with_id(app, "dashboard", "打开 Dashboard…", true, None::<&str>)?,
+                    &MenuItem::with_id(app, "dashboard", tray_lang.dashboard, true, None::<&str>)?,
                     &PredefinedMenuItem::separator(app)?,
-                    &MenuItem::with_id(app, "quit", "退出 Liaison", true, None::<&str>)?,
+                    &MenuItem::with_id(app, "quit", tray_lang.quit, true, None::<&str>)?,
                 ],
             )?;
 
@@ -829,6 +912,7 @@ pub fn run() {
             cmd_get_status,
             cmd_open_dashboard,
             cmd_set_server,
+            cmd_set_locale,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

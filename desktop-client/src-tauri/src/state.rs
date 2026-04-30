@@ -31,6 +31,11 @@ pub struct PersistedState {
     /// switch via the popup's "更改服务器" entry.
     #[serde(default = "default_base_url")]
     pub base_url: String,
+    /// User-selected UI locale. `None` means auto-detect from the OS
+    /// locale on first launch; once the user picks a value via the
+    /// settings page it sticks. Recognised values: "en", "zh".
+    #[serde(default)]
+    pub locale: Option<String>,
 }
 
 fn default_intended() -> String {
@@ -47,6 +52,7 @@ impl Default for PersistedState {
             intended: default_intended(),
             edge_id: None,
             base_url: default_base_url(),
+            locale: None,
         }
     }
 }
@@ -159,6 +165,7 @@ mod tests {
             intended: "weird".into(),
             edge_id: None,
             base_url: default_base_url(),
+            locale: None,
         };
         assert_eq!(s.intended_as_enum(), IntendedState::Running);
     }

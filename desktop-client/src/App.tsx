@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import "./App.css";
+import { Dict, Locale, detectLocale, dict as loadDict } from "./i18n";
 
 type TrayState =
   | { kind: "LoggedOut" }
@@ -20,17 +21,20 @@ interface StatusPayload {
   logged_in: boolean;
   cli_hits: CliHit[];
   base_url: string;
+  locale: Locale | null;
 }
 
 type View = "main" | "settings";
 
-const LABELS: Record<TrayState["kind"], string> = {
-  LoggedOut: "未登录",
-  Paused: "已暂停",
-  Connecting: "连接中",
-  Online: "已连接",
-  Error: "错误",
-};
+function labelFor(t: Dict, kind: TrayState["kind"]): string {
+  switch (kind) {
+    case "LoggedOut": return t.label_logged_out;
+    case "Paused": return t.label_paused;
+    case "Connecting": return t.label_connecting;
+    case "Online": return t.label_online;
+    case "Error": return t.label_error;
+  }
+}
 
 const DOT_CLASS: Record<TrayState["kind"], string> = {
   LoggedOut: "dot dot--grey",
@@ -41,7 +45,7 @@ const DOT_CLASS: Record<TrayState["kind"], string> = {
 };
 
 // Heroicons-style cog: a circular hub with 8 trapezoidal teeth and an
-// inner ring. Reads as a gear at 14px instead of looking like a sun.
+// inner ring. Reads as a gear at 16px instead of looking like a sun.
 function GearIcon() {
   return (
     <svg
@@ -77,6 +81,7 @@ function BackArrowIcon() {
 
 interface MainProps {
   status: StatusPayload;
+  t: Dict;
   busy: boolean;
   onCommand: (cmd: string) => void;
   onOpenSettings: () => void;
@@ -86,6 +91,7 @@ interface MainProps {
 
 function MainView({
   status,
+  t,
   busy,
   onCommand,
   onOpenSettings,
@@ -103,18 +109,13 @@ function MainView({
         <span className="hdr__title" data-tauri-drag-region>Liaison</span>
         <span className="hdr__spacer" data-tauri-drag-region />
         <span className={DOT_CLASS[tray.kind]} data-tauri-drag-region />
-        <span className="label" data-tauri-drag-region>{LABELS[tray.kind]}</span>
+        <span className="label" data-tauri-drag-region>{labelFor(t, tray.kind)}</span>
       </header>
 
       {showCliBanner && (
         <div className="banner">
-          <div className="banner__title">
-            ⚠ 检测到本机已有 liaison-edge CLI 安装
-          </div>
-          <div className="banner__body">
-            继续使用 Liaison Desktop 会创建一个独立的连接器，与 CLI 并行运行。
-            建议先卸载 CLI 版本：
-          </div>
+          <div className="banner__title">{t.cli_banner_title}</div>
+          <div className="banner__body">{t.cli_banner_body}</div>
           <ul className="banner__list">
             {cli_hits.slice(0, 4).map((h, i) => (
               <li key={i}>
@@ -123,16 +124,11 @@ function MainView({
               </li>
             ))}
             {cli_hits.length > 4 && (
-              <li className="banner__more">
-                + {cli_hits.length - 4} 项…
-              </li>
+              <li className="banner__more">{t.cli_banner_more(cli_hits.length - 4)}</li>
             )}
           </ul>
-          <button
-            className="btn ghost banner__dismiss"
-            onClick={onDismissCliBanner}
-          >
-            知道了，继续
+          <button className="btn ghost banner__dismiss" onClick={onDismissCliBanner}>
+            {t.cli_banner_dismiss}
           </button>
         </div>
       )}
@@ -141,62 +137,38 @@ function MainView({
 
       <section className="actions">
         {!logged_in && (
-          <button
-            className="btn primary"
-            disabled={busy}
-            onClick={() => onCommand("cmd_login")}
-          >
-            登录 Liaison
+          <button className="btn primary" disabled={busy} onClick={() => onCommand("cmd_login")}>
+            {t.btn_login}
           </button>
         )}
 
         {logged_in && tray.kind === "Paused" && (
-          <button
-            className="btn primary"
-            disabled={busy}
-            onClick={() => onCommand("cmd_resume")}
-          >
-            恢复连接
+          <button className="btn primary" disabled={busy} onClick={() => onCommand("cmd_resume")}>
+            {t.btn_resume}
           </button>
         )}
 
         {logged_in && (tray.kind === "Online" || tray.kind === "Connecting") && (
-          <button
-            className="btn"
-            disabled={busy}
-            onClick={() => onCommand("cmd_pause")}
-          >
-            暂停连接
+          <button className="btn" disabled={busy} onClick={() => onCommand("cmd_pause")}>
+            {t.btn_pause}
           </button>
         )}
 
         {logged_in && tray.kind === "Error" && (
-          <button
-            className="btn primary"
-            disabled={busy}
-            onClick={() => onCommand("cmd_resume")}
-          >
-            重连
+          <button className="btn primary" disabled={busy} onClick={() => onCommand("cmd_resume")}>
+            {t.btn_reconnect}
           </button>
         )}
 
         {logged_in && (
-          <button
-            className="btn"
-            disabled={busy}
-            onClick={() => onCommand("cmd_open_dashboard")}
-          >
-            打开 Dashboard
+          <button className="btn" disabled={busy} onClick={() => onCommand("cmd_open_dashboard")}>
+            {t.btn_dashboard}
           </button>
         )}
 
         {logged_in && (
-          <button
-            className="btn ghost"
-            disabled={busy}
-            onClick={() => onCommand("cmd_logout")}
-          >
-            退出登录
+          <button className="btn ghost" disabled={busy} onClick={() => onCommand("cmd_logout")}>
+            {t.btn_logout}
           </button>
         )}
       </section>
@@ -206,8 +178,8 @@ function MainView({
           className="footer__gear"
           onClick={onOpenSettings}
           disabled={busy}
-          aria-label="设置"
-          title="设置"
+          aria-label={t.settings_open_aria}
+          title={t.settings_open_aria}
         >
           <GearIcon />
         </button>
@@ -218,19 +190,30 @@ function MainView({
 
 interface SettingsProps {
   baseUrl: string;
+  locale: Locale;
+  t: Dict;
   busy: boolean;
   onClose: () => void;
   onSave: (newUrl: string) => Promise<void>;
+  onLocaleChange: (l: Locale) => void;
 }
 
-function SettingsView({ baseUrl, busy, onClose, onSave }: SettingsProps) {
+function SettingsView({
+  baseUrl,
+  locale,
+  t,
+  busy,
+  onClose,
+  onSave,
+  onLocaleChange,
+}: SettingsProps) {
   const [draft, setDraft] = useState(baseUrl);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSave() {
     const trimmed = draft.trim();
     if (!trimmed) {
-      setError("地址不能为空");
+      setError(t.settings_url_empty);
       return;
     }
     setError(null);
@@ -248,50 +231,51 @@ function SettingsView({ baseUrl, busy, onClose, onSave }: SettingsProps) {
           className="hdr__back"
           onClick={onClose}
           disabled={busy}
-          aria-label="返回"
-          title="返回"
+          aria-label={t.settings_back_aria}
+          title={t.settings_back_aria}
         >
           <BackArrowIcon />
         </button>
-        <span className="hdr__title" data-tauri-drag-region>服务器配置</span>
+        <span className="hdr__title" data-tauri-drag-region>{t.settings_title}</span>
         <span className="hdr__spacer" data-tauri-drag-region />
       </header>
 
       <div className="settings">
-        <label className="settings__label" htmlFor="server-url">
-          Liaison 服务器地址
-        </label>
+        <label className="settings__label" htmlFor="server-url">{t.settings_url_label}</label>
         <input
           id="server-url"
           className="settings__input"
           type="text"
           value={draft}
-          placeholder="https://liaison.example.com"
+          placeholder={t.settings_url_placeholder}
           onChange={(e) => setDraft(e.target.value)}
           disabled={busy}
           autoFocus
         />
-        <div className="settings__hint">
-          公网用户保持默认 https://liaison.cloud。私有化部署请填写你的部署地址，
-          以 http:// 或 https:// 开头。
-        </div>
+        <div className="settings__hint">{t.settings_url_hint}</div>
         {error && <div className="err settings__err">{error}</div>}
+
+        <label className="settings__label settings__label--gap" htmlFor="locale-select">
+          {t.settings_locale_label}
+        </label>
+        <select
+          id="locale-select"
+          className="settings__select"
+          value={locale}
+          onChange={(e) => onLocaleChange(e.target.value as Locale)}
+          disabled={busy}
+        >
+          <option value="en">{t.locale_en}</option>
+          <option value="zh">{t.locale_zh}</option>
+        </select>
       </div>
 
       <section className="actions">
-        <button
-          className="btn primary"
-          disabled={busy}
-          onClick={handleSave}
-        >
-          保存并重新登录
+        <button className="btn primary" disabled={busy} onClick={handleSave}>
+          {t.settings_save}
         </button>
-        <button
-          className="btn ghost"
-          disabled={busy}
-          onClick={onClose}
-        >
-          取消
+        <button className="btn ghost" disabled={busy} onClick={onClose}>
+          {t.settings_cancel}
         </button>
       </section>
     </main>
@@ -303,11 +287,18 @@ function App() {
   const [busy, setBusy] = useState(false);
   const [cliBannerDismissed, setCliBannerDismissed] = useState(false);
   const [view, setView] = useState<View>("main");
+  // Resolved locale for rendering: prefer the persisted choice from
+  // state.json (returned by cmd_get_status), fall back to OS detection
+  // before the first status arrives.
+  const [locale, setLocale] = useState<Locale>(detectLocale());
 
   async function refresh() {
     try {
       const s = await invoke<StatusPayload>("cmd_get_status");
       setStatus(s);
+      if (s.locale === "en" || s.locale === "zh") {
+        setLocale(s.locale);
+      }
     } catch (err) {
       console.error("get_status failed", err);
     }
@@ -319,10 +310,8 @@ function App() {
       setStatus((prev) =>
         prev
           ? { ...prev, tray: event.payload }
-          : { tray: event.payload, logged_in: true, cli_hits: [], base_url: "" }
+          : { tray: event.payload, logged_in: true, cli_hits: [], base_url: "", locale: null }
       );
-      // Server-switch path emits LoggedOut; pull a fresh full payload
-      // so base_url, logged_in, etc. all repaint together.
       if (event.payload.kind === "LoggedOut") refresh();
     });
     return () => {
@@ -353,6 +342,15 @@ function App() {
     }
   }
 
+  async function saveLocale(next: Locale) {
+    setLocale(next); // optimistic
+    try {
+      await invoke("cmd_set_locale", { locale: next });
+    } catch (err) {
+      console.error("cmd_set_locale failed", err);
+    }
+  }
+
   if (!status) {
     return (
       <main className="popup">
@@ -361,13 +359,18 @@ function App() {
     );
   }
 
+  const t = loadDict(locale);
+
   if (view === "settings") {
     return (
       <SettingsView
         baseUrl={status.base_url}
+        locale={locale}
+        t={t}
         busy={busy}
         onClose={() => setView("main")}
         onSave={saveServer}
+        onLocaleChange={saveLocale}
       />
     );
   }
@@ -375,6 +378,7 @@ function App() {
   return (
     <MainView
       status={status}
+      t={t}
       busy={busy}
       onCommand={runCommand}
       onOpenSettings={() => setView("settings")}
