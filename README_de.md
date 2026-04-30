@@ -91,6 +91,37 @@ Daten (`data/` SQLite), TLS-Zertifikate (`certs/`) und Logs (`logs/`) werden neb
 
 ### Konnektor installieren
 
+Zwei Installationswege, wähle den passenden für das Zielgerät.
+
+#### Option A — Liaison Desktop (GUI, macOS / Windows)
+
+Menüleisten- / Tray-App, die den Konnektor umschließt und Single-Click-Anmeldung, Statusanzeige, Pause / Fortsetzen sowie Ein-Klick-Zugriff auf das Dashboard bietet. Ideal für Laptops und Workstations.
+
+<div align="center">
+
+| macOS | Windows |
+|:---:|:---:|
+| <img src="docs/images/desktop-client/popup-macos.png" alt="Liaison Desktop on macOS" width="360" /> | <img src="docs/images/desktop-client/popup-windows.png" alt="Liaison Desktop on Windows" width="360" /> |
+
+</div>
+
+- **Ein-Klick-Anmeldung** — browservermittelter OAuth-Flow, PAT wird im OS-Schlüsselbund gespeichert (Keychain auf macOS, Anmeldeinformationsverwaltung auf Windows)
+- **Multi-Deployment** — Standard ist `liaison.cloud`; das Zahnrad-Symbol unten links erlaubt den Wechsel zu jedem privaten Deployment ohne Neuinstallation
+- **Heartbeat-bewusster Status** — Verbindung herstellen → Online-Übergänge spiegeln den tatsächlichen Tunnelzustand wider, nicht nur Prozess-Lebendigkeit
+- **Pause überlebt das Beenden** — Absicht auf Disk persistiert, eine pausierte Session bleibt nach Neustart pausiert
+
+**Download (Rolling Pre-Release, neuester Build aus `feat/desktop-client`):**
+
+| Plattform | Datei |
+|:---|:---|
+| macOS (Apple Silicon + Intel, universal) | [`Liaison_0.1.0_universal.dmg`](https://github.com/liaisonio/liaison/releases/download/desktop-latest/Liaison_0.1.0_universal.dmg) |
+| Windows (.msi-Installer) | [`Liaison_0.1.0_x64_en-US.msi`](https://github.com/liaisonio/liaison/releases/download/desktop-latest/Liaison_0.1.0_x64_en-US.msi) |
+| Windows (.exe NSIS, mit Keychain-Bereinigung beim Deinstallieren) | [`Liaison_0.1.0_x64-setup.exe`](https://github.com/liaisonio/liaison/releases/download/desktop-latest/Liaison_0.1.0_x64-setup.exe) |
+
+> Die v0.1-Installer sind unsigniert. macOS Gatekeeper und Windows SmartScreen warnen beim ersten Start — Rechtsklick → Öffnen auf macOS, oder „Weitere Informationen" → „Trotzdem ausführen" auf Windows. WebView2 Runtime ist auf Windows erforderlich; Win10 1803+ und Win11 enthalten es.
+
+#### Option B — CLI-Installationsbefehl (Linux / headless)
+
 **Erstelle einen neuen Konnektor** in der Web-Konsole, kopiere den Installationsbefehl für deine Plattform aus der UI und führe ihn auf dem Zielgerät aus. Der Konnektor erscheint automatisch in der Konsole.
 
 ---

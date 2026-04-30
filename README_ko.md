@@ -91,6 +91,37 @@ cd liaison-1.5.0-docker-amd64
 
 ### 커넥터 설치
 
+대상 기기에 맞춰 두 가지 설치 경로 중 하나를 선택하세요.
+
+#### 옵션 A — Liaison Desktop (GUI, macOS / Windows)
+
+커넥터를 감싸는 메뉴바 / 트레이 앱입니다. 원클릭 로그인, 상태 표시, 일시정지 / 재개, 대시보드 원클릭 접근을 제공합니다. 노트북과 워크스테이션에 적합합니다.
+
+<div align="center">
+
+| macOS | Windows |
+|:---:|:---:|
+| <img src="docs/images/desktop-client/popup-macos.png" alt="Liaison Desktop on macOS" width="360" /> | <img src="docs/images/desktop-client/popup-windows.png" alt="Liaison Desktop on Windows" width="360" /> |
+
+</div>
+
+- **원클릭 로그인** — 브라우저 OAuth 흐름, PAT 은 OS 키체인 (macOS Keychain, Windows 자격 증명 관리자)에 저장
+- **멀티 배포** — 기본값은 `liaison.cloud`, 좌하단 톱니바퀴 아이콘으로 어떤 프라이빗 배포로든 재설치 없이 즉시 전환
+- **하트비트 기반 상태** — 연결 중 → 온라인 전환은 실제 터널 상태를 반영 (프로세스 생존 여부만이 아님)
+- **재시작 후에도 유지되는 일시정지** — 사용자 의도가 디스크에 영속화되어 재시작 후에도 Paused 유지
+
+**다운로드 (롤링 프리릴리스, `feat/desktop-client` 최신 빌드):**
+
+| 플랫폼 | 파일 |
+|:---|:---|
+| macOS (Apple Silicon + Intel 유니버설) | [`Liaison_0.1.0_universal.dmg`](https://github.com/liaisonio/liaison/releases/download/desktop-latest/Liaison_0.1.0_universal.dmg) |
+| Windows (.msi 설치 프로그램) | [`Liaison_0.1.0_x64_en-US.msi`](https://github.com/liaisonio/liaison/releases/download/desktop-latest/Liaison_0.1.0_x64_en-US.msi) |
+| Windows (.exe NSIS, 제거 시 키체인 정리 포함) | [`Liaison_0.1.0_x64-setup.exe`](https://github.com/liaisonio/liaison/releases/download/desktop-latest/Liaison_0.1.0_x64-setup.exe) |
+
+> v0.1 설치 프로그램은 서명되지 않았습니다. macOS Gatekeeper 와 Windows SmartScreen 이 첫 실행 시 경고를 표시합니다 — macOS 는 우클릭 → 열기, Windows 는 "추가 정보" → "실행"을 선택하세요. Windows 에는 WebView2 Runtime 이 필요합니다 (Win10 1803+ 와 Win11 에 기본 포함).
+
+#### 옵션 B — CLI 설치 명령 (Linux / 헤드리스)
+
 웹 콘솔에서 **새 커넥터를 생성**하고, UI 에서 대상 플랫폼용 설치 명령을 복사해 대상 기기에서 실행하면 커넥터가 콘솔에 자동으로 나타납니다.
 
 ---
