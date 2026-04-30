@@ -14,15 +14,20 @@
       {
         "label": "popup",
         "title": "Liaison",
-        "width": 336,
-        "height": 316,
+        "width": 320,
+        "height": 300,
         "visible": false,
         "decorations": false,
         "transparent": true,
         "alwaysOnTop": true,
         "resizable": false,
         "skipTaskbar": true,
-        "shadow": false
+        "shadow": false,
+        "windowEffects": {
+          "effects": ["hudWindow"],
+          "state": "active",
+          "radius": 12
+        }
       }
     ],
     "security": {
