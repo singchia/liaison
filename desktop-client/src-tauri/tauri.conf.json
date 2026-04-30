@@ -22,12 +22,7 @@
         "alwaysOnTop": true,
         "resizable": false,
         "skipTaskbar": true,
-        "shadow": false,
-        "windowEffects": {
-          "effects": ["hudWindow"],
-          "state": "active",
-          "radius": 12
-        }
+        "shadow": false
       }
     ],
     "security": {

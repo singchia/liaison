@@ -35,5 +35,17 @@ rand = "0.8"
 keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service"] }
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "gzip"] }
 
+[target."cfg(target_os = \"macos\")".dependencies]
+# Used to force-round the NSWindow's content layer corners on macOS.
+# Tauri's windowEffects.radius only clips the visual-effect material,
+# leaving the NSWindow itself square — so the corners outside the
+# material's rounded clip showed the host material (looks white on a
+# light theme), making the square frame visible. Setting cornerRadius
+# + masksToBounds on the contentView's CALayer clips the whole window
+# render so the corners are genuinely transparent.
+objc2 = "0.5"
+objc2-app-kit = { version = "0.2", features = ["NSWindow", "NSView"] }
+objc2-quartz-core = { version = "0.2", features = ["CALayer"] }
+
 [dev-dependencies]
 wiremock = "0.6"

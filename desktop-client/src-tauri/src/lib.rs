@@ -607,6 +607,45 @@ fn position_popup_under(
     let _ = window.set_position(PhysicalPosition::new(x, y));
 }
 
+/// Round the popup window's corners on macOS by attaching a CALayer
+/// mask to the contentView. Tauri's windowEffects.radius only clips
+/// the visual-effect material it draws *inside* the window, not the
+/// NSWindow itself — so without this the four corners between our
+/// CSS 12px-rounded popup and the square NSWindow show whatever the
+/// host material is (white-ish on a light theme), leaving a visible
+/// square frame even with `transparent: true` + `decorations: false`.
+///
+/// Setting cornerRadius + masksToBounds on the contentView's CALayer
+/// clips the entire window render — including the NSWindow's own
+/// chrome — so the corners outside the radius are genuinely
+/// transparent and the desktop shows through.
+#[cfg(target_os = "macos")]
+fn round_macos_window_corners(window: &tauri::WebviewWindow, radius: f64) {
+    use objc2::msg_send;
+    use objc2::runtime::AnyObject;
+
+    let Ok(ns_window) = window.ns_window() else {
+        return;
+    };
+    if ns_window.is_null() {
+        return;
+    }
+    unsafe {
+        let ns_window = ns_window as *mut AnyObject;
+        let content_view: *mut AnyObject = msg_send![ns_window, contentView];
+        if content_view.is_null() {
+            return;
+        }
+        let _: () = msg_send![content_view, setWantsLayer: true];
+        let layer: *mut AnyObject = msg_send![content_view, layer];
+        if layer.is_null() {
+            return;
+        }
+        let _: () = msg_send![layer, setCornerRadius: radius];
+        let _: () = msg_send![layer, setMasksToBounds: true];
+    }
+}
+
 /// Drop the popup at the corner of the primary monitor where the tray
 /// icon typically lives. Used both at first launch and when a
 /// second-launch (desktop-shortcut double-click forwarded by the
@@ -739,6 +778,8 @@ pub fn run() {
             //   Windows / Linux: lower-right (just above the taskbar).
             // The user can drag it elsewhere via the header drag-region.
             if let Some(popup) = app.get_webview_window("popup") {
+                #[cfg(target_os = "macos")]
+                round_macos_window_corners(&popup, 12.0);
                 position_popup_at_corner(&popup);
                 let _ = popup.show();
                 let _ = popup.set_focus();
