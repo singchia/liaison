@@ -759,7 +759,15 @@ fn position_popup_at_corner(window: &tauri::WebviewWindow) {
     let Ok(outer) = window.outer_size() else { return };
     let mp = monitor.position();
     let ms = monitor.size();
-    let x = mp.x + ms.width as i32 - outer.width as i32 - 8;
+    // Right-edge inset. macOS gets a wider margin so the popup
+    // doesn't appear flush against the very edge of the desktop —
+    // 8px looked OK in screenshots but feels cramped under the
+    // actual menu-bar tray icons. Windows / Linux can stay tight.
+    #[cfg(target_os = "macos")]
+    let right_margin = 16;
+    #[cfg(not(target_os = "macos"))]
+    let right_margin = 8;
+    let x = mp.x + ms.width as i32 - outer.width as i32 - right_margin;
     #[cfg(target_os = "macos")]
     let y = mp.y + 28;
     #[cfg(not(target_os = "macos"))]

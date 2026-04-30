@@ -1,8 +1,26 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { LogicalSize } from "@tauri-apps/api/dpi";
 import "./App.css";
-import { Dict, Locale, detectLocale, dict as loadDict } from "./i18n";
+import { Dict, Locale, LOCALE_LABEL_BILINGUAL, detectLocale, dict as loadDict } from "./i18n";
+
+// Settings view has more vertical content (server URL form + hint
+// + language picker + buttons), so the window grows to fit. Main
+// view goes back to the compact menu-bar size.
+const SIZE_MAIN = { width: 320, height: 300 };
+const SIZE_SETTINGS = { width: 320, height: 400 };
+
+async function setWindowSize(size: { width: number; height: number }) {
+  try {
+    await getCurrentWebviewWindow().setSize(
+      new LogicalSize(size.width, size.height),
+    );
+  } catch (err) {
+    console.error("setSize failed", err);
+  }
+}
 
 type TrayState =
   | { kind: "LoggedOut" }
@@ -256,7 +274,7 @@ function SettingsView({
         {error && <div className="err settings__err">{error}</div>}
 
         <label className="settings__label settings__label--gap" htmlFor="locale-select">
-          {t.settings_locale_label}
+          {LOCALE_LABEL_BILINGUAL}
         </label>
         <select
           id="locale-select"
@@ -298,6 +316,19 @@ function App() {
       setStatus(s);
       if (s.locale === "en" || s.locale === "zh") {
         setLocale(s.locale);
+      } else {
+        // First launch: state.json had no locale persisted yet. The
+        // OS-locale heuristic the Rust side uses (LANG / LC_*) isn't
+        // reliable on macOS GUI launches, but `navigator.language`
+        // here is. Detect on the React side and persist back so the
+        // tray menu also picks up the right language on next start.
+        const detected = detectLocale();
+        setLocale(detected);
+        try {
+          await invoke("cmd_set_locale", { locale: detected });
+        } catch (err) {
+          console.error("first-launch locale persist failed", err);
+        }
       }
     } catch (err) {
       console.error("get_status failed", err);
@@ -368,7 +399,10 @@ function App() {
         locale={locale}
         t={t}
         busy={busy}
-        onClose={() => setView("main")}
+        onClose={() => {
+          setView("main");
+          setWindowSize(SIZE_MAIN);
+        }}
         onSave={saveServer}
         onLocaleChange={saveLocale}
       />
@@ -381,7 +415,10 @@ function App() {
       t={t}
       busy={busy}
       onCommand={runCommand}
-      onOpenSettings={() => setView("settings")}
+      onOpenSettings={() => {
+        setWindowSize(SIZE_SETTINGS);
+        setView("settings");
+      }}
       cliBannerDismissed={cliBannerDismissed}
       onDismissCliBanner={() => setCliBannerDismissed(true)}
     />

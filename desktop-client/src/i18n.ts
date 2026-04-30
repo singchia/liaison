@@ -41,11 +41,20 @@ export interface Dict {
   settings_cancel: string;
   settings_url_empty: string;
 
-  // Locale picker
+  // Locale picker — `settings_locale_label` is always rendered in
+  // both languages ("中文 / English") so a user on either locale can
+  // recognise the switch even before changing the rest of the UI.
+  // Kept here as a constant per-locale entry to keep the call-site
+  // shape uniform with the other strings.
   settings_locale_label: string;
   locale_en: string;
   locale_zh: string;
 }
+
+/// Bilingual heading shown above the language dropdown so users on
+/// either side of the language barrier can find the switch. Stays
+/// the same regardless of `Locale`.
+export const LOCALE_LABEL_BILINGUAL = "中文 / English";
 
 const en: Dict = {
   label_logged_out: "Not signed in",
@@ -73,7 +82,7 @@ const en: Dict = {
   settings_url_label: "Liaison server URL",
   settings_url_placeholder: "https://liaison.example.com",
   settings_url_hint:
-    "Public users keep the default https://liaison.cloud. For a private deployment, enter your URL starting with http:// or https://.",
+    "Keep the default for liaison.cloud, or enter your private deployment URL.",
   settings_save: "Save and re-sign in",
   settings_cancel: "Cancel",
   settings_url_empty: "Address cannot be empty",
@@ -109,7 +118,7 @@ const zh: Dict = {
   settings_url_label: "Liaison 服务器地址",
   settings_url_placeholder: "https://liaison.example.com",
   settings_url_hint:
-    "公网用户保持默认 https://liaison.cloud。私有化部署请填写你的部署地址，以 http:// 或 https:// 开头。",
+    "保持默认连接 liaison.cloud，或填写你的私有化部署地址。",
   settings_save: "保存并重新登录",
   settings_cancel: "取消",
   settings_url_empty: "地址不能为空",
