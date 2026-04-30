@@ -607,22 +607,28 @@ fn position_popup_under(
     let _ = window.set_position(PhysicalPosition::new(x, y));
 }
 
-/// Round the popup window's corners on macOS by attaching a CALayer
-/// mask to the contentView. Tauri's windowEffects.radius only clips
-/// the visual-effect material it draws *inside* the window, not the
-/// NSWindow itself — so without this the four corners between our
-/// CSS 12px-rounded popup and the square NSWindow show whatever the
-/// host material is (white-ish on a light theme), leaving a visible
-/// square frame even with `transparent: true` + `decorations: false`.
+/// Force the popup window into a fully borderless, fully transparent,
+/// rounded-corner state on macOS. Tauri's `transparent: true` /
+/// `decorations: false` / `shadow: false` configs *should* be enough,
+/// but in practice the NSWindow still ends up with a dark default
+/// material drawn at the four corners outside our 12px rounded path
+/// (visible as a black wedge against any light backdrop). Force
+/// every relevant flag via objc so the corners are genuinely
+/// transparent:
 ///
-/// Setting cornerRadius + masksToBounds on the contentView's CALayer
-/// clips the entire window render — including the NSWindow's own
-/// chrome — so the corners outside the radius are genuinely
-/// transparent and the desktop shows through.
+///   - styleMask = NSWindowStyleMaskBorderless (no chrome at all)
+///   - opaque = NO, backgroundColor = clearColor (NSWindow draws nothing)
+///   - hasShadow = NO (kill the OS-drawn shadow that was leaking
+///     past the rounded mask)
+///   - contentView.layer.cornerRadius + masksToBounds = clip every
+///     pixel outside the 12px path, including the layer's own
+///     background fill
+///   - contentView.layer.backgroundColor = clear (in case the auto-
+///     created CALayer defaulted to a system color like windowBg)
 #[cfg(target_os = "macos")]
 fn round_macos_window_corners(window: &tauri::WebviewWindow, radius: f64) {
     use objc2::msg_send;
-    use objc2::runtime::AnyObject;
+    use objc2::runtime::{AnyClass, AnyObject};
 
     let Ok(ns_window) = window.ns_window() else {
         return;
@@ -632,6 +638,18 @@ fn round_macos_window_corners(window: &tauri::WebviewWindow, radius: f64) {
     }
     unsafe {
         let ns_window = ns_window as *mut AnyObject;
+
+        // NSWindowStyleMaskBorderless == 0
+        let _: () = msg_send![ns_window, setStyleMask: 0_u64];
+        let _: () = msg_send![ns_window, setOpaque: false];
+        let _: () = msg_send![ns_window, setHasShadow: false];
+
+        let nscolor = AnyClass::get("NSColor").expect("NSColor class");
+        let clear_color: *mut AnyObject = msg_send![nscolor, clearColor];
+        if !clear_color.is_null() {
+            let _: () = msg_send![ns_window, setBackgroundColor: clear_color];
+        }
+
         let content_view: *mut AnyObject = msg_send![ns_window, contentView];
         if content_view.is_null() {
             return;
@@ -643,6 +661,14 @@ fn round_macos_window_corners(window: &tauri::WebviewWindow, radius: f64) {
         }
         let _: () = msg_send![layer, setCornerRadius: radius];
         let _: () = msg_send![layer, setMasksToBounds: true];
+        let _: () = msg_send![layer, setBorderWidth: 0.0_f64];
+
+        if !clear_color.is_null() {
+            let cg_clear: *mut AnyObject = msg_send![clear_color, CGColor];
+            if !cg_clear.is_null() {
+                let _: () = msg_send![layer, setBackgroundColor: cg_clear];
+            }
+        }
     }
 }
 
