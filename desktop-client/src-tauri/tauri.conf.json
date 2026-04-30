@@ -14,8 +14,8 @@
       {
         "label": "popup",
         "title": "Liaison",
-        "width": 320,
-        "height": 300,
+        "width": 336,
+        "height": 316,
         "visible": false,
         "decorations": false,
         "transparent": true,

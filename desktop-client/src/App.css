@@ -32,9 +32,17 @@ body,
 }
 
 .popup {
-  margin: 0;
+  /* On macOS, NSWindow with `decorations: false` + `transparent: true`
+     can still leak a faint square outline at its four corners — the
+     window itself is a sharp rectangle and the OS's focus ring / edge
+     highlight bleeds through where our 12px rounded mask leaves the
+     last few pixels of each corner uncovered. Inset the popup with
+     a transparent margin so the actual visible "popup" sits well
+     inside the window's edge; the OS-drawn outline ends up in the
+     transparent gap and is invisible against the desktop behind. */
+  margin: 8px;
   padding: 14px;
-  height: 100vh;
+  height: calc(100vh - 16px);
   box-sizing: border-box;
   overflow-y: auto;
   /* Dark variant of the brand SVG gradient — diagonal blue-violet to
@@ -49,6 +57,10 @@ body,
   -webkit-backdrop-filter: blur(18px);
   border-radius: 12px;
   border: 1px solid rgba(139, 92, 212, 0.18);
+  /* Soft drop shadow to define the popup's edge against any
+     backdrop, since we no longer touch the window's outermost
+     pixels. macOS handles this cheaply on transparent windows. */
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.32);
   display: flex;
   flex-direction: column;
   gap: 10px;
