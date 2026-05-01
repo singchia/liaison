@@ -1,0 +1,166 @@
+name: desktop-client / macos build
+
+on:
+  push:
+    branches: [feat/desktop-client]
+    tags: ['desktop-v*']
+    paths:
+      - 'desktop-client/**'
+      - 'cmd/edge/**'
+      - 'pkg/edge/**'
+      - '.github/workflows/desktop-client-macos.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write   # required to publish the rolling pre-release
+
+concurrency:
+  group: desktop-client-macos-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache: true
+
+      - name: Build liaison-edge for both Mac architectures
+        run: |
+          mkdir -p desktop-client/src-tauri/resources
+
+          # CGO must be enabled on darwin: gopsutil's cpu.Percent /
+          # disk.Usage call into mach kernel APIs and the C standard
+          # library, and without CGO they return ErrNotImplementedError
+          # ("not implemented yet"). The reporter's heartbeat would
+          # then never reach the manager, the heartbeat-aware
+          # effectiveEdgeOnline check would mark the edge offline
+          # after 60s, and the dashboard would show a connected edge
+          # as "已离线". Linux/Windows are fine without CGO because
+          # gopsutil there reads /proc or syscalls.
+          #
+          # Apple Silicon runner has the host clang for arm64 natively;
+          # for amd64 we just point CC/CXX at clang with -arch x86_64
+          # so the SDK lipo's both arches into the binary chain Tauri
+          # expects under universal-apple-darwin.
+
+          # Native arch (arm64 on Apple Silicon runner)
+          echo "building edge for darwin/arm64 (CGO enabled, native) ..."
+          CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 \
+            go build -trimpath -ldflags "-s -w" \
+            -o desktop-client/src-tauri/resources/liaison-edge-darwin-arm64 \
+            ./cmd/edge
+
+          # Cross arch (amd64 from arm64 runner, via clang -arch x86_64)
+          echo "building edge for darwin/amd64 (CGO enabled, cross) ..."
+          CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 \
+            CC="clang -arch x86_64" \
+            CXX="clang++ -arch x86_64" \
+            go build -trimpath -ldflags "-s -w" \
+            -o desktop-client/src-tauri/resources/liaison-edge-darwin-amd64 \
+            ./cmd/edge
+
+          ls -la desktop-client/src-tauri/resources/
+          file desktop-client/src-tauri/resources/liaison-edge-darwin-*
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: desktop-client/pnpm-lock.yaml
+
+      - name: Setup Rust (both Mac targets)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: Cache cargo / target
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: 'desktop-client/src-tauri -> target'
+
+      - name: Install frontend deps
+        working-directory: desktop-client
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Tauri (.dmg / .app, universal)
+        working-directory: desktop-client
+        run: pnpm tauri build --target universal-apple-darwin
+
+      - name: Stamp .dmg filename with date + commit
+        # Tauri's default name (Liaison_0.1.0_universal.dmg) is stable so
+        # the rolling URL doesn't change, but a stale cached download is
+        # indistinguishable from a fresh one. Add a second .dmg whose
+        # filename embeds the build date + short sha, so a tester can
+        # tell at a glance which build they're holding.
+        shell: bash
+        run: |
+          sha="${GITHUB_SHA:0:7}"
+          date="$(date -u +%Y%m%d-%H%M)"
+          stamp="_${date}_${sha}"
+          bd="desktop-client/src-tauri/target/universal-apple-darwin/release/bundle/dmg"
+          for f in "$bd"/*.dmg; do
+            base="${f%.dmg}"
+            cp "$f" "${base}${stamp}.dmg"
+            echo "  stamped: ${base}${stamp}.dmg"
+          done
+
+      - name: Locate produced bundle
+        id: bundles
+        shell: bash
+        run: |
+          BUNDLE_DIR=desktop-client/src-tauri/target/universal-apple-darwin/release/bundle
+          dmg=$(ls "$BUNDLE_DIR/dmg/"*.dmg 2>/dev/null | head -1 || true)
+          if [ -z "$dmg" ]; then
+            echo "no .dmg produced under $BUNDLE_DIR"
+            find "$BUNDLE_DIR" -maxdepth 3 -print
+            exit 1
+          fi
+          echo "dmg=$dmg" >> "$GITHUB_OUTPUT"
+          size=$(stat -f%z "$dmg")
+          echo "produced: $dmg ($((size/1024/1024)) MB)"
+
+      - name: Upload artifact (always)
+        uses: actions/upload-artifact@v4
+        with:
+          name: liaison-desktop-macos-${{ github.sha }}
+          path: desktop-client/src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Publish rolling pre-release (feat/desktop-client only)
+        if: github.ref == 'refs/heads/feat/desktop-client'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: desktop-latest
+          name: 'Liaison Desktop (latest from feat/desktop-client)'
+          prerelease: true
+          files: |
+            desktop-client/src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish tagged release
+        if: startsWith(github.ref, 'refs/tags/desktop-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: 'Liaison Desktop ${{ github.ref_name }}'
+          files: |
+            desktop-client/src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

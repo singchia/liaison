@@ -91,6 +91,37 @@ cd liaison-1.5.0-docker-amd64
 
 ### 🔌 安装连接器
 
+两种安装方式，按目标设备类型选择。
+
+#### 方式 A — Liaison Desktop（图形界面，macOS / Windows）
+
+菜单栏 / 系统托盘应用，封装连接器本身，提供一键登录、状态指示、暂停 / 恢复以及一键打开 Dashboard。适合笔记本和工作站。
+
+<div align="center">
+
+| macOS | Windows |
+|:---:|:---:|
+| <img src="docs/images/desktop-client/popup-macos-zh.png" alt="Liaison Desktop 在 macOS" width="360" /> | <img src="docs/images/desktop-client/popup-windows-zh.png" alt="Liaison Desktop 在 Windows" width="360" /> |
+
+</div>
+
+- **一键登录** — 浏览器辅助 OAuth 流程，PAT 存入系统钥匙串（macOS Keychain，Windows 凭据管理器）
+- **多部署支持** — 默认连 `liaison.cloud`；左下角齿轮图标可随时切换到任意私有化部署，无需重装
+- **基于心跳的状态判断** — 连接中 → 已连接的切换反映真实隧道状态，不只看进程是否存活
+- **暂停状态跨重启保留** — 用户意图持久化到磁盘，暂停后退出再启动还是暂停
+
+**下载（rolling 预发布，`feat/desktop-client` 最新构建）：**
+
+| 平台 | 文件 |
+|:---|:---|
+| macOS（Apple Silicon + Intel 通用） | [`Liaison_0.1.0_universal.dmg`](https://github.com/liaisonio/liaison/releases/download/desktop-latest/Liaison_0.1.0_universal.dmg) |
+| Windows（.msi 安装器） | [`Liaison_0.1.0_x64_en-US.msi`](https://github.com/liaisonio/liaison/releases/download/desktop-latest/Liaison_0.1.0_x64_en-US.msi) |
+| Windows（.exe NSIS，卸载时清理 keychain） | [`Liaison_0.1.0_x64-setup.exe`](https://github.com/liaisonio/liaison/releases/download/desktop-latest/Liaison_0.1.0_x64-setup.exe) |
+
+> v0.1 的安装包未签名。macOS Gatekeeper 与 Windows SmartScreen 首次启动会提示——macOS 上右键点击 → 打开，Windows 上选「更多信息」→「仍要运行」。Windows 需要 WebView2 Runtime；Win10 1803+ 和 Win11 已自带。
+
+#### 方式 B — 命令行安装（Linux / 无图形环境）
+
 在 Web 控制台**新建连接器**，在页面上拷贝对应平台的安装命令，在目标设备上执行即可完成安装。安装后连接器会自动出现在控制台中。
 
 ---

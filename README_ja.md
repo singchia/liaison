@@ -91,6 +91,37 @@ cd liaison-1.5.0-docker-amd64
 
 ### コネクター導入
 
+ターゲット端末に応じて 2 つのインストール経路から選択してください。
+
+#### オプション A — Liaison Desktop (GUI、macOS / Windows)
+
+コネクターをラップするメニューバー / トレイアプリ。ワンクリックサインイン、ステータス表示、一時停止 / 再開、ダッシュボードへのワンクリックアクセスを提供します。ノート PC やワークステーションに最適。
+
+<div align="center">
+
+| macOS | Windows |
+|:---:|:---:|
+| <img src="docs/images/desktop-client/popup-macos.png" alt="Liaison Desktop on macOS" width="360" /> | <img src="docs/images/desktop-client/popup-windows.png" alt="Liaison Desktop on Windows" width="360" /> |
+
+</div>
+
+- **ワンクリックサインイン** — ブラウザ仲介の OAuth フロー、PAT は OS のキーチェーン (macOS Keychain、Windows 資格情報マネージャー) に保存
+- **マルチデプロイ対応** — デフォルトは `liaison.cloud`、左下の歯車アイコンから任意のプライベートデプロイへ即座に切替可能（再インストール不要）
+- **ハートビート連動のステータス** — 接続中 → オンライン遷移は実際のトンネル状態を反映 (プロセス生存だけではない)
+- **再起動を跨いで保持される一時停止** — ユーザー意図がディスクに永続化され、再起動後も Paused のまま
+
+**ダウンロード (ローリングプレリリース、`feat/desktop-client` の最新ビルド)：**
+
+| プラットフォーム | ファイル |
+|:---|:---|
+| macOS (Apple Silicon + Intel ユニバーサル) | [`Liaison_0.1.0_universal.dmg`](https://github.com/liaisonio/liaison/releases/download/desktop-latest/Liaison_0.1.0_universal.dmg) |
+| Windows (.msi インストーラー) | [`Liaison_0.1.0_x64_en-US.msi`](https://github.com/liaisonio/liaison/releases/download/desktop-latest/Liaison_0.1.0_x64_en-US.msi) |
+| Windows (.exe NSIS、アンインストール時にキーチェーンクリーンアップ) | [`Liaison_0.1.0_x64-setup.exe`](https://github.com/liaisonio/liaison/releases/download/desktop-latest/Liaison_0.1.0_x64-setup.exe) |
+
+> v0.1 のインストーラーは未署名です。macOS Gatekeeper と Windows SmartScreen が初回起動時に警告を出します — macOS は右クリック → 開く、Windows は「詳細情報」→「実行」を選択してください。Windows には WebView2 Runtime が必要です (Win10 1803+ と Win11 にプリインストール済み)。
+
+#### オプション B — CLI インストールコマンド (Linux / ヘッドレス)
+
 Web コンソールで **コネクターを新規作成** し、UI から対象プラットフォーム用のインストールコマンドをコピーして対象デバイスで実行すると、コネクターがコンソールに自動で現れます。
 
 ---

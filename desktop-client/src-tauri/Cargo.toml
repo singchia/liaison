@@ -1,0 +1,51 @@
+[package]
+name = "desktop-client"
+version = "0.1.0"
+description = "A Tauri App"
+authors = ["you"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "desktop_client_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-opener = "2"
+
+[target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\"))".dependencies]
+tauri-plugin-single-instance = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+tokio = { version = "1", features = ["sync", "time", "rt-multi-thread", "macros", "process", "fs", "io-util"] }
+serde_yml = "0.0.12"
+dirs = "6"
+tiny_http = "0.12"
+url = "2.5"
+rand = "0.8"
+keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "gzip"] }
+
+[target."cfg(target_os = \"macos\")".dependencies]
+# Used to force-round the NSWindow's content layer corners on macOS.
+# Tauri's windowEffects.radius only clips the visual-effect material,
+# leaving the NSWindow itself square — so the corners outside the
+# material's rounded clip showed the host material (looks white on a
+# light theme), making the square frame visible. Setting cornerRadius
+# + masksToBounds on the contentView's CALayer clips the whole window
+# render so the corners are genuinely transparent.
+objc2 = "0.5"
+objc2-app-kit = { version = "0.2", features = ["NSWindow", "NSView"] }
+objc2-quartz-core = { version = "0.2", features = ["CALayer"] }
+
+[dev-dependencies]
+wiremock = "0.6"

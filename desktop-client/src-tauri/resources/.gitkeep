@@ -1,0 +1,3 @@
+# liaison-edge-darwin-{amd64,arm64} are copied here by
+# `make desktop-client-copy-edge-binary` and bundled into the .app
+# at build time. Not committed.

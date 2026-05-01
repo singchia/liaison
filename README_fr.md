@@ -91,6 +91,37 @@ Les données (`data/` SQLite), les certificats TLS (`certs/`) et les logs (`logs
 
 ### Installer un connecteur
 
+Deux chemins d'installation, choisissez celui adapté à la machine cible.
+
+#### Option A — Liaison Desktop (GUI, macOS / Windows)
+
+Application de barre de menus / barre d'état système qui encapsule le connecteur et offre une connexion en un clic, un indicateur d'état, pause / reprise et un accès au tableau de bord en un clic. Idéal pour les ordinateurs portables et postes de travail.
+
+<div align="center">
+
+| macOS | Windows |
+|:---:|:---:|
+| <img src="docs/images/desktop-client/popup-macos.png" alt="Liaison Desktop on macOS" width="360" /> | <img src="docs/images/desktop-client/popup-windows.png" alt="Liaison Desktop on Windows" width="360" /> |
+
+</div>
+
+- **Connexion en un clic** — flux OAuth via navigateur, PAT stocké dans le trousseau du système (Keychain sur macOS, Gestionnaire d'identifiants sur Windows)
+- **Multi-déploiement** — par défaut sur `liaison.cloud` ; l'icône d'engrenage en bas à gauche permet de basculer vers n'importe quel déploiement privé sans réinstaller
+- **État sensible au heartbeat** — les transitions Connexion → En ligne reflètent l'état réel du tunnel, pas seulement la vivacité du processus
+- **Pause qui survit à la fermeture** — l'intention est persistée sur disque, une session en pause le reste après relance
+
+**Télécharger (pré-release roulante, dernier build de `feat/desktop-client`) :**
+
+| Plateforme | Fichier |
+|:---|:---|
+| macOS (Apple Silicon + Intel, universel) | [`Liaison_0.1.0_universal.dmg`](https://github.com/liaisonio/liaison/releases/download/desktop-latest/Liaison_0.1.0_universal.dmg) |
+| Windows (installateur .msi) | [`Liaison_0.1.0_x64_en-US.msi`](https://github.com/liaisonio/liaison/releases/download/desktop-latest/Liaison_0.1.0_x64_en-US.msi) |
+| Windows (.exe NSIS, avec nettoyage du trousseau à la désinstallation) | [`Liaison_0.1.0_x64-setup.exe`](https://github.com/liaisonio/liaison/releases/download/desktop-latest/Liaison_0.1.0_x64-setup.exe) |
+
+> Les installateurs v0.1 ne sont pas signés. Gatekeeper macOS et Windows SmartScreen avertiront au premier lancement — clic droit → Ouvrir sur macOS, ou « Informations supplémentaires » → « Exécuter quand même » sur Windows. WebView2 Runtime est requis sur Windows ; Win10 1803+ et Win11 l'incluent.
+
+#### Option B — Commande d'installation CLI (Linux / headless)
+
 **Créez un nouveau connecteur** dans la console Web, copiez la commande d'installation correspondant à votre plateforme depuis l'interface et exécutez-la sur la machine cible. Le connecteur apparaîtra automatiquement dans la console.
 
 ---

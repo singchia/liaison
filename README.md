@@ -91,6 +91,37 @@ Data (`data/` SQLite), TLS certs (`certs/`), and logs (`logs/`) are bind-mounted
 
 ### Install Connector
 
+Two install paths, pick whichever fits the target device.
+
+#### Option A — Liaison Desktop (GUI, macOS / Windows)
+
+A menubar / tray app that wraps the connector and gives you a single-click sign-in, status pill, pause / resume, and one-click access to the dashboard. Ideal for laptops and workstations.
+
+<div align="center">
+
+| macOS | Windows |
+|:---:|:---:|
+| <img src="docs/images/desktop-client/popup-macos.png" alt="Liaison Desktop on macOS" width="360" /> | <img src="docs/images/desktop-client/popup-windows.png" alt="Liaison Desktop on Windows" width="360" /> |
+
+</div>
+
+- **One-click sign-in** — browser-mediated OAuth-style flow, PAT stored in the OS keychain (Keychain on macOS, Credential Manager on Windows)
+- **Multi-deployment** — defaults to `liaison.cloud`, gear icon in the bottom-left lets a user switch to any private deployment without re-installing
+- **Heartbeat-aware status** — Connecting → Online transitions reflect the actual tunnel state, not just process liveness
+- **Pause / resume that survives quit** — intent persisted to disk, so a paused session stays paused across relaunch
+
+**Download (rolling pre-release, latest from `feat/desktop-client`):**
+
+| Platform | File |
+|:---|:---|
+| macOS (Apple Silicon + Intel, universal) | [`Liaison_0.1.0_universal.dmg`](https://github.com/liaisonio/liaison/releases/download/desktop-latest/Liaison_0.1.0_universal.dmg) |
+| Windows (.msi installer) | [`Liaison_0.1.0_x64_en-US.msi`](https://github.com/liaisonio/liaison/releases/download/desktop-latest/Liaison_0.1.0_x64_en-US.msi) |
+| Windows (.exe NSIS, with uninstall keychain cleanup) | [`Liaison_0.1.0_x64-setup.exe`](https://github.com/liaisonio/liaison/releases/download/desktop-latest/Liaison_0.1.0_x64-setup.exe) |
+
+> Both installers are unsigned for v0.1. macOS Gatekeeper and Windows SmartScreen will warn on first run — right-click → Open on macOS, or "More info" → "Run anyway" on Windows. WebView2 Runtime is required at runtime on Windows; Win10 1803+ and Win11 ship it.
+
+#### Option B — CLI install command (Linux / headless)
+
 **Create a new connector** in the Web console, copy the install command for your platform from the UI, and run it on the target device. The connector will appear in the console automatically.
 
 ---
