@@ -101,7 +101,7 @@ cd liaison-1.5.0-docker-amd64
 
 | macOS | Windows |
 |:---:|:---:|
-| <img src="docs/images/desktop-client/popup-macos.png" alt="Liaison Desktop on macOS" width="360" /> | <img src="docs/images/desktop-client/popup-windows.png" alt="Liaison Desktop on Windows" width="360" /> |
+| <img src="docs/images/desktop-client/popup-macos-zh.png" alt="Liaison Desktop 在 macOS" width="360" /> | <img src="docs/images/desktop-client/popup-windows-zh.png" alt="Liaison Desktop 在 Windows" width="360" /> |
 
 </div>
 
