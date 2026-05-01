@@ -8,9 +8,11 @@ import { Dict, Locale, LOCALE_LABEL_BILINGUAL, detectLocale, dict as loadDict } 
 
 // Settings view has more vertical content (server URL form + hint
 // + language picker + buttons), so the window grows to fit. Main
-// view goes back to the compact menu-bar size.
+// view goes back to the compact menu-bar size. The settings height
+// has a bit of slack so the longer English copy doesn't trigger a
+// scrollbar even if a wrap pushes the layout one line taller.
 const SIZE_MAIN = { width: 320, height: 300 };
-const SIZE_SETTINGS = { width: 320, height: 400 };
+const SIZE_SETTINGS = { width: 320, height: 440 };
 
 async function setWindowSize(size: { width: number; height: number }) {
   try {
