@@ -75,29 +75,39 @@ jobs:
         working-directory: desktop-client
         run: pnpm tauri build
 
-      - name: Stamp installer filenames with date + commit
-        # The Tauri-default name (Liaison_0.1.0_x64_en-US.msi) is stable so
-        # the rolling-release URL doesn't change, but a fresh download is
-        # indistinguishable from a cached one. Copy the bundles to a
-        # second filename that includes the build date + short sha so a
-        # tester can confirm which build they're looking at by glancing
-        # at the file in their Downloads folder. Both names ship to the
-        # release.
+      - name: Rename + stamp installer filenames
+        # Tauri's default name (Liaison_0.1.0_x64_en-US.msi) was fine
+        # for internal testing, but liaison.cloud advertises the
+        # canonical form `Liaison-Desktop-vX.Y.Z-Windows-x64.msi`.
+        # Rename to that form so the GH release filename matches the
+        # URL on the site, and emit a second copy with the build date
+        # + short sha so testers can tell stamped builds apart.
         shell: pwsh
         run: |
           $sha   = "${{ github.sha }}".Substring(0, 7)
           $date  = Get-Date -Format "yyyyMMdd-HHmm"
-          $stamp = "_${date}_${sha}"
+          $stamp = "${date}_${sha}"
           $bundleDir = "desktop-client/src-tauri/target/release/bundle"
-          foreach ($msi in Get-ChildItem -Path "$bundleDir/msi" -Filter *.msi -ErrorAction SilentlyContinue) {
-            $stamped = $msi.FullName -replace '\.msi$', "$stamp.msi"
-            Copy-Item $msi.FullName $stamped
-            Write-Host "  stamped: $stamped"
+          if ("${env:GITHUB_REF}" -like "refs/tags/*") {
+            $ver = "${env:GITHUB_REF_NAME}" -replace "^desktop-", ""
+          } else {
+            $ver = "dev-" + (("${env:GITHUB_REF_NAME}") -replace "/", "-")
           }
-          foreach ($exe in Get-ChildItem -Path "$bundleDir/nsis" -Filter *-setup.exe -ErrorAction SilentlyContinue) {
-            $stamped = $exe.FullName -replace '-setup\.exe$', "${stamp}-setup.exe"
+          foreach ($msi in Get-ChildItem -Path "$bundleDir/msi" -Filter "Liaison_*.msi" -ErrorAction SilentlyContinue) {
+            $canonical = Join-Path $msi.DirectoryName "Liaison-Desktop-${ver}-Windows-x64.msi"
+            $stamped   = Join-Path $msi.DirectoryName "Liaison-Desktop-${ver}-Windows-x64_${stamp}.msi"
+            Copy-Item $msi.FullName $canonical
+            Copy-Item $msi.FullName $stamped
+            Remove-Item $msi.FullName
+            Write-Host "  canonical: $canonical"
+          }
+          foreach ($exe in Get-ChildItem -Path "$bundleDir/nsis" -Filter "Liaison_*-setup.exe" -ErrorAction SilentlyContinue) {
+            $canonical = Join-Path $exe.DirectoryName "Liaison-Desktop-${ver}-Windows-x64-setup.exe"
+            $stamped   = Join-Path $exe.DirectoryName "Liaison-Desktop-${ver}-Windows-x64-setup_${stamp}.exe"
+            Copy-Item $exe.FullName $canonical
             Copy-Item $exe.FullName $stamped
-            Write-Host "  stamped: $stamped"
+            Remove-Item $exe.FullName
+            Write-Host "  canonical: $canonical"
           }
 
       - name: Locate produced bundles

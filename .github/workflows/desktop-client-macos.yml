@@ -101,22 +101,34 @@ jobs:
         working-directory: desktop-client
         run: pnpm tauri build --target universal-apple-darwin
 
-      - name: Stamp .dmg filename with date + commit
-        # Tauri's default name (Liaison_0.1.0_universal.dmg) is stable so
-        # the rolling URL doesn't change, but a stale cached download is
-        # indistinguishable from a fresh one. Add a second .dmg whose
-        # filename embeds the build date + short sha, so a tester can
-        # tell at a glance which build they're holding.
+      - name: Rename + stamp .dmg
+        # Tauri's default name (Liaison_0.1.0_universal.dmg) was fine for
+        # internal testing, but liaison.cloud advertises the canonical
+        # form `Liaison-Desktop-vX.Y.Z-macOS-universal.dmg`. Rename the
+        # build output to that form so the GH release filename matches
+        # the URL on the site, and add a second copy with the build
+        # date + short sha so testers can tell stamped builds apart.
         shell: bash
         run: |
           sha="${GITHUB_SHA:0:7}"
           date="$(date -u +%Y%m%d-%H%M)"
-          stamp="_${date}_${sha}"
+          stamp="${date}_${sha}"
           bd="desktop-client/src-tauri/target/universal-apple-darwin/release/bundle/dmg"
-          for f in "$bd"/*.dmg; do
-            base="${f%.dmg}"
-            cp "$f" "${base}${stamp}.dmg"
-            echo "  stamped: ${base}${stamp}.dmg"
+          # tag-triggered runs use the tag (e.g. "desktop-v0.1.0"); for
+          # branch builds fall back to the branch name so the file is
+          # still self-describing.
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            ver="${GITHUB_REF_NAME#desktop-}"
+          else
+            ver="dev-${GITHUB_REF_NAME//\//-}"
+          fi
+          for f in "$bd"/Liaison_*.dmg; do
+            [ -e "$f" ] || continue
+            canonical="$bd/Liaison-Desktop-${ver}-macOS-universal.dmg"
+            cp "$f" "$canonical"
+            cp "$f" "$bd/Liaison-Desktop-${ver}-macOS-universal_${stamp}.dmg"
+            rm "$f"
+            echo "  canonical: $canonical"
           done
 
       - name: Locate produced bundle
