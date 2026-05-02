@@ -17,14 +17,14 @@
 |:---:|:---:|
 | ![Jellyfin](docs/pages/jellyfin-ss.png) | ![OpenClaw](docs/pages/openclaw-ss.png) |
 
-[快速开始](#-快速开始) • [简介](#-项目简介) • [文档](#-文档) • [贡献](#-贡献)
+[快速开始](#-快速开始) • [简介](#-项目简介) • [贡献](#-贡献)
 
 
 ---
 
 ## 📖 项目简介
 
-Liaison 是一个企业级应用访问解决方案，不暴露任何内网端口，随时开启关闭。它提供了完整的产品功能，支持自动发现设备应用，实时流量统计，以及安全的 TLS 加密传输。
+Liaison 是一个生产级应用访问解决方案，不暴露任何内网端口，随时开启关闭。它提供了完整的产品功能，支持自动发现设备应用，实时流量统计，以及安全的 TLS 加密传输。
 
 本项目主要解决以下问题：
 
@@ -151,24 +151,6 @@ cd liaison-1.5.0-docker-amd64
 - **Liaison** - 管理中心，提供 Web 界面和 API，访问入口
 - **Frontier** - 连接器网关，处理所有连接器的连接和通信
 - **Edge** - 连接器客户端，部署在目标设备上
-
----
-
-## 📸 功能展示
-
-| 功能 | 截图 |
-|:---:|:---:|
-| 设备管理 | ![Device](docs/pages/device.png) |
-| 应用管理 | ![Application](docs/pages/application.png) |
-| 代理配置 | ![Proxy](docs/pages/entry.png) |
-| 连接器管理 | ![Connector](docs/pages/edge.png) |
-
----
-
-## 📚 文档
-
-- [业务流程图](./docs/biz_sequence.md)
-- [API 文档](./docs/swagger/)
 
 ---
 
